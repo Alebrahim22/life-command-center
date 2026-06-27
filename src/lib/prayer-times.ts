@@ -20,7 +20,7 @@ export interface PrayerTimesData {
 
 export async function fetchPrayerTimes(): Promise<PrayerTimesData> {
   const res = await fetch(
-    "https://api.aladhan.com/v1/timings?latitude=29.3759&longitude=47.9774&method=6",
+    "https://api.aladhan.com/v1/timings?latitude=29.3759&longitude=47.9774&method=0",
     { next: { revalidate: 3600 } }
   )
 
