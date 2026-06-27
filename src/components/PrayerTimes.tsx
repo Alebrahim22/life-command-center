@@ -80,8 +80,8 @@ export default function PrayerTimes() {
 
   if (error) {
     return (
-      <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
-        <h2 className="mb-3 text-lg font-semibold text-[#a0a0a0]">Prayer Times</h2>
+      <div className="rounded-xl border border-border bg-bg-card p-5">
+        <h2 className="mb-3 text-lg font-semibold text-text-secondary">Prayer Times</h2>
         <p className="text-sm text-red-400">Failed to load prayer times</p>
       </div>
     )
@@ -89,11 +89,11 @@ export default function PrayerTimes() {
 
   if (!data) {
     return (
-      <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
-        <h2 className="mb-3 text-lg font-semibold text-[#a0a0a0]">Prayer Times</h2>
+      <div className="rounded-xl border border-border bg-bg-card p-5">
+        <h2 className="mb-3 text-lg font-semibold text-text-secondary">Prayer Times</h2>
         <div className="space-y-2">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-7 animate-pulse rounded bg-[#2a2a2a]" />
+            <div key={i} className="h-7 animate-pulse rounded bg-border" />
           ))}
         </div>
       </div>
@@ -101,8 +101,8 @@ export default function PrayerTimes() {
   }
 
   return (
-    <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
-      <h2 className="mb-4 text-lg font-semibold text-[#a0a0a0]">Prayer Times</h2>
+    <div className="rounded-xl border border-border bg-bg-card p-5">
+      <h2 className="mb-4 text-lg font-semibold text-text-secondary">Prayer Times</h2>
       <div className="space-y-1">
         {(Object.keys(PRAYER_LABELS) as (keyof typeof data.timings)[]).map((name) => {
           const isCurrent = current === name
@@ -112,36 +112,36 @@ export default function PrayerTimes() {
               key={name}
               className={`flex items-center justify-between rounded-lg px-3 py-2 transition-colors ${
                 isCurrent
-                  ? "bg-[#22c55e] bg-opacity-15"
-                  : "hover:bg-[#222]"
+                  ? "bg-accent/15"
+                  : "hover:bg-bg-card-hover"
               }`}
             >
               <div className="flex items-center gap-3">
                 <span
                   className={`h-2 w-2 rounded-full ${
                     isCurrent
-                      ? "bg-[#22c55e]"
+                      ? "bg-accent"
                       : isNext
-                        ? "bg-[#3b82f6]"
-                        : "bg-[#444]"
+                        ? "bg-prayer-next"
+                        : "bg-text-secondary/30"
                   }`}
                 />
                 <span
                   className={`text-sm ${
-                    isCurrent ? "font-medium text-white" : "text-[#c0c0c0]"
+                    isCurrent ? "font-medium text-text-primary" : "text-text-secondary"
                   }`}
                 >
                   {PRAYER_LABELS[name]}
                 </span>
                 {isNext && (
-                  <span className="rounded bg-[#3b82f6] bg-opacity-20 px-1.5 py-0.5 text-[10px] font-medium text-[#3b82f6]">
+                  <span className="rounded bg-prayer-next/20 px-1.5 py-0.5 text-[10px] font-medium text-prayer-next">
                     UP NEXT
                   </span>
                 )}
               </div>
               <span
                 className={`text-sm tabular-nums ${
-                  isCurrent ? "font-semibold text-white" : "text-[#a0a0a0]"
+                  isCurrent ? "font-semibold text-text-primary" : "text-text-secondary"
                 }`}
               >
                 {data.timings[name]}

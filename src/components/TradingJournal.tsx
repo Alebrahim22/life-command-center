@@ -167,49 +167,49 @@ export default function TradingJournal() {
 
   if (!loaded) {
     return (
-      <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
-        <h2 className="mb-3 text-lg font-semibold text-[#a0a0a0]">Trading Journal</h2>
-        <div className="h-32 animate-pulse rounded bg-[#2a2a2a]" />
+      <div className="rounded-xl border border-border bg-bg-card p-5">
+        <h2 className="mb-3 text-lg font-semibold text-text-secondary">Trading Journal</h2>
+        <div className="h-32 animate-pulse rounded bg-border" />
       </div>
     )
   }
 
   return (
-    <div className="col-span-1 lg:col-span-2 rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
+    <div className="col-span-1 lg:col-span-2 rounded-xl border border-border bg-bg-card p-5">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-[#a0a0a0]">Trading Journal</h2>
+        <h2 className="text-lg font-semibold text-text-secondary">Trading Journal</h2>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="rounded-lg bg-[#22c55e] bg-opacity-20 px-3 py-1.5 text-xs font-medium text-[#22c55e] transition-colors hover:bg-opacity-30"
+          className="rounded-lg bg-accent/20 px-3 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent/30"
         >
           {showForm ? "Cancel" : "+ Trade"}
         </button>
       </div>
 
       <div className="mb-4 grid grid-cols-4 gap-3 text-sm">
-        <div className="rounded-lg bg-[#222] p-3">
-          <p className="text-[10px] text-[#a0a0a0]">Total Trades</p>
-          <p className="mt-1 text-xl font-semibold text-white">{totalTrades}</p>
+        <div className="rounded-lg bg-bg-card-hover p-3">
+          <p className="text-[10px] text-text-secondary">Total Trades</p>
+          <p className="mt-1 text-xl font-semibold text-text-primary">{totalTrades}</p>
         </div>
-        <div className="rounded-lg bg-[#222] p-3">
-          <p className="text-[10px] text-[#a0a0a0]">Win Rate</p>
-          <p className="mt-1 text-xl font-semibold text-white">{winRate.toFixed(1)}%</p>
+        <div className="rounded-lg bg-bg-card-hover p-3">
+          <p className="text-[10px] text-text-secondary">Win Rate</p>
+          <p className="mt-1 text-xl font-semibold text-text-primary">{winRate.toFixed(1)}%</p>
         </div>
-        <div className="rounded-lg bg-[#222] p-3">
-          <p className="text-[10px] text-[#a0a0a0]">Avg R:R</p>
-          <p className="mt-1 text-xl font-semibold text-white">{avgRR.toFixed(2)}</p>
+        <div className="rounded-lg bg-bg-card-hover p-3">
+          <p className="text-[10px] text-text-secondary">Avg R:R</p>
+          <p className="mt-1 text-xl font-semibold text-text-primary">{avgRR.toFixed(2)}</p>
         </div>
-        <div className="rounded-lg bg-[#222] p-3">
-          <p className="text-[10px] text-[#a0a0a0]">Total P&L</p>
-          <p className={`mt-1 text-xl font-semibold ${totalPnl >= 0 ? "text-[#22c55e]" : "text-red-400"}`}>
+        <div className="rounded-lg bg-bg-card-hover p-3">
+          <p className="text-[10px] text-text-secondary">Total P&L</p>
+          <p className={`mt-1 text-xl font-semibold ${totalPnl >= 0 ? "text-accent" : "text-red-400"}`}>
             ${totalPnl.toFixed(2)}
           </p>
         </div>
       </div>
 
       {equityTrades.length > 0 && (
-        <div className="mb-4 rounded-lg bg-[#222] p-3">
-          <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-[#a0a0a0]">Equity Curve (last {equityTrades.length})</p>
+        <div className="mb-4 rounded-lg bg-bg-card-hover p-3">
+          <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-text-secondary">Equity Curve (last {equityTrades.length})</p>
           <div className="flex items-end gap-[2px]" style={{ height: 80 }}>
             {equityTrades.map((t) => {
               const pnl = calcPnl(t)!
@@ -220,7 +220,7 @@ export default function TradingJournal() {
                   className="flex-1 rounded-t-sm"
                   style={{
                     height: `${h}%`,
-                    backgroundColor: pnl >= 0 ? "#22c55e" : "#ef4444",
+                    backgroundColor: pnl >= 0 ? "var(--color-accent)" : "#ef4444",
                     opacity: 0.8,
                   }}
                   title={`${t.instrument === "Custom" ? t.instrumentCustom : t.instrument} ${t.direction}: $${pnl.toFixed(2)}`}
@@ -231,13 +231,13 @@ export default function TradingJournal() {
         </div>
       )}
 
-      <div className="mb-3 flex gap-1 rounded-lg bg-[#222] p-1 text-xs">
+      <div className="mb-3 flex gap-1 rounded-lg bg-bg-card-hover p-1 text-xs">
         {(["All", "Open", "Closed"] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
             className={`flex-1 rounded-md px-3 py-1.5 capitalize transition-colors ${
-              filter === f ? "bg-[#333] text-white" : "text-[#a0a0a0] hover:text-white"
+              filter === f ? "bg-bg-card-hover text-text-primary" : "text-text-secondary hover:text-text-primary"
             }`}
           >
             {f} ({f === "All" ? trades.length : f === "Open" ? trades.filter((t) => t.status === "Open").length : trades.filter((t) => t.status !== "Open").length})
@@ -246,38 +246,38 @@ export default function TradingJournal() {
       </div>
 
       {showForm && (
-        <div className="mb-4 space-y-2 rounded-lg bg-[#222] p-3">
+        <div className="mb-4 space-y-2 rounded-lg bg-bg-card-hover p-3">
           <div className="flex gap-2">
-            <select value={instrument} onChange={(e) => setInstrument(e.target.value)} className="rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-2 py-2 text-sm text-white outline-none">
+            <select value={instrument} onChange={(e) => setInstrument(e.target.value)} className="rounded-lg border border-border bg-bg-card px-2 py-2 text-sm text-text-primary outline-none">
               {INSTRUMENTS.map((i) => <option key={i} value={i}>{i}</option>)}
             </select>
             {instrument === "Custom" && (
-              <input type="text" placeholder="Instrument" value={instrumentCustom} onChange={(e) => setInstrumentCustom(e.target.value)} className="flex-1 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-white placeholder-[#666] outline-none" />
+              <input type="text" placeholder="Instrument" value={instrumentCustom} onChange={(e) => setInstrumentCustom(e.target.value)} className="flex-1 rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-text-primary placeholder-text-secondary outline-none" />
             )}
-            <select value={direction} onChange={(e) => setDirection(e.target.value as "Long" | "Short")} className="rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-2 py-2 text-sm text-white outline-none">
+            <select value={direction} onChange={(e) => setDirection(e.target.value as "Long" | "Short")} className="rounded-lg border border-border bg-bg-card px-2 py-2 text-sm text-text-primary outline-none">
               <option value="Long">Long</option>
               <option value="Short">Short</option>
             </select>
-            <select value={strategy} onChange={(e) => setStrategy(e.target.value as Trade["strategy"])} className="rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-2 py-2 text-sm text-white outline-none">
+            <select value={strategy} onChange={(e) => setStrategy(e.target.value as Trade["strategy"])} className="rounded-lg border border-border bg-bg-card px-2 py-2 text-sm text-text-primary outline-none">
               {STRATEGIES.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
           <div className="flex gap-2">
-            <input type="number" step="any" placeholder="Entry" value={entryPrice} onChange={(e) => setEntryPrice(e.target.value)} className="flex-1 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-white placeholder-[#666] outline-none" />
-            <input type="number" step="any" placeholder="Exit (leave blank if open)" value={exitPrice} onChange={(e) => setExitPrice(e.target.value)} className="flex-1 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-white placeholder-[#666] outline-none" />
-            <input type="number" step="any" placeholder="Lot size" value={lotSize} onChange={(e) => setLotSize(e.target.value)} className="w-20 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-white placeholder-[#666] outline-none" />
+            <input type="number" step="any" placeholder="Entry" value={entryPrice} onChange={(e) => setEntryPrice(e.target.value)} className="flex-1 rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-text-primary placeholder-text-secondary outline-none" />
+            <input type="number" step="any" placeholder="Exit (leave blank if open)" value={exitPrice} onChange={(e) => setExitPrice(e.target.value)} className="flex-1 rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-text-primary placeholder-text-secondary outline-none" />
+            <input type="number" step="any" placeholder="Lot size" value={lotSize} onChange={(e) => setLotSize(e.target.value)} className="w-20 rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-text-primary placeholder-text-secondary outline-none" />
           </div>
           <div className="flex gap-2">
-            <input type="number" step="any" placeholder="Stop Loss" value={stopLoss} onChange={(e) => setStopLoss(e.target.value)} className="flex-1 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-white placeholder-[#666] outline-none" />
-            <input type="number" step="any" placeholder="Take Profit" value={takeProfit} onChange={(e) => setTakeProfit(e.target.value)} className="flex-1 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-white placeholder-[#666] outline-none" />
+            <input type="number" step="any" placeholder="Stop Loss" value={stopLoss} onChange={(e) => setStopLoss(e.target.value)} className="flex-1 rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-text-primary placeholder-text-secondary outline-none" />
+            <input type="number" step="any" placeholder="Take Profit" value={takeProfit} onChange={(e) => setTakeProfit(e.target.value)} className="flex-1 rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-text-primary placeholder-text-secondary outline-none" />
           </div>
-          <textarea placeholder="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-white placeholder-[#666] outline-none" rows={2} />
-          <button onClick={addTrade} className="w-full rounded-lg bg-[#22c55e] bg-opacity-20 py-2 text-sm font-medium text-[#22c55e]">Add Trade</button>
+          <textarea placeholder="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-text-primary placeholder-text-secondary outline-none" rows={2} />
+          <button onClick={addTrade} className="w-full rounded-lg bg-accent/20 py-2 text-sm font-medium text-accent">Add Trade</button>
         </div>
       )}
 
       {filtered.length === 0 && (
-        <p className="py-6 text-center text-sm text-[#666]">No trades yet</p>
+        <p className="py-6 text-center text-sm text-text-secondary">No trades yet</p>
       )}
 
       <div className="space-y-1">
@@ -288,43 +288,43 @@ export default function TradingJournal() {
           return (
             <div
               key={t.id}
-              className={`group rounded-lg px-3 py-2.5 transition-colors hover:bg-[#222] ${
-                t.status === "Open" ? "border-l-2 border-[#22c55e] bg-[#22c55e] bg-opacity-5" : ""
+              className={`group rounded-lg px-3 py-2.5 transition-colors hover:bg-bg-card-hover ${
+                t.status === "Open" ? "border-l-2 border-accent bg-accent/5" : ""
               } ${t.status === "Stopped Out" ? "opacity-60" : ""}`}
             >
               <div className="flex items-center gap-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <span className={`text-sm font-medium ${pnl !== null ? (pnl >= 0 ? "text-[#22c55e]" : "text-red-400") : "text-white"}`}>
+                    <span className={`text-sm font-medium ${pnl !== null ? (pnl >= 0 ? "text-accent" : "text-red-400") : "text-text-primary"}`}>
                       {inst}
                     </span>
                     <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
-                      t.direction === "Long" ? "bg-[#22c55e] bg-opacity-20 text-[#22c55e]" : "bg-red-500 bg-opacity-20 text-red-400"
+                      t.direction === "Long" ? "bg-accent/20 text-accent" : "bg-red-500/20 text-red-400"
                     }`}>
                       {t.direction}
                     </span>
-                    <span className="text-[10px] text-[#666]">{t.dateOpened}</span>
+                    <span className="text-[10px] text-text-secondary">{t.dateOpened}</span>
                   </div>
-                  <div className="mt-0.5 flex gap-3 text-[10px] text-[#666]">
+                  <div className="mt-0.5 flex gap-3 text-[10px] text-text-secondary">
                     <span>Entry: {t.entryPrice}</span>
                     <span>SL: {t.stopLoss}</span>
                     <span>TP: {t.takeProfit}</span>
                     <span>Lot: {t.lotSize}</span>
                     {rr !== null && <span>R:R: {rr.toFixed(2)}</span>}
-                    <span className="text-[#a0a0a0]">{t.strategy}</span>
+                    <span className="text-text-secondary">{t.strategy}</span>
                   </div>
                 </div>
 
                 <div className="text-right">
                   {pnl !== null ? (
-                    <p className={`text-sm font-semibold ${pnl >= 0 ? "text-[#22c55e]" : "text-red-400"}`}>
+                    <p className={`text-sm font-semibold ${pnl >= 0 ? "text-accent" : "text-red-400"}`}>
                       {pnl >= 0 ? "+" : ""}${pnl.toFixed(2)}
                     </p>
                   ) : (
                     <p className="text-sm font-medium text-amber-400">Open</p>
                   )}
                   <p className={`text-[10px] ${
-                    t.status === "Closed" ? "text-[#22c55e]" : t.status === "Stopped Out" ? "text-red-400" : "text-amber-400"
+                    t.status === "Closed" ? "text-accent" : t.status === "Stopped Out" ? "text-red-400" : "text-amber-400"
                   }`}>
                     {t.status}
                   </p>
@@ -332,8 +332,8 @@ export default function TradingJournal() {
 
                 {t.status === "Open" && (
                   <div className="flex gap-1">
-                    <button onClick={() => closeTrade(t.id, "Closed")} className="rounded bg-[#22c55e] bg-opacity-20 px-2 py-1 text-[10px] font-medium text-[#22c55e]">Close</button>
-                    <button onClick={() => closeTrade(t.id, "Stopped Out")} className="rounded bg-red-500 bg-opacity-20 px-2 py-1 text-[10px] font-medium text-red-400">SL</button>
+                    <button onClick={() => closeTrade(t.id, "Closed")} className="rounded bg-accent/20 px-2 py-1 text-[10px] font-medium text-accent">Close</button>
+                    <button onClick={() => closeTrade(t.id, "Stopped Out")} className="rounded bg-red-500/20 px-2 py-1 text-[10px] font-medium text-red-400">SL</button>
                   </div>
                 )}
 
@@ -341,7 +341,7 @@ export default function TradingJournal() {
                   <Trash2 className="h-3.5 w-3.5 text-red-400" />
                 </button>
               </div>
-              {t.notes && <p className="mt-1 text-[10px] text-[#666]">{t.notes}</p>}
+              {t.notes && <p className="mt-1 text-[10px] text-text-secondary">{t.notes}</p>}
             </div>
           )
         })}

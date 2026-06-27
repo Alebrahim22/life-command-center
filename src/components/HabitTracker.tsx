@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Checkbox from "@/components/Checkbox"
 
 interface HabitData {
   [dateKey: string]: string[]
@@ -119,36 +120,36 @@ export default function HabitTracker() {
 
   if (!loaded) {
     return (
-      <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
-        <h2 className="mb-3 text-lg font-semibold text-[#a0a0a0]">Habit Tracker</h2>
-        <div className="h-48 animate-pulse rounded bg-[#2a2a2a]" />
+      <div className="rounded-xl border border-border bg-bg-card p-5">
+        <h2 className="mb-3 text-lg font-semibold text-text-secondary">Habit Tracker</h2>
+        <div className="h-48 animate-pulse rounded bg-border" />
       </div>
     )
   }
 
   return (
-    <div className="col-span-1 lg:col-span-2 rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
+    <div className="col-span-1 lg:col-span-2 rounded-xl border border-border bg-bg-card p-5">
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-[#a0a0a0]">Habit Tracker</h2>
-          <p className="text-xs text-[#666]">{todayDisplay}</p>
+          <h2 className="text-lg font-semibold text-text-secondary">Habit Tracker</h2>
+          <p className="text-xs text-text-secondary">{todayDisplay}</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-[#a0a0a0]">{completedCount}/{totalCount}</span>
+          <span className="text-sm text-text-secondary">{completedCount}/{totalCount}</span>
           <div
             className="relative h-10 w-10 rounded-full"
             style={{
-              background: `conic-gradient(#22c55e ${scorePct}%, #2a2a2a ${scorePct}%)`,
+              background: `conic-gradient(var(--color-accent) ${scorePct}%, var(--color-border) ${scorePct}%)`,
             }}
           >
-            <div className="absolute inset-[2px] flex items-center justify-center rounded-full bg-[#1a1a1a]">
-              <span className="text-[10px] font-semibold text-white">{Math.round(scorePct)}%</span>
+            <div className="absolute inset-[2px] flex items-center justify-center rounded-full bg-bg-card">
+              <span className="text-[10px] font-semibold text-text-primary">{Math.round(scorePct)}%</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="mb-3 flex items-center gap-1 text-[10px] text-[#555]">
+      <div className="mb-3 flex items-center gap-1 text-[10px] text-text-secondary/60">
         {last7.map((key) => (
           <div key={key} className="flex w-8 flex-col items-center">
             <span>{dayLabel(key)}</span>
@@ -162,20 +163,18 @@ export default function HabitTracker() {
         {HABITS.map((habit) => {
           const streak = calcStreak(habit.id)
           return (
-            <div key={habit.id} className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-[#222]">
-              <input
-                type="checkbox"
+            <div key={habit.id} className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-bg-card-hover">
+              <Checkbox
                 checked={isDone(habit.id, today)}
                 onChange={() => toggleHabit(habit.id)}
-                className="h-4 w-4 cursor-pointer accent-[#22c55e]"
               />
-              <span className="flex-1 text-sm text-[#e0e0e0]">{habit.label}</span>
+              <span className="flex-1 text-sm text-text-primary">{habit.label}</span>
               <div className="flex items-center gap-[3px]">
                 {last7.map((key) => (
                   <div
                     key={key}
                     className={`h-2.5 w-2.5 rounded-full ${
-                      isDone(habit.id, key) ? "bg-[#22c55e]" : "bg-[#333]"
+                      isDone(habit.id, key) ? "bg-accent" : "bg-bg-card-hover"
                     }`}
                   />
                 ))}
@@ -189,7 +188,7 @@ export default function HabitTracker() {
         })}
       </div>
 
-      <p className="mt-3 text-center text-[10px] text-[#555]">
+      <p className="mt-3 text-center text-[10px] text-text-secondary/60">
         Check off habits for today. Circles show last 7 days.
       </p>
     </div>

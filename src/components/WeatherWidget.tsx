@@ -25,8 +25,8 @@ export default function WeatherWidget() {
 
   if (error) {
     return (
-      <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
-        <h2 className="mb-3 text-lg font-semibold text-[#a0a0a0]">Weather</h2>
+      <div className="rounded-xl border border-border bg-bg-card p-5">
+        <h2 className="mb-3 text-lg font-semibold text-text-secondary">Weather</h2>
         <p className="text-sm text-red-400">Failed to load weather</p>
       </div>
     )
@@ -34,9 +34,9 @@ export default function WeatherWidget() {
 
   if (!weather) {
     return (
-      <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
-        <h2 className="mb-3 text-lg font-semibold text-[#a0a0a0]">Weather</h2>
-        <div className="h-24 animate-pulse rounded bg-[#2a2a2a]" />
+      <div className="rounded-xl border border-border bg-bg-card p-5">
+        <h2 className="mb-3 text-lg font-semibold text-text-secondary">Weather</h2>
+        <div className="h-24 animate-pulse rounded bg-border" />
       </div>
     )
   }
@@ -45,16 +45,16 @@ export default function WeatherWidget() {
   const condition = getWeatherCondition(weather.weatherCode)
 
   return (
-    <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
-      <h2 className="mb-4 text-lg font-semibold text-[#a0a0a0]">Weather</h2>
+    <div className="rounded-xl border border-border bg-bg-card p-5">
+      <h2 className="mb-4 text-lg font-semibold text-text-secondary">Weather</h2>
       <div className="flex items-center justify-between">
         <div>
           <span className="text-5xl font-light tracking-tight">{weather.temperature}°</span>
-          <p className="mt-1 text-sm text-[#a0a0a0]">{condition}</p>
+          <p className="mt-1 text-sm text-text-secondary">{condition}</p>
         </div>
-        <Icon className="h-12 w-12 text-[#a0a0a0]" strokeWidth={1.5} />
+        <Icon className="h-12 w-12 text-text-secondary" strokeWidth={1.5} />
       </div>
-      <div className="mt-4 flex gap-4 text-sm text-[#a0a0a0]">
+      <div className="mt-4 flex gap-4 text-sm text-text-secondary">
         <span>
           H: <span className="text-orange-400">{weather.high}°</span>
         </span>

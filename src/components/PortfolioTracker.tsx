@@ -178,40 +178,40 @@ export default function PortfolioTracker() {
 
   if (!loaded) {
     return (
-      <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
-        <h2 className="mb-3 text-lg font-semibold text-[#a0a0a0]">Portfolio Tracker</h2>
-        <div className="h-40 animate-pulse rounded bg-[#2a2a2a]" />
+      <div className="rounded-xl border border-border bg-bg-card p-5">
+        <h2 className="mb-3 text-lg font-semibold text-text-secondary">Portfolio Tracker</h2>
+        <div className="h-40 animate-pulse rounded bg-border" />
       </div>
     )
   }
 
   return (
-    <div className="col-span-1 lg:col-span-2 rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
-      <h2 className="mb-4 text-lg font-semibold text-[#a0a0a0]">Portfolio Tracker</h2>
+    <div className="col-span-1 lg:col-span-2 rounded-xl border border-border bg-bg-card p-5">
+      <h2 className="mb-4 text-lg font-semibold text-text-secondary">Portfolio Tracker</h2>
 
       <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
-        <div className="rounded-lg bg-[#222] p-3">
-          <p className="text-xs text-[#a0a0a0]">Total Portfolio</p>
-          <p className="mt-1 text-2xl font-semibold text-white">
+        <div className="rounded-lg bg-bg-card-hover p-3">
+          <p className="text-xs text-text-secondary">Total Portfolio</p>
+          <p className="mt-1 text-2xl font-semibold text-text-primary">
             {fmt(totalKwd, "KWD")} KWD
           </p>
         </div>
-        <div className="rounded-lg bg-[#222] p-3">
-          <p className="text-xs text-[#a0a0a0]">Total P&L</p>
-          <p className={`mt-1 text-2xl font-semibold ${totalPnl >= 0 ? "text-[#22c55e]" : "text-red-400"}`}>
+        <div className="rounded-lg bg-bg-card-hover p-3">
+          <p className="text-xs text-text-secondary">Total P&L</p>
+          <p className={`mt-1 text-2xl font-semibold ${totalPnl >= 0 ? "text-accent" : "text-red-400"}`}>
             {totalPnl >= 0 ? "+" : ""}{fmt(totalPnl, "KWD")} KWD
           </p>
         </div>
-        <div className="rounded-lg bg-[#222] p-3">
-          <p className="text-xs text-[#a0a0a0]">P&L %</p>
-          <p className={`mt-1 text-2xl font-semibold ${pnlPercent >= 0 ? "text-[#22c55e]" : "text-red-400"}`}>
+        <div className="rounded-lg bg-bg-card-hover p-3">
+          <p className="text-xs text-text-secondary">P&L %</p>
+          <p className={`mt-1 text-2xl font-semibold ${pnlPercent >= 0 ? "text-accent" : "text-red-400"}`}>
             {pnlPercent >= 0 ? "+" : ""}{pnlPercent.toFixed(1)}%
           </p>
         </div>
       </div>
 
-      <div className="mb-5 flex items-center gap-2 border-t border-[#2a2a2a] pt-3">
-        <label className="text-xs text-[#a0a0a0]">1 USD =</label>
+      <div className="mb-5 flex items-center gap-2 border-t border-border pt-3">
+        <label className="text-xs text-text-secondary">1 USD =</label>
         <input
           type="number"
           step="0.001"
@@ -219,9 +219,9 @@ export default function PortfolioTracker() {
           onChange={(e) => setRateInput(e.target.value)}
           onBlur={updateRate}
           onKeyDown={(e) => e.key === "Enter" && updateRate()}
-          className="w-20 rounded-lg border border-[#2a2a2a] bg-[#222] px-2 py-1 text-sm text-white outline-none"
+          className="w-20 rounded-lg border border-border bg-bg-card-hover px-2 py-1 text-sm text-text-primary outline-none"
         />
-        <span className="text-xs text-[#a0a0a0]">KWD</span>
+        <span className="text-xs text-text-secondary">KWD</span>
       </div>
 
       <div className="space-y-3">
@@ -233,44 +233,44 @@ export default function PortfolioTracker() {
           const isCollapsed = platform.collapsed
 
           return (
-            <div key={key} className="rounded-lg border border-[#2a2a2a] bg-[#222]">
+            <div key={key} className="rounded-lg border border-border bg-bg-card-hover">
               <button
                 onClick={() => toggleCollapse(key)}
                 className="flex w-full items-center gap-2 px-4 py-3 text-left"
               >
                 {isCollapsed ? (
-                  <ChevronRight className="h-4 w-4 text-[#a0a0a0]" />
+                  <ChevronRight className="h-4 w-4 text-text-secondary" />
                 ) : (
-                  <ChevronDown className="h-4 w-4 text-[#a0a0a0]" />
+                  <ChevronDown className="h-4 w-4 text-text-secondary" />
                 )}
-                <span className="flex-1 text-sm font-medium text-white">
+                <span className="flex-1 text-sm font-medium text-text-primary">
                   {PLATFORM_LABELS[key]}
                 </span>
-                <span className="text-xs text-[#a0a0a0]">{currency}</span>
-                <span className="text-sm font-semibold text-white">
+                <span className="text-xs text-text-secondary">{currency}</span>
+                <span className="text-sm font-semibold text-text-primary">
                   {fmt(val, currency)} {currency === "KWD" ? "KWD" : ""}
                 </span>
               </button>
 
               {!isCollapsed && (
-                <div className="border-t border-[#2a2a2a] px-4 pb-3 pt-3">
+                <div className="border-t border-border px-4 pb-3 pt-3">
                   <div className="mb-3 flex items-center gap-2">
-                    <label className="text-xs text-[#a0a0a0]">Change today:</label>
+                    <label className="text-xs text-text-secondary">Change today:</label>
                     <input
                       type="number"
                       value={platform.changeToday || ""}
                       onChange={(e) => updateChange(key, parseFloat(e.target.value) || 0)}
-                      className="w-24 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-2 py-1 text-sm text-white outline-none"
+                      className="w-24 rounded-lg border border-border bg-bg-card px-2 py-1 text-sm text-text-primary outline-none"
                     />
                     {platform.changeToday !== 0 && (
-                      <span className={`text-xs font-medium ${platform.changeToday > 0 ? "text-[#22c55e]" : "text-red-400"}`}>
+                      <span className={`text-xs font-medium ${platform.changeToday > 0 ? "text-accent" : "text-red-400"}`}>
                         {platform.changeToday > 0 ? "+" : ""}{platform.changeToday} {currency}
                       </span>
                     )}
                   </div>
 
                   <div className="space-y-1">
-                    <div className="grid grid-cols-5 gap-2 px-2 py-1 text-[10px] text-[#666]">
+                    <div className="grid grid-cols-5 gap-2 px-2 py-1 text-[10px] text-text-secondary">
                       <span className="col-span-1">Asset</span>
                       <span className="text-right">Qty</span>
                       <span className="text-right">Buy</span>
@@ -282,14 +282,14 @@ export default function PortfolioTracker() {
                       return (
                         <div
                           key={h.id}
-                          className="group grid grid-cols-5 items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-[#1a1a1a]"
+                          className="group grid grid-cols-5 items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-bg-card"
                         >
-                          <span className="text-sm font-medium text-white">{h.asset}</span>
-                          <span className="text-right text-sm text-[#c0c0c0]">{fmt(h.quantity, currency)}</span>
-                          <span className="text-right text-sm text-[#a0a0a0]">{fmt(h.buyPrice, currency)}</span>
-                          <span className="text-right text-sm text-[#a0a0a0]">{fmt(h.currentPrice, currency)}</span>
+                          <span className="text-sm font-medium text-text-primary">{h.asset}</span>
+                          <span className="text-right text-sm text-text-secondary">{fmt(h.quantity, currency)}</span>
+                          <span className="text-right text-sm text-text-secondary">{fmt(h.buyPrice, currency)}</span>
+                          <span className="text-right text-sm text-text-secondary">{fmt(h.currentPrice, currency)}</span>
                           <div className="flex items-center justify-end gap-1">
-                            <span className={`text-sm font-medium ${hPnl >= 0 ? "text-[#22c55e]" : "text-red-400"}`}>
+                            <span className={`text-sm font-medium ${hPnl >= 0 ? "text-accent" : "text-red-400"}`}>
                               {hPnl >= 0 ? "+" : ""}{fmt(hPnl, currency)} {currency === "KWD" ? "" : ""}
                             </span>
                             <button
@@ -305,18 +305,18 @@ export default function PortfolioTracker() {
                   </div>
 
                   {platform.holdings.length === 0 && (
-                    <p className="py-2 text-center text-xs text-[#666]">No holdings yet</p>
+                    <p className="py-2 text-center text-xs text-text-secondary">No holdings yet</p>
                   )}
 
                   {addingPlatform === key ? (
-                    <div className="mt-3 grid grid-cols-5 gap-2 rounded-lg bg-[#1a1a1a] p-2">
+                    <div className="mt-3 grid grid-cols-5 gap-2 rounded-lg bg-bg-card p-2">
                       <input
                         type="text"
                         placeholder="Asset"
                         value={addAsset}
                         onChange={(e) => setAddAsset(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && addHolding(key)}
-                        className="col-span-1 rounded border border-[#2a2a2a] bg-[#222] px-2 py-1 text-sm text-white placeholder-[#666] outline-none"
+                        className="col-span-1 rounded border border-border bg-bg-card-hover px-2 py-1 text-sm text-text-primary placeholder-text-secondary outline-none"
                       />
                       <input
                         type="number"
@@ -324,7 +324,7 @@ export default function PortfolioTracker() {
                         value={addQty}
                         onChange={(e) => setAddQty(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && addHolding(key)}
-                        className="rounded border border-[#2a2a2a] bg-[#222] px-2 py-1 text-sm text-white placeholder-[#666] outline-none"
+                        className="rounded border border-border bg-bg-card-hover px-2 py-1 text-sm text-text-primary placeholder-text-secondary outline-none"
                       />
                       <input
                         type="number"
@@ -332,7 +332,7 @@ export default function PortfolioTracker() {
                         value={addBuy}
                         onChange={(e) => setAddBuy(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && addHolding(key)}
-                        className="rounded border border-[#2a2a2a] bg-[#222] px-2 py-1 text-sm text-white placeholder-[#666] outline-none"
+                        className="rounded border border-border bg-bg-card-hover px-2 py-1 text-sm text-text-primary placeholder-text-secondary outline-none"
                       />
                       <input
                         type="number"
@@ -340,11 +340,11 @@ export default function PortfolioTracker() {
                         value={addCur}
                         onChange={(e) => setAddCur(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && addHolding(key)}
-                        className="rounded border border-[#2a2a2a] bg-[#222] px-2 py-1 text-sm text-white placeholder-[#666] outline-none"
+                        className="rounded border border-border bg-bg-card-hover px-2 py-1 text-sm text-text-primary placeholder-text-secondary outline-none"
                       />
                       <button
                         onClick={() => addHolding(key)}
-                        className="rounded bg-[#22c55e] bg-opacity-20 text-sm font-medium text-[#22c55e] transition-colors hover:bg-opacity-30"
+                        className="rounded bg-accent/20 text-sm font-medium text-accent transition-colors hover:bg-accent/30"
                       >
                         Add
                       </button>
@@ -358,7 +358,7 @@ export default function PortfolioTracker() {
                         setAddBuy("")
                         setAddCur("")
                       }}
-                      className="mt-2 flex items-center gap-1 text-xs text-[#22c55e] transition-colors hover:text-[#22c55e]"
+                      className="mt-2 flex items-center gap-1 text-xs text-accent transition-colors hover:text-accent"
                     >
                       <Plus className="h-3 w-3" /> Add Holding
                     </button>

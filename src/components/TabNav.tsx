@@ -39,7 +39,7 @@ export default function TabNav({ onTabChange }: Props) {
   }
 
   return (
-    <div className="sticky top-0 z-10 border-b border-[#2a2a2a] bg-[#0f0f0f]">
+    <div className="sticky top-0 z-10 border-b border-border bg-bg-primary">
       <div className="mx-auto max-w-5xl overflow-x-auto px-4 sm:px-6 lg:px-8 [&::-webkit-scrollbar]:hidden">
         <div className="flex gap-1">
           {TABS.map((tab) => (
@@ -49,12 +49,12 @@ export default function TabNav({ onTabChange }: Props) {
               className={`relative shrink-0 px-4 py-3 text-sm font-medium transition-colors ${
                 activeTab === tab.id
                   ? "text-white"
-                  : "text-[#666] hover:text-[#a0a0a0]"
+                  : "text-text-secondary hover:text-text-secondary"
               }`}
             >
               {tab.label}
               {activeTab === tab.id && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#22c55e]" />
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent" />
               )}
             </button>
           ))}

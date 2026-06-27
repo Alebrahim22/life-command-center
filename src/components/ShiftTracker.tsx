@@ -123,85 +123,85 @@ export default function ShiftTracker() {
 
   if (!loaded) {
     return (
-      <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
-        <h2 className="mb-3 text-lg font-semibold text-[#a0a0a0]">Shift Tracker</h2>
-        <div className="h-32 animate-pulse rounded bg-[#2a2a2a]" />
+      <div className="rounded-xl border border-border bg-bg-card p-5">
+        <h2 className="mb-3 text-lg font-semibold text-text-secondary">Shift Tracker</h2>
+        <div className="h-32 animate-pulse rounded bg-border" />
       </div>
     )
   }
 
   return (
-    <div className="col-span-1 lg:col-span-2 rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
-      <h2 className="mb-4 text-lg font-semibold text-[#a0a0a0]">Shift Tracker</h2>
+    <div className="col-span-1 lg:col-span-2 rounded-xl border border-border bg-bg-card p-5">
+      <h2 className="mb-4 text-lg font-semibold text-text-secondary">Shift Tracker</h2>
 
       <div className="mb-4 grid grid-cols-3 gap-4 text-sm">
-        <div className="rounded-lg bg-[#222] p-3">
-          <p className="text-[#a0a0a0]">This Month</p>
-          <p className="mt-1 text-2xl font-semibold text-white">{shiftsThisMonth}</p>
+        <div className="rounded-lg bg-bg-card-hover p-3">
+          <p className="text-text-secondary">This Month</p>
+          <p className="mt-1 text-2xl font-semibold text-text-primary">{shiftsThisMonth}</p>
         </div>
-        <div className="rounded-lg bg-[#222] p-3">
-          <p className="text-[#a0a0a0]">This Year</p>
-          <p className="mt-1 text-2xl font-semibold text-white">{shiftsThisYear}</p>
+        <div className="rounded-lg bg-bg-card-hover p-3">
+          <p className="text-text-secondary">This Year</p>
+          <p className="mt-1 text-2xl font-semibold text-text-primary">{shiftsThisYear}</p>
         </div>
-        <div className="rounded-lg bg-[#222] p-3">
-          <p className="text-[#a0a0a0]">Remaining</p>
-          <p className="mt-1 text-2xl font-semibold text-[#22c55e]">{remaining}</p>
+        <div className="rounded-lg bg-bg-card-hover p-3">
+          <p className="text-text-secondary">Remaining</p>
+          <p className="mt-1 text-2xl font-semibold text-accent">{remaining}</p>
         </div>
       </div>
 
       <div className="mb-5">
-        <div className="flex items-center justify-between text-xs text-[#a0a0a0]">
+        <div className="flex items-center justify-between text-xs text-text-secondary">
           <span>Progress to {YEAR_TARGET}</span>
           <span>{shiftsThisYear}/{YEAR_TARGET}</span>
         </div>
-        <div className="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-[#2a2a2a]">
+        <div className="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-border">
           <div
-            className="h-full rounded-full bg-[#22c55e] transition-all duration-500"
+            className="h-full rounded-full bg-accent transition-all duration-500"
             style={{ width: `${progress}%` }}
           />
         </div>
       </div>
 
-      <div className="mb-5 space-y-2 border-t border-[#2a2a2a] pt-4">
-        <h3 className="text-xs font-medium uppercase tracking-wider text-[#a0a0a0]">Leave Balances</h3>
+      <div className="mb-5 space-y-2 border-t border-border pt-4">
+        <h3 className="text-xs font-medium uppercase tracking-wider text-text-secondary">Leave Balances</h3>
         <div className="space-y-1.5 text-sm">
-          <div className="flex items-center justify-between rounded-lg bg-[#222] px-3 py-2">
-            <span className="text-[#c0c0c0]">Allowance Leave</span>
-            <span className="font-medium text-white">{allowanceRemaining}h / {ALLOWANCE_MAX_HOURS}h</span>
+          <div className="flex items-center justify-between rounded-lg bg-bg-card-hover px-3 py-2">
+            <span className="text-text-secondary">Allowance Leave</span>
+            <span className="font-medium text-text-primary">{allowanceRemaining}h / {ALLOWANCE_MAX_HOURS}h</span>
           </div>
-          <div className="flex items-center justify-between rounded-lg bg-[#222] px-3 py-2">
-            <span className="text-[#c0c0c0]">Sick Leave</span>
-            <span className="font-medium text-white">{sickRemaining} / {SICK_MAX_DAYS} days</span>
+          <div className="flex items-center justify-between rounded-lg bg-bg-card-hover px-3 py-2">
+            <span className="text-text-secondary">Sick Leave</span>
+            <span className="font-medium text-text-primary">{sickRemaining} / {SICK_MAX_DAYS} days</span>
           </div>
-          <div className="flex items-center justify-between rounded-lg bg-[#222] px-3 py-2">
-            <span className="text-[#c0c0c0]">Excused Absence</span>
-            <span className="font-medium text-white">{excusedRemaining} / {EXCUSED_MAX_DAYS} days</span>
+          <div className="flex items-center justify-between rounded-lg bg-bg-card-hover px-3 py-2">
+            <span className="text-text-secondary">Excused Absence</span>
+            <span className="font-medium text-text-primary">{excusedRemaining} / {EXCUSED_MAX_DAYS} days</span>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 border-t border-[#2a2a2a] pt-4">
+      <div className="flex flex-wrap gap-2 border-t border-border pt-4">
         <button
           onClick={() => addShift("work")}
-          className="rounded-lg bg-[#22c55e] bg-opacity-20 px-4 py-2 text-sm font-medium text-[#22c55e] transition-colors hover:bg-opacity-30"
+          className="rounded-lg bg-accent/20 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/30"
         >
           + Shift Completed
         </button>
         <button
           onClick={() => addShift("sick")}
-          className="rounded-lg bg-[#f97316] bg-opacity-20 px-4 py-2 text-sm font-medium text-orange-400 transition-colors hover:bg-opacity-30"
+          className="rounded-lg bg-amber-500/20 px-4 py-2 text-sm font-medium text-orange-400 transition-colors hover:bg-amber-500/30"
         >
           + Sick Day
         </button>
         <button
           onClick={() => addShift("excused")}
-          className="rounded-lg bg-[#a855f7] bg-opacity-20 px-4 py-2 text-sm font-medium text-purple-400 transition-colors hover:bg-opacity-30"
+          className="rounded-lg bg-purple-500/20 px-4 py-2 text-sm font-medium text-purple-400 transition-colors hover:bg-purple-500/30"
         >
           + Excused Day
         </button>
         <button
           onClick={() => setShowAllowanceInput(!showAllowanceInput)}
-          className="rounded-lg bg-[#3b82f6] bg-opacity-20 px-4 py-2 text-sm font-medium text-blue-400 transition-colors hover:bg-opacity-30"
+          className="rounded-lg bg-blue-500/20 px-4 py-2 text-sm font-medium text-blue-400 transition-colors hover:bg-blue-500/30"
         >
           + Allowance Hours
         </button>
@@ -216,12 +216,12 @@ export default function ShiftTracker() {
             placeholder="Hours (1-4)"
             value={allowanceInput}
             onChange={(e) => setAllowanceInput(e.target.value)}
-            className="w-32 rounded-lg border border-[#2a2a2a] bg-[#222] px-3 py-2 text-sm text-white placeholder-[#666] outline-none focus:border-[#3b82f6]"
+            className="w-32 rounded-lg border border-border bg-bg-card-hover px-3 py-2 text-sm text-text-primary placeholder-text-secondary outline-none focus:border-accent"
           />
           <button
             onClick={addAllowance}
-            className="rounded-lg bg-blue-400 bg-opacity-20 px-4 py-2 text-sm font-medium text-blue-400 transition-colors hover:bg-opacity-30"
-          >
+className="rounded-lg bg-blue-500/20 px-4 py-2 text-sm font-medium text-blue-400 transition-colors hover:bg-blue-500/30"
+        >
             Submit
           </button>
         </div>

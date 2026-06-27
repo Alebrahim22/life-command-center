@@ -25,22 +25,22 @@ export default function HeaderStrip() {
   const timeStr = now.toLocaleTimeString("en-US", { hour12: false })
 
   return (
-    <div className="flex items-center justify-between rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] px-6 py-4">
+    <div className="flex items-center justify-between rounded-xl border border-border bg-bg-card px-6 py-4">
       <div className="flex items-baseline gap-5">
         <span className="text-3xl font-semibold tracking-tight">{timeStr}</span>
         <div className="hidden sm:block">
-          <p className="text-sm text-[#a0a0a0]">{dateStr}</p>
+          <p className="text-sm text-text-secondary">{dateStr}</p>
           {hijri && (
-            <p className="text-sm text-[#a0a0a0]">
+            <p className="text-sm text-text-secondary">
               {hijri.day} {hijri.month} {hijri.year} AH
             </p>
           )}
         </div>
       </div>
       <div className="sm:hidden text-right">
-        <p className="text-xs text-[#a0a0a0]">{dateStr}</p>
+        <p className="text-xs text-text-secondary">{dateStr}</p>
         {hijri && (
-          <p className="text-xs text-[#a0a0a0]">
+          <p className="text-xs text-text-secondary">
             {hijri.day} {hijri.month} {hijri.year} AH
           </p>
         )}

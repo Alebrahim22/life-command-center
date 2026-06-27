@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Trash2 } from "lucide-react"
+import Checkbox from "@/components/Checkbox"
 
 interface Todo {
   id: string
@@ -28,7 +29,7 @@ function load(): Todo[] {
 const priorityColors: Record<string, string> = {
   high: "text-red-400",
   medium: "text-yellow-400",
-  low: "text-[#a0a0a0]",
+  low: "text-text-secondary",
 }
 
 const priorityLabels: Record<string, string> = {
@@ -88,16 +89,16 @@ export default function TodoList() {
 
   if (!loaded) {
     return (
-      <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
-        <h2 className="mb-3 text-lg font-semibold text-[#a0a0a0]">Todo</h2>
-        <div className="h-32 animate-pulse rounded bg-[#2a2a2a]" />
+      <div className="rounded-xl border border-border bg-bg-card p-5">
+        <h2 className="mb-3 text-lg font-semibold text-text-secondary">Todo</h2>
+        <div className="h-32 animate-pulse rounded bg-border" />
       </div>
     )
   }
 
   return (
-    <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
-      <h2 className="mb-4 text-lg font-semibold text-[#a0a0a0]">Todo</h2>
+    <div className="rounded-xl border border-border bg-bg-card p-5">
+      <h2 className="mb-4 text-lg font-semibold text-text-secondary">Todo</h2>
 
       <div className="mb-3 flex gap-2">
         <input
@@ -106,11 +107,11 @@ export default function TodoList() {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && addTodo()}
-          className="min-w-0 flex-1 rounded-lg border border-[#2a2a2a] bg-[#222] px-3 py-2 text-sm text-white placeholder-[#666] outline-none focus:border-[#22c55e]"
+          className="min-w-0 flex-1 rounded-lg border border-border bg-bg-card-hover px-3 py-2 text-sm text-text-primary placeholder-text-secondary outline-none focus:border-accent"
         />
         <button
           onClick={addTodo}
-          className="rounded-lg bg-[#22c55e] bg-opacity-20 px-4 py-2 text-sm font-medium text-[#22c55e] transition-colors hover:bg-opacity-30"
+          className="rounded-lg bg-accent/20 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/30"
         >
           Add
         </button>
@@ -120,7 +121,7 @@ export default function TodoList() {
         <select
           value={priority}
           onChange={(e) => setPriority(e.target.value as "high" | "medium" | "low")}
-          className="rounded-lg border border-[#2a2a2a] bg-[#222] px-2 py-1.5 text-xs text-white outline-none"
+          className="rounded-lg border border-border bg-bg-card-hover px-2 py-1.5 text-xs text-text-primary outline-none"
         >
           <option value="high">High</option>
           <option value="medium">Medium</option>
@@ -130,17 +131,17 @@ export default function TodoList() {
           type="date"
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}
-          className="rounded-lg border border-[#2a2a2a] bg-[#222] px-2 py-1.5 text-xs text-white outline-none [color-scheme:dark]"
+          className="rounded-lg border border-border bg-bg-card-hover px-2 py-1.5 text-xs text-text-primary outline-none [color-scheme:dark]"
         />
       </div>
 
-      <div className="mb-3 flex gap-1 rounded-lg bg-[#222] p-1 text-xs">
+      <div className="mb-3 flex gap-1 rounded-lg bg-bg-card-hover p-1 text-xs">
         {(["all", "active", "completed"] as Filter[]).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
             className={`flex-1 rounded-md px-3 py-1.5 capitalize transition-colors ${
-              filter === f ? "bg-[#333] text-white" : "text-[#a0a0a0] hover:text-white"
+              filter === f ? "bg-bg-card-hover text-text-primary" : "text-text-secondary hover:text-text-primary"
             }`}
           >
             {f}
@@ -149,24 +150,22 @@ export default function TodoList() {
       </div>
 
       {filtered.length === 0 && (
-        <p className="py-6 text-center text-sm text-[#666]">No tasks yet</p>
+        <p className="py-6 text-center text-sm text-text-secondary">No tasks yet</p>
       )}
 
       <div className="space-y-1">
         {filtered.map((todo) => (
           <div
             key={todo.id}
-            className="group flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#222]"
+            className="group flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-bg-card-hover"
           >
-            <input
-              type="checkbox"
+            <Checkbox
               checked={todo.completed}
               onChange={() => toggleComplete(todo.id)}
-              className="h-4 w-4 cursor-pointer accent-[#22c55e]"
             />
             <span
               className={`flex-1 text-sm ${
-                todo.completed ? "text-[#555] line-through" : "text-[#e0e0e0]"
+                todo.completed ? "text-text-secondary line-through" : "text-text-primary"
               }`}
             >
               {todo.text}
@@ -175,7 +174,7 @@ export default function TodoList() {
               {priorityLabels[todo.priority]}
             </span>
             {todo.dueDate && (
-              <span className="text-[10px] text-[#666]">{todo.dueDate}</span>
+              <span className="text-[10px] text-text-secondary">{todo.dueDate}</span>
             )}
             <button
               onClick={() => deleteTodo(todo.id)}

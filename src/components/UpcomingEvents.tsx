@@ -16,11 +16,11 @@ const STORAGE_KEY = "events"
 const CATEGORIES: Event["category"][] = ["Personal", "Work", "Business", "Legal", "Medical"]
 
 const categoryColors: Record<string, string> = {
-  Personal: "bg-[#22c55e] bg-opacity-20 text-[#22c55e]",
-  Work: "bg-[#3b82f6] bg-opacity-20 text-blue-400",
-  Business: "bg-[#f97316] bg-opacity-20 text-orange-400",
-  Legal: "bg-[#a855f7] bg-opacity-20 text-purple-400",
-  Medical: "bg-[#ef4444] bg-opacity-20 text-red-400",
+  Personal: "bg-accent/20 text-accent",
+  Work: "bg-blue-500/20 text-blue-400",
+  Business: "bg-amber-500/20 text-amber-400",
+  Legal: "bg-purple-500/20 text-purple-400",
+  Medical: "bg-red-500/20 text-red-400",
 }
 
 function load(): Event[] {
@@ -106,53 +106,53 @@ export default function UpcomingEvents() {
 
   if (!loaded) {
     return (
-      <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
-        <h2 className="mb-3 text-lg font-semibold text-[#a0a0a0]">Upcoming Events</h2>
-        <div className="h-32 animate-pulse rounded bg-[#2a2a2a]" />
+      <div className="rounded-xl border border-border bg-bg-card p-5">
+        <h2 className="mb-3 text-lg font-semibold text-text-secondary">Upcoming Events</h2>
+        <div className="h-32 animate-pulse rounded bg-border" />
       </div>
     )
   }
 
   return (
-    <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
+    <div className="rounded-xl border border-border bg-bg-card p-5">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-[#a0a0a0]">Upcoming Events</h2>
+        <h2 className="text-lg font-semibold text-text-secondary">Upcoming Events</h2>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="rounded-lg bg-[#22c55e] bg-opacity-20 px-3 py-1.5 text-xs font-medium text-[#22c55e] transition-colors hover:bg-opacity-30"
+          className="rounded-lg bg-accent/20 px-3 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent/30"
         >
           {showForm ? "Cancel" : "+ Event"}
         </button>
       </div>
 
       {showForm && (
-        <div className="mb-4 space-y-2 rounded-lg bg-[#222] p-3">
+        <div className="mb-4 space-y-2 rounded-lg bg-bg-card-hover p-3">
           <input
             type="text"
             placeholder="Event title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-white placeholder-[#666] outline-none focus:border-[#22c55e]"
+            className="w-full rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-white placeholder-text-secondary outline-none focus:border-accent"
           />
           <div className="flex gap-2">
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="flex-1 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-white outline-none [color-scheme:dark]"
+              className="flex-1 rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-white outline-none [color-scheme:dark]"
             />
             <input
               type="time"
               value={time}
               onChange={(e) => setTime(e.target.value)}
-              className="flex-1 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-white outline-none [color-scheme:dark]"
+              className="flex-1 rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-white outline-none [color-scheme:dark]"
             />
           </div>
           <div className="flex gap-2">
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as Event["category"])}
-              className="flex-1 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-white outline-none"
+              className="flex-1 rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-white outline-none"
             >
               {CATEGORIES.map((c) => (
                 <option key={c} value={c}>{c}</option>
@@ -160,7 +160,7 @@ export default function UpcomingEvents() {
             </select>
             <button
               onClick={addEvent}
-              className="rounded-lg bg-[#22c55e] bg-opacity-20 px-4 py-2 text-sm font-medium text-[#22c55e] transition-colors hover:bg-opacity-30"
+              className="rounded-lg bg-accent/20 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/30"
             >
               Save
             </button>
@@ -169,24 +169,24 @@ export default function UpcomingEvents() {
       )}
 
       {groups.length === 0 && (
-        <p className="py-6 text-center text-sm text-[#666]">No upcoming events</p>
+        <p className="py-6 text-center text-sm text-text-secondary">No upcoming events</p>
       )}
 
       <div className="space-y-4">
         {groups.map((group) => (
           <div key={group.label}>
-            <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-[#666]">
+            <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-text-secondary">
               {group.label}
             </h3>
             <div className="space-y-1">
               {group.events.map((ev) => (
                 <div
                   key={ev.id}
-                  className="group flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-[#222]"
+                  className="group flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-bg-card-hover"
                 >
                   <div className="flex-1">
-                    <p className="text-sm text-[#e0e0e0]">{ev.title}</p>
-                    <p className="text-[10px] text-[#666]">
+                    <p className="text-sm text-text-primary">{ev.title}</p>
+                    <p className="text-[10px] text-text-secondary">
                       {ev.date}
                       {ev.time ? ` ${ev.time}` : ""}
                     </p>

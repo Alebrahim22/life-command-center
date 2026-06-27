@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { ChevronDown, ChevronRight, Plus, Trash2, GripVertical } from "lucide-react"
+import Checkbox from "@/components/Checkbox"
 
 type ProjectStatus = "Active" | "On Hold" | "Launched" | "Archived"
 type ProjectStage = "Idea" | "Building" | "Beta" | "Live" | "Scaling"
@@ -39,18 +40,18 @@ const STORAGE_KEY = "projects-data"
 const PROJECT_NAMES = ["Hadeya", "Reluxx", "Osoul", "XYZ Agency", "Personal Brand"]
 
 const statusColors: Record<ProjectStatus, string> = {
-  Active: "bg-[#22c55e] bg-opacity-20 text-[#22c55e]",
-  "On Hold": "bg-amber-500 bg-opacity-20 text-amber-400",
-  Launched: "bg-blue-500 bg-opacity-20 text-blue-400",
-  Archived: "bg-[#555] bg-opacity-20 text-[#888]",
+  Active: "bg-accent/20 text-accent",
+  "On Hold": "bg-amber-500/20 text-amber-400",
+  Launched: "bg-blue-500/20 text-blue-400",
+  Archived: "bg-text-secondary/20 text-text-secondary",
 }
 
 const stageColors: Record<ProjectStage, string> = {
-  Idea: "bg-[#555] bg-opacity-20 text-[#888]",
-  Building: "bg-blue-500 bg-opacity-20 text-blue-400",
-  Beta: "bg-amber-500 bg-opacity-20 text-amber-400",
-  Live: "bg-[#22c55e] bg-opacity-20 text-[#22c55e]",
-  Scaling: "bg-purple-500 bg-opacity-20 text-purple-400",
+  Idea: "bg-text-secondary/20 text-text-secondary",
+  Building: "bg-blue-500/20 text-blue-400",
+  Beta: "bg-amber-500/20 text-amber-400",
+  Live: "bg-accent/20 text-accent",
+  Scaling: "bg-purple-500/20 text-purple-400",
 }
 
 function defaultProject(): Project {
@@ -206,24 +207,24 @@ export default function ProjectsTracker() {
 
   if (!loaded) {
     return (
-      <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
-        <h2 className="mb-3 text-lg font-semibold text-[#a0a0a0]">Projects</h2>
-        <div className="h-32 animate-pulse rounded bg-[#2a2a2a]" />
+      <div className="rounded-xl border border-border bg-bg-card p-5">
+        <h2 className="mb-3 text-lg font-semibold text-text-secondary">Projects</h2>
+        <div className="h-32 animate-pulse rounded bg-border" />
       </div>
     )
   }
 
   return (
-    <div className="col-span-1 lg:col-span-2 rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
-      <h2 className="mb-4 text-lg font-semibold text-[#a0a0a0]">Projects</h2>
+    <div className="col-span-1 lg:col-span-2 rounded-xl border border-border bg-bg-card p-5">
+      <h2 className="mb-4 text-lg font-semibold text-text-secondary">Projects</h2>
 
       <div className="mb-4 flex gap-4 text-sm">
-        <div className="rounded-lg bg-[#222] px-4 py-2">
-          <span className="text-[#a0a0a0]">Active: </span>
-          <span className="font-semibold text-[#22c55e]">{activeCount}</span>
+        <div className="rounded-lg bg-bg-card-hover px-4 py-2">
+          <span className="text-text-secondary">Active: </span>
+          <span className="font-semibold text-accent">{activeCount}</span>
         </div>
-        <div className="rounded-lg bg-[#222] px-4 py-2">
-          <span className="text-[#a0a0a0]">Milestones due this week: </span>
+        <div className="rounded-lg bg-bg-card-hover px-4 py-2">
+          <span className="text-text-secondary">Milestones due this week: </span>
           <span className="font-semibold text-amber-400">{milestonesDueThisWeek}</span>
         </div>
       </div>
@@ -234,18 +235,18 @@ export default function ProjectsTracker() {
           return (
             <div
               key={name}
-              className="rounded-lg border border-[#2a2a2a] bg-[#222]"
+              className="rounded-lg border border-border bg-bg-card-hover"
             >
               <button
                 onClick={() => toggleCollapse(name)}
                 className="flex w-full items-center gap-3 px-4 py-3 text-left"
               >
                 {proj.collapsed ? (
-                  <ChevronRight className="h-4 w-4 text-[#a0a0a0]" />
+                  <ChevronRight className="h-4 w-4 text-text-secondary" />
                 ) : (
-                  <ChevronDown className="h-4 w-4 text-[#a0a0a0]" />
+                  <ChevronDown className="h-4 w-4 text-text-secondary" />
                 )}
-                <span className="flex-1 text-sm font-medium text-white">{name}</span>
+                <span className="flex-1 text-sm font-medium text-text-primary">{name}</span>
                 <span className={`rounded px-2 py-0.5 text-[10px] font-medium ${statusColors[proj.status]}`}>
                   {proj.status}
                 </span>
@@ -255,12 +256,12 @@ export default function ProjectsTracker() {
               </button>
 
               {!proj.collapsed && (
-                <div className="border-t border-[#2a2a2a] px-4 pb-4 pt-3">
+                <div className="border-t border-border px-4 pb-4 pt-3">
                   <div className="mb-3 flex gap-2">
                     <select
                       value={proj.status}
                       onChange={(e) => updateProject(name, { status: e.target.value as ProjectStatus })}
-                      className="rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-2 py-1 text-xs text-white outline-none"
+                      className="rounded-lg border border-border bg-bg-card px-2 py-1 text-xs text-text-primary outline-none"
                     >
                       {(["Active", "On Hold", "Launched", "Archived"] as ProjectStatus[]).map((s) => (
                         <option key={s} value={s}>{s}</option>
@@ -269,7 +270,7 @@ export default function ProjectsTracker() {
                     <select
                       value={proj.stage}
                       onChange={(e) => updateProject(name, { stage: e.target.value as ProjectStage })}
-                      className="rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-2 py-1 text-xs text-white outline-none"
+                      className="rounded-lg border border-border bg-bg-card px-2 py-1 text-xs text-text-primary outline-none"
                     >
                       {(["Idea", "Building", "Beta", "Live", "Scaling"] as ProjectStage[]).map((s) => (
                         <option key={s} value={s}>{s}</option>
@@ -279,7 +280,7 @@ export default function ProjectsTracker() {
 
                   <div className="mb-3">
                     <div className="mb-1 flex items-center justify-between">
-                      <span className="text-xs font-medium uppercase tracking-wider text-[#a0a0a0]">KPIs</span>
+                      <span className="text-xs font-medium uppercase tracking-wider text-text-secondary">KPIs</span>
                       {proj.kpis.length < 5 && (
                         <button
                           onClick={() => {
@@ -289,7 +290,7 @@ export default function ProjectsTracker() {
                             setKpiUnit("")
                             setKpiCurrent("")
                           }}
-                          className="flex items-center gap-1 text-xs text-[#22c55e]"
+                          className="flex items-center gap-1 text-xs text-accent"
                         >
                           <Plus className="h-3 w-3" /> Add KPI
                         </button>
@@ -300,17 +301,17 @@ export default function ProjectsTracker() {
                         {proj.kpis.map((kpi) => {
                           const pct = kpi.targetValue > 0 ? (kpi.currentValue / kpi.targetValue) * 100 : 0
                           return (
-                            <div key={kpi.id} className="group flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-[#1a1a1a]">
+                            <div key={kpi.id} className="group flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-bg-card">
                               <div className="flex-1">
                                 <div className="flex items-center justify-between">
-                                  <span className="text-sm text-[#e0e0e0]">{kpi.name}</span>
-                                  <span className="text-xs text-[#a0a0a0]">
+                                  <span className="text-sm text-text-primary">{kpi.name}</span>
+                                  <span className="text-xs text-text-secondary">
                                     {kpi.currentValue} / {kpi.targetValue} {kpi.unit}
                                   </span>
                                 </div>
-                                <div className="mt-0.5 h-1.5 w-full overflow-hidden rounded-full bg-[#2a2a2a]">
+                                <div className="mt-0.5 h-1.5 w-full overflow-hidden rounded-full bg-border">
                                   <div
-                                    className="h-full rounded-full bg-[#22c55e]"
+                                    className="h-full rounded-full bg-accent"
                                     style={{ width: `${Math.min(100, pct)}%` }}
                                   />
                                 </div>
@@ -324,22 +325,22 @@ export default function ProjectsTracker() {
                       </div>
                     )}
                     {proj.kpis.length === 0 && (
-                      <p className="text-xs text-[#666]">No KPIs set</p>
+                      <p className="text-xs text-text-secondary">No KPIs set</p>
                     )}
                     {editKpiProject === name && (
-                      <div className="mt-2 grid grid-cols-5 gap-2 rounded-lg bg-[#1a1a1a] p-2">
-                        <input type="text" placeholder="Name" value={kpiName} onChange={(e) => setKpiName(e.target.value)} className="col-span-1 rounded border border-[#2a2a2a] bg-[#222] px-2 py-1 text-xs text-white placeholder-[#666] outline-none" />
-                        <input type="number" placeholder="Current" value={kpiCurrent} onChange={(e) => setKpiCurrent(e.target.value)} className="rounded border border-[#2a2a2a] bg-[#222] px-2 py-1 text-xs text-white placeholder-[#666] outline-none" />
-                        <input type="number" placeholder="Target" value={kpiTarget} onChange={(e) => setKpiTarget(e.target.value)} className="rounded border border-[#2a2a2a] bg-[#222] px-2 py-1 text-xs text-white placeholder-[#666] outline-none" />
-                        <input type="text" placeholder="Unit" value={kpiUnit} onChange={(e) => setKpiUnit(e.target.value)} className="rounded border border-[#2a2a2a] bg-[#222] px-2 py-1 text-xs text-white placeholder-[#666] outline-none" />
-                        <button onClick={() => addKpi(name)} className="rounded bg-[#22c55e] bg-opacity-20 text-xs font-medium text-[#22c55e]">Add</button>
+                      <div className="mt-2 grid grid-cols-5 gap-2 rounded-lg bg-bg-card p-2">
+                        <input type="text" placeholder="Name" value={kpiName} onChange={(e) => setKpiName(e.target.value)} className="col-span-1 rounded border border-border bg-bg-card-hover px-2 py-1 text-xs text-text-primary placeholder-text-secondary outline-none" />
+                        <input type="number" placeholder="Current" value={kpiCurrent} onChange={(e) => setKpiCurrent(e.target.value)} className="rounded border border-border bg-bg-card-hover px-2 py-1 text-xs text-text-primary placeholder-text-secondary outline-none" />
+                        <input type="number" placeholder="Target" value={kpiTarget} onChange={(e) => setKpiTarget(e.target.value)} className="rounded border border-border bg-bg-card-hover px-2 py-1 text-xs text-text-primary placeholder-text-secondary outline-none" />
+                        <input type="text" placeholder="Unit" value={kpiUnit} onChange={(e) => setKpiUnit(e.target.value)} className="rounded border border-border bg-bg-card-hover px-2 py-1 text-xs text-text-primary placeholder-text-secondary outline-none" />
+                        <button onClick={() => addKpi(name)} className="rounded bg-accent/20 text-xs font-medium text-accent">Add</button>
                       </div>
                     )}
                   </div>
 
                   <div className="mb-3">
                     <div className="mb-1 flex items-center justify-between">
-                      <span className="text-xs font-medium uppercase tracking-wider text-[#a0a0a0]">Milestones</span>
+                      <span className="text-xs font-medium uppercase tracking-wider text-text-secondary">Milestones</span>
                       {proj.milestones.length < 5 && (
                         <button
                           onClick={() => {
@@ -347,50 +348,50 @@ export default function ProjectsTracker() {
                             setMsTitle("")
                             setMsDate("")
                           }}
-                          className="flex items-center gap-1 text-xs text-[#22c55e]"
+                          className="flex items-center gap-1 text-xs text-accent"
                         >
                           <Plus className="h-3 w-3" /> Add Milestone
                         </button>
                       )}
                     </div>
                     {proj.milestones.map((ms) => (
-                      <div key={ms.id} className="group flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-[#1a1a1a]">
-                        <input type="checkbox" checked={ms.done} onChange={() => toggleMilestone(name, ms.id)} className="h-3.5 w-3.5 cursor-pointer accent-[#22c55e]" />
-                        <span className={`flex-1 text-sm ${ms.done ? "text-[#555] line-through" : "text-[#c0c0c0]"}`}>{ms.title}</span>
-                        <span className="text-[10px] text-[#666]">{ms.dueDate}</span>
+                      <div key={ms.id} className="group flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-bg-card">
+                        <Checkbox checked={ms.done} onChange={() => toggleMilestone(name, ms.id)} />
+                        <span className={`flex-1 text-sm ${ms.done ? "text-text-secondary/60 line-through" : "text-text-secondary"}`}>{ms.title}</span>
+                        <span className="text-[10px] text-text-secondary">{ms.dueDate}</span>
                         <button onClick={() => removeMilestone(name, ms.id)} className="opacity-0 transition-opacity group-hover:opacity-100">
                           <Trash2 className="h-3 w-3 text-red-400" />
                         </button>
                       </div>
                     ))}
                     {proj.milestones.length === 0 && (
-                      <p className="text-xs text-[#666]">No milestones</p>
+                      <p className="text-xs text-text-secondary">No milestones</p>
                     )}
                     {editMilestoneProject === name && (
-                      <div className="mt-2 flex gap-2 rounded-lg bg-[#1a1a1a] p-2">
-                        <input type="text" placeholder="Title" value={msTitle} onChange={(e) => setMsTitle(e.target.value)} className="flex-1 rounded border border-[#2a2a2a] bg-[#222] px-2 py-1 text-xs text-white placeholder-[#666] outline-none" />
-                        <input type="date" value={msDate} onChange={(e) => setMsDate(e.target.value)} className="rounded border border-[#2a2a2a] bg-[#222] px-2 py-1 text-xs text-white outline-none [color-scheme:dark]" />
-                        <button onClick={() => addMilestone(name)} className="rounded bg-[#22c55e] bg-opacity-20 px-2 text-xs font-medium text-[#22c55e]">Add</button>
+                      <div className="mt-2 flex gap-2 rounded-lg bg-bg-card p-2">
+                        <input type="text" placeholder="Title" value={msTitle} onChange={(e) => setMsTitle(e.target.value)} className="flex-1 rounded border border-border bg-bg-card-hover px-2 py-1 text-xs text-text-primary placeholder-text-secondary outline-none" />
+                        <input type="date" value={msDate} onChange={(e) => setMsDate(e.target.value)} className="rounded border border-border bg-bg-card-hover px-2 py-1 text-xs text-text-primary outline-none [color-scheme:dark]" />
+                        <button onClick={() => addMilestone(name)} className="rounded bg-accent/20 px-2 text-xs font-medium text-accent">Add</button>
                       </div>
                     )}
                   </div>
 
                   <div>
-                    <span className="text-xs font-medium uppercase tracking-wider text-[#a0a0a0]">Notes</span>
+                    <span className="text-xs font-medium uppercase tracking-wider text-text-secondary">Notes</span>
                     {editNotes === name ? (
                       <div className="mt-1">
                         <textarea
                           value={proj.notes}
                           onChange={(e) => updateProject(name, { notes: e.target.value })}
-                          className="w-full rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-white outline-none"
+                          className="w-full rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-text-primary outline-none"
                           rows={3}
                         />
-                        <button onClick={() => setEditNotes(null)} className="mt-1 rounded bg-[#22c55e] bg-opacity-20 px-3 py-1 text-xs font-medium text-[#22c55e]">Done</button>
+                        <button onClick={() => setEditNotes(null)} className="mt-1 rounded bg-accent/20 px-3 py-1 text-xs font-medium text-accent">Done</button>
                       </div>
                     ) : (
                       <div
                         onClick={() => setEditNotes(name)}
-                        className="mt-1 cursor-text rounded-lg bg-[#1a1a1a] px-3 py-2 text-sm text-[#a0a0a0]"
+                        className="mt-1 cursor-text rounded-lg bg-bg-card px-3 py-2 text-sm text-text-secondary"
                       >
                         {proj.notes || "Click to add notes..."}
                       </div>

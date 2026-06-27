@@ -98,40 +98,40 @@ export default function BudgetSnapshot() {
   }
 
   const statusColor = {
-    green: "text-[#22c55e]",
+    green: "text-accent",
     amber: "text-amber-400",
     red: "text-red-400",
   }
 
-  const progressColor = totalSpent > available ? "bg-red-400" : totalSpent > available * 0.9 ? "bg-amber-400" : "bg-[#22c55e]"
+  const progressColor = totalSpent > available ? "bg-red-400" : totalSpent > available * 0.9 ? "bg-amber-400" : "bg-accent"
 
   if (!loaded) {
     return (
-      <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
-        <h2 className="mb-3 text-lg font-semibold text-[#a0a0a0]">Budget Snapshot</h2>
-        <div className="h-32 animate-pulse rounded bg-[#2a2a2a]" />
+      <div className="rounded-xl border border-border bg-bg-card p-5">
+        <h2 className="mb-3 text-lg font-semibold text-text-secondary">Budget Snapshot</h2>
+        <div className="h-32 animate-pulse rounded bg-border" />
       </div>
     )
   }
 
   return (
-    <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
-      <h2 className="mb-4 text-lg font-semibold text-[#a0a0a0]">Budget Snapshot</h2>
+    <div className="rounded-xl border border-border bg-bg-card p-5">
+      <h2 className="mb-4 text-lg font-semibold text-text-secondary">Budget Snapshot</h2>
 
       <div className="mb-4 grid grid-cols-2 gap-3">
         <div>
-          <label className="text-[10px] text-[#666]">Monthly Income (KWD)</label>
+          <label className="text-[10px] text-text-secondary">Monthly Income (KWD)</label>
           <input
             type="number"
             value={incomeInput}
             onChange={(e) => setIncomeInput(e.target.value)}
             onBlur={updateIncome}
             onKeyDown={(e) => e.key === "Enter" && updateIncome()}
-            className="mt-1 w-full rounded-lg border border-[#2a2a2a] bg-[#222] px-3 py-2 text-sm text-white outline-none"
+            className="mt-1 w-full rounded-lg border border-border bg-bg-card-hover px-3 py-2 text-sm text-text-primary outline-none"
           />
         </div>
         <div>
-          <label className="text-[10px] text-[#666]">Savings Goal (%)</label>
+          <label className="text-[10px] text-text-secondary">Savings Goal (%)</label>
           <input
             type="number"
             min="0"
@@ -140,26 +140,26 @@ export default function BudgetSnapshot() {
             onChange={(e) => setGoalInput(e.target.value)}
             onBlur={updateGoal}
             onKeyDown={(e) => e.key === "Enter" && updateGoal()}
-            className="mt-1 w-full rounded-lg border border-[#2a2a2a] bg-[#222] px-3 py-2 text-sm text-white outline-none"
+            className="mt-1 w-full rounded-lg border border-border bg-bg-card-hover px-3 py-2 text-sm text-text-primary outline-none"
           />
         </div>
       </div>
 
       <div className="mb-4 grid grid-cols-3 gap-3 text-sm">
-        <div className="rounded-lg bg-[#222] p-3">
-          <p className="text-[10px] text-[#a0a0a0]">Income</p>
-          <p className="mt-1 text-lg font-semibold text-white">
+        <div className="rounded-lg bg-bg-card-hover p-3">
+          <p className="text-[10px] text-text-secondary">Income</p>
+          <p className="mt-1 text-lg font-semibold text-text-primary">
             {data.income.toLocaleString("en-US", { minimumFractionDigits: 2 })} KWD
           </p>
         </div>
-        <div className="rounded-lg bg-[#222] p-3">
-          <p className="text-[10px] text-[#a0a0a0]">Spent</p>
+        <div className="rounded-lg bg-bg-card-hover p-3">
+          <p className="text-[10px] text-text-secondary">Spent</p>
           <p className={`mt-1 text-lg font-semibold ${statusColor[status]}`}>
             {totalSpent.toLocaleString("en-US", { minimumFractionDigits: 2 })} KWD
           </p>
         </div>
-        <div className="rounded-lg bg-[#222] p-3">
-          <p className="text-[10px] text-[#a0a0a0]">Remaining</p>
+        <div className="rounded-lg bg-bg-card-hover p-3">
+          <p className="text-[10px] text-text-secondary">Remaining</p>
           <p className={`mt-1 text-lg font-semibold ${statusColor[status]}`}>
             {remaining.toLocaleString("en-US", { minimumFractionDigits: 2 })} KWD
           </p>
@@ -167,11 +167,11 @@ export default function BudgetSnapshot() {
       </div>
 
       <div className="mb-4">
-        <div className="flex items-center justify-between text-xs text-[#a0a0a0]">
+        <div className="flex items-center justify-between text-xs text-text-secondary">
           <span>Spending vs Available ({data.savingsGoalPercent}% savings)</span>
           <span>{totalSpent.toFixed(0)} / {available.toFixed(0)} KWD</span>
         </div>
-        <div className="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-[#2a2a2a]">
+        <div className="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-border">
           <div
             className={`h-full rounded-full transition-all duration-500 ${progressColor}`}
             style={{ width: `${Math.min(100, spendPercent)}%` }}
@@ -179,15 +179,15 @@ export default function BudgetSnapshot() {
         </div>
       </div>
 
-      <div className="mb-3 border-t border-[#2a2a2a] pt-3">
-        <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-[#a0a0a0]">
+      <div className="mb-3 border-t border-border pt-3">
+        <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-text-secondary">
           Spending by Category
         </h3>
         <div className="space-y-1">
           {CATEGORIES.map((cat) => (
             <div key={cat}>
-              <div className="flex items-center justify-between rounded-lg px-3 py-2 transition-colors hover:bg-[#222]">
-                <span className="text-sm text-[#c0c0c0]">{cat}</span>
+              <div className="flex items-center justify-between rounded-lg px-3 py-2 transition-colors hover:bg-bg-card-hover">
+                <span className="text-sm text-text-secondary">{cat}</span>
                 {editCat === cat ? (
                   <div className="flex items-center gap-1">
                     <input
@@ -195,12 +195,12 @@ export default function BudgetSnapshot() {
                       value={catInput}
                       onChange={(e) => setCatInput(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && updateCategory(cat)}
-                      className="w-24 rounded border border-[#2a2a2a] bg-[#1a1a1a] px-2 py-1 text-right text-sm text-white outline-none"
+                      className="w-24 rounded border border-border bg-bg-card px-2 py-1 text-right text-sm text-text-primary outline-none"
                       autoFocus
                     />
                     <button
                       onClick={() => updateCategory(cat)}
-                      className="rounded bg-[#22c55e] bg-opacity-20 px-2 py-1 text-xs font-medium text-[#22c55e]"
+                      className="rounded bg-accent/20 px-2 py-1 text-xs font-medium text-accent"
                     >
                       OK
                     </button>
@@ -211,16 +211,16 @@ export default function BudgetSnapshot() {
                       setEditCat(cat)
                       setCatInput(String(data.categories[cat] || ""))
                     }}
-                    className="text-sm text-white hover:text-[#22c55e]"
+                    className="text-sm text-text-primary hover:text-accent"
                   >
                     {(data.categories[cat] || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })} KWD
                   </button>
                 )}
               </div>
               {data.income > 0 && (
-                <div className="mx-3 mb-1 h-1 w-full max-w-[200px] overflow-hidden rounded-full bg-[#2a2a2a]">
+                <div className="mx-3 mb-1 h-1 w-full max-w-[200px] overflow-hidden rounded-full bg-border">
                   <div
-                    className="h-full rounded-full bg-[#22c55e]"
+                    className="h-full rounded-full bg-accent"
                     style={{
                       width: `${Math.min(100, ((data.categories[cat] || 0) / available) * 100)}%`,
                     }}
@@ -232,10 +232,10 @@ export default function BudgetSnapshot() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-[#2a2a2a] bg-[#222] p-3">
+      <div className="rounded-lg border border-border bg-bg-card-hover p-3">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-[#a0a0a0]">Savings ({data.savingsGoalPercent}%)</span>
-          <span className="font-medium text-white">
+          <span className="text-text-secondary">Savings ({data.savingsGoalPercent}%)</span>
+          <span className="font-medium text-text-primary">
             {savingsAmount.toLocaleString("en-US", { minimumFractionDigits: 2 })} KWD
           </span>
         </div>
@@ -243,7 +243,7 @@ export default function BudgetSnapshot() {
           <span className={`font-medium ${statusColor[status]}`}>
             {status === "green" ? "On Track" : status === "amber" ? "Near Limit" : "Over Budget"}
           </span>
-          <span className="text-[#666]">
+          <span className="text-text-secondary">
             {totalSpent > 0
               ? `${((totalSpent / data.income) * 100).toFixed(1)}% of income`
               : "No spending yet"}

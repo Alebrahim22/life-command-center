@@ -28,7 +28,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("today")
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f]">
+    <div className="min-h-screen bg-bg-primary">
       <HeaderStrip />
       <TabNav onTabChange={setActiveTab} />
 
@@ -85,10 +85,10 @@ export default function Home() {
 
         {activeTab === "more" && (
           <Section>
-            <div className="flex min-h-[300px] items-center justify-center rounded-xl border border-[#2a2a2a] bg-[#1a1a1a]">
+            <div className="flex min-h-[300px] items-center justify-center rounded-xl border border-border bg-bg-card">
               <div className="text-center">
-                <p className="text-lg font-medium text-[#666]">Coming Soon</p>
-                <p className="mt-1 text-sm text-[#444]">More modules are on the way.</p>
+                <p className="text-lg font-medium text-text-secondary">Coming Soon</p>
+                <p className="mt-1 text-sm text-text-secondary">More modules are on the way.</p>
               </div>
             </div>
           </Section>
