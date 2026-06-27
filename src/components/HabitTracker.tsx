@@ -136,12 +136,12 @@ export default function HabitTracker() {
         <div className="flex items-center gap-3">
           <span className="text-sm text-[#a0a0a0]">{completedCount}/{totalCount}</span>
           <div
-            className="h-10 w-10 rounded-full"
+            className="relative h-10 w-10 rounded-full"
             style={{
               background: `conic-gradient(#22c55e ${scorePct}%, #2a2a2a ${scorePct}%)`,
             }}
           >
-            <div className="flex h-full w-full items-center justify-center rounded-full bg-[#1a1a1a]" style={{ margin: 2, width: 36, height: 36 }}>
+            <div className="absolute inset-[2px] flex items-center justify-center rounded-full bg-[#1a1a1a]">
               <span className="text-[10px] font-semibold text-white">{Math.round(scorePct)}%</span>
             </div>
           </div>
