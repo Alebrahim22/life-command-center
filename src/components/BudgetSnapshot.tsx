@@ -103,12 +103,6 @@ export default function BudgetSnapshot() {
     red: "text-red-400",
   }
 
-  const statusBg = {
-    green: "bg-[#22c55e]",
-    amber: "bg-amber-400",
-    red: "bg-red-400",
-  }
-
   const progressColor = totalSpent > available ? "bg-red-400" : totalSpent > available * 0.9 ? "bg-amber-400" : "bg-[#22c55e]"
 
   if (!loaded) {

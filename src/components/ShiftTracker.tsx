@@ -85,8 +85,6 @@ export default function ShiftTracker() {
   const excusedRemaining = Math.max(0, EXCUSED_MAX_DAYS - excusedUsed)
   const allowanceRemaining = Math.max(0, ALLOWANCE_MAX_HOURS - data.allowanceHoursUsed)
 
-  const allowanceUsedThisMonth = data.allowanceHoursUsed
-
   function addShift(type: "work" | "sick" | "excused") {
     setData((prev) => {
       const updated = { ...prev, records: [...prev.records, { date: now(), type }] }
