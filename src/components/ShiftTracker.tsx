@@ -133,7 +133,7 @@ export default function ShiftTracker() {
   }
 
   return (
-    <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
+    <div className="col-span-1 lg:col-span-2 rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
       <h2 className="mb-4 text-lg font-semibold text-[#a0a0a0]">Shift Tracker</h2>
 
       <div className="mb-4 grid grid-cols-3 gap-4 text-sm">

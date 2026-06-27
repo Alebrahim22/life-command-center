@@ -4,6 +4,9 @@ import WeatherWidget from "@/components/WeatherWidget"
 import ShiftTracker from "@/components/ShiftTracker"
 import TodoList from "@/components/TodoList"
 import UpcomingEvents from "@/components/UpcomingEvents"
+import PortfolioTracker from "@/components/PortfolioTracker"
+import BillsTracker from "@/components/BillsTracker"
+import BudgetSnapshot from "@/components/BudgetSnapshot"
 
 export default function Home() {
   return (
@@ -22,6 +25,15 @@ export default function Home() {
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <TodoList />
         <UpcomingEvents />
+      </div>
+
+      <div className="mt-6">
+        <PortfolioTracker />
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <BillsTracker />
+        <BudgetSnapshot />
       </div>
     </div>
   )
