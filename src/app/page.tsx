@@ -9,6 +9,8 @@ import BillsTracker from "@/components/BillsTracker"
 import BudgetSnapshot from "@/components/BudgetSnapshot"
 import ProjectsTracker from "@/components/ProjectsTracker"
 import LegalCases from "@/components/LegalCases"
+import TradingJournal from "@/components/TradingJournal"
+import HabitTracker from "@/components/HabitTracker"
 
 export default function Home() {
   return (
@@ -44,6 +46,14 @@ export default function Home() {
 
       <div className="mt-6">
         <LegalCases />
+      </div>
+
+      <div className="mt-6">
+        <TradingJournal />
+      </div>
+
+      <div className="mt-6">
+        <HabitTracker />
       </div>
     </div>
   )

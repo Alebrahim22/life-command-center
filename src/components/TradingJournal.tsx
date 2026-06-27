@@ -1,0 +1,351 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { Trash2 } from "lucide-react"
+
+interface Trade {
+  id: string
+  instrument: string
+  instrumentCustom: string
+  direction: "Long" | "Short"
+  entryPrice: number
+  exitPrice: number | null
+  lotSize: number
+  stopLoss: number
+  takeProfit: number
+  status: "Open" | "Closed" | "Stopped Out"
+  dateOpened: string
+  dateClosed: string | null
+  strategy: "Inside Bar" | "EMA Ribbon" | "Manual" | "Other"
+  notes: string
+}
+
+const STORAGE_KEY = "trading-journal"
+const INSTRUMENTS = ["XAU/USD", "EUR/USD", "GBP/USD", "Custom"]
+const STRATEGIES: Trade["strategy"][] = ["Inside Bar", "EMA Ribbon", "Manual", "Other"]
+
+function today() {
+  return new Date().toISOString().split("T")[0]
+}
+
+function contractSize(instrument: string): number {
+  return instrument === "XAU/USD" ? 100 : 100000
+}
+
+function calcPnl(t: Trade): number | null {
+  if (t.exitPrice === null) return null
+  const diff = t.direction === "Long" ? t.exitPrice - t.entryPrice : t.entryPrice - t.exitPrice
+  const inst = t.instrument === "Custom" ? t.instrumentCustom : t.instrument
+  return diff * t.lotSize * contractSize(inst)
+}
+
+function calcRR(t: Trade): number | null {
+  if (t.stopLoss === t.entryPrice || t.takeProfit === t.entryPrice) return null
+  let r, rLoss
+  if (t.direction === "Long") {
+    r = t.takeProfit - t.entryPrice
+    rLoss = t.entryPrice - t.stopLoss
+  } else {
+    r = t.entryPrice - t.takeProfit
+    rLoss = t.stopLoss - t.entryPrice
+  }
+  if (rLoss <= 0 || r <= 0) return null
+  return r / rLoss
+}
+
+function load(): Trade[] {
+  if (typeof window === "undefined") return []
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (raw) return JSON.parse(raw)
+  } catch {}
+  return []
+}
+
+export default function TradingJournal() {
+  const [trades, setTrades] = useState<Trade[]>([])
+  const [loaded, setLoaded] = useState(false)
+  const [filter, setFilter] = useState<"All" | "Open" | "Closed">("All")
+  const [showForm, setShowForm] = useState(false)
+
+  const [instrument, setInstrument] = useState("XAU/USD")
+  const [instrumentCustom, setInstrumentCustom] = useState("")
+  const [direction, setDirection] = useState<"Long" | "Short">("Long")
+  const [entryPrice, setEntryPrice] = useState("")
+  const [exitPrice, setExitPrice] = useState("")
+  const [lotSize, setLotSize] = useState("")
+  const [stopLoss, setStopLoss] = useState("")
+  const [takeProfit, setTakeProfit] = useState("")
+  const [strategy, setStrategy] = useState<Trade["strategy"]>("Manual")
+  const [notes, setNotes] = useState("")
+
+  useEffect(() => {
+    setTrades(load())
+    setLoaded(true)
+  }, [])
+
+  useEffect(() => {
+    if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(trades))
+  }, [trades, loaded])
+
+  function addTrade() {
+    const entry = parseFloat(entryPrice)
+    const exit = exitPrice ? parseFloat(exitPrice) : null
+    const lot = parseFloat(lotSize)
+    const sl = parseFloat(stopLoss)
+    const tp = parseFloat(takeProfit)
+    if (isNaN(entry) || isNaN(lot) || isNaN(sl) || isNaN(tp)) return
+
+    const t: Trade = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+      instrument,
+      instrumentCustom: instrument === "Custom" ? instrumentCustom : "",
+      direction,
+      entryPrice: entry,
+      exitPrice: exit,
+      lotSize: lot,
+      stopLoss: sl,
+      takeProfit: tp,
+      status: exit !== null ? "Closed" : "Open",
+      dateOpened: today(),
+      dateClosed: exit !== null ? today() : null,
+      strategy,
+      notes,
+    }
+    setTrades((prev) => [t, ...prev])
+    setEntryPrice("")
+    setExitPrice("")
+    setLotSize("")
+    setStopLoss("")
+    setTakeProfit("")
+    setNotes("")
+    setShowForm(false)
+  }
+
+  function closeTrade(id: string, status: "Closed" | "Stopped Out") {
+    setTrades((prev) =>
+      prev.map((t) =>
+        t.id === id ? { ...t, status, exitPrice: t.exitPrice ?? t.entryPrice, dateClosed: today() } : t,
+      ),
+    )
+  }
+
+  function deleteTrade(id: string) {
+    setTrades((prev) => prev.filter((t) => t.id !== id))
+  }
+
+  function updateField(id: string, field: string, value: any) {
+    setTrades((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, [field]: value } : t)),
+    )
+  }
+
+  const filtered = trades.filter((t) => {
+    if (filter === "Open") return t.status === "Open"
+    if (filter === "Closed") return t.status !== "Open"
+    return true
+  })
+
+  const totalTrades = trades.length
+  const closedTrades = trades.filter((t) => t.status !== "Open")
+  const winningTrades = closedTrades.filter((t) => {
+    const pnl = calcPnl(t)
+    return pnl !== null && pnl > 0
+  })
+  const winRate = closedTrades.length > 0 ? (winningTrades.length / closedTrades.length) * 100 : 0
+
+  const closedPnlValues = closedTrades.map(calcPnl).filter((p) => p !== null) as number[]
+  const totalPnl = closedPnlValues.reduce((a, b) => a + b, 0)
+
+  const rrValues = closedTrades.map(calcRR).filter((r) => r !== null) as number[]
+  const avgRR = rrValues.length > 0 ? rrValues.reduce((a, b) => a + b, 0) / rrValues.length : 0
+
+  const maxAbsPnl = Math.max(...closedPnlValues.map(Math.abs), 1)
+  const MAX_EQUITY_BARS = 50
+
+  const equityTrades = [...closedTrades].slice(-MAX_EQUITY_BARS)
+
+  if (!loaded) {
+    return (
+      <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
+        <h2 className="mb-3 text-lg font-semibold text-[#a0a0a0]">Trading Journal</h2>
+        <div className="h-32 animate-pulse rounded bg-[#2a2a2a]" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="col-span-1 lg:col-span-2 rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-[#a0a0a0]">Trading Journal</h2>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="rounded-lg bg-[#22c55e] bg-opacity-20 px-3 py-1.5 text-xs font-medium text-[#22c55e] transition-colors hover:bg-opacity-30"
+        >
+          {showForm ? "Cancel" : "+ Trade"}
+        </button>
+      </div>
+
+      <div className="mb-4 grid grid-cols-4 gap-3 text-sm">
+        <div className="rounded-lg bg-[#222] p-3">
+          <p className="text-[10px] text-[#a0a0a0]">Total Trades</p>
+          <p className="mt-1 text-xl font-semibold text-white">{totalTrades}</p>
+        </div>
+        <div className="rounded-lg bg-[#222] p-3">
+          <p className="text-[10px] text-[#a0a0a0]">Win Rate</p>
+          <p className="mt-1 text-xl font-semibold text-white">{winRate.toFixed(1)}%</p>
+        </div>
+        <div className="rounded-lg bg-[#222] p-3">
+          <p className="text-[10px] text-[#a0a0a0]">Avg R:R</p>
+          <p className="mt-1 text-xl font-semibold text-white">{avgRR.toFixed(2)}</p>
+        </div>
+        <div className="rounded-lg bg-[#222] p-3">
+          <p className="text-[10px] text-[#a0a0a0]">Total P&L</p>
+          <p className={`mt-1 text-xl font-semibold ${totalPnl >= 0 ? "text-[#22c55e]" : "text-red-400"}`}>
+            ${totalPnl.toFixed(2)}
+          </p>
+        </div>
+      </div>
+
+      {equityTrades.length > 0 && (
+        <div className="mb-4 rounded-lg bg-[#222] p-3">
+          <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-[#a0a0a0]">Equity Curve (last {equityTrades.length})</p>
+          <div className="flex items-end gap-[2px]" style={{ height: 80 }}>
+            {equityTrades.map((t) => {
+              const pnl = calcPnl(t)!
+              const h = Math.max(4, (Math.abs(pnl) / maxAbsPnl) * 100)
+              return (
+                <div
+                  key={t.id}
+                  className="flex-1 rounded-t-sm"
+                  style={{
+                    height: `${h}%`,
+                    backgroundColor: pnl >= 0 ? "#22c55e" : "#ef4444",
+                    opacity: 0.8,
+                  }}
+                  title={`${t.instrument === "Custom" ? t.instrumentCustom : t.instrument} ${t.direction}: $${pnl.toFixed(2)}`}
+                />
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      <div className="mb-3 flex gap-1 rounded-lg bg-[#222] p-1 text-xs">
+        {(["All", "Open", "Closed"] as const).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`flex-1 rounded-md px-3 py-1.5 capitalize transition-colors ${
+              filter === f ? "bg-[#333] text-white" : "text-[#a0a0a0] hover:text-white"
+            }`}
+          >
+            {f} ({f === "All" ? trades.length : f === "Open" ? trades.filter((t) => t.status === "Open").length : trades.filter((t) => t.status !== "Open").length})
+          </button>
+        ))}
+      </div>
+
+      {showForm && (
+        <div className="mb-4 space-y-2 rounded-lg bg-[#222] p-3">
+          <div className="flex gap-2">
+            <select value={instrument} onChange={(e) => setInstrument(e.target.value)} className="rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-2 py-2 text-sm text-white outline-none">
+              {INSTRUMENTS.map((i) => <option key={i} value={i}>{i}</option>)}
+            </select>
+            {instrument === "Custom" && (
+              <input type="text" placeholder="Instrument" value={instrumentCustom} onChange={(e) => setInstrumentCustom(e.target.value)} className="flex-1 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-white placeholder-[#666] outline-none" />
+            )}
+            <select value={direction} onChange={(e) => setDirection(e.target.value as "Long" | "Short")} className="rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-2 py-2 text-sm text-white outline-none">
+              <option value="Long">Long</option>
+              <option value="Short">Short</option>
+            </select>
+            <select value={strategy} onChange={(e) => setStrategy(e.target.value as Trade["strategy"])} className="rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-2 py-2 text-sm text-white outline-none">
+              {STRATEGIES.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+          <div className="flex gap-2">
+            <input type="number" step="any" placeholder="Entry" value={entryPrice} onChange={(e) => setEntryPrice(e.target.value)} className="flex-1 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-white placeholder-[#666] outline-none" />
+            <input type="number" step="any" placeholder="Exit (leave blank if open)" value={exitPrice} onChange={(e) => setExitPrice(e.target.value)} className="flex-1 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-white placeholder-[#666] outline-none" />
+            <input type="number" step="any" placeholder="Lot size" value={lotSize} onChange={(e) => setLotSize(e.target.value)} className="w-20 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-white placeholder-[#666] outline-none" />
+          </div>
+          <div className="flex gap-2">
+            <input type="number" step="any" placeholder="Stop Loss" value={stopLoss} onChange={(e) => setStopLoss(e.target.value)} className="flex-1 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-white placeholder-[#666] outline-none" />
+            <input type="number" step="any" placeholder="Take Profit" value={takeProfit} onChange={(e) => setTakeProfit(e.target.value)} className="flex-1 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-white placeholder-[#666] outline-none" />
+          </div>
+          <textarea placeholder="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-white placeholder-[#666] outline-none" rows={2} />
+          <button onClick={addTrade} className="w-full rounded-lg bg-[#22c55e] bg-opacity-20 py-2 text-sm font-medium text-[#22c55e]">Add Trade</button>
+        </div>
+      )}
+
+      {filtered.length === 0 && (
+        <p className="py-6 text-center text-sm text-[#666]">No trades yet</p>
+      )}
+
+      <div className="space-y-1">
+        {filtered.map((t) => {
+          const pnl = calcPnl(t)
+          const rr = calcRR(t)
+          const inst = t.instrument === "Custom" ? t.instrumentCustom : t.instrument
+          return (
+            <div
+              key={t.id}
+              className={`group rounded-lg px-3 py-2.5 transition-colors hover:bg-[#222] ${
+                t.status === "Open" ? "border-l-2 border-[#22c55e] bg-[#22c55e] bg-opacity-5" : ""
+              } ${t.status === "Stopped Out" ? "opacity-60" : ""}`}
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-sm font-medium ${pnl !== null ? (pnl >= 0 ? "text-[#22c55e]" : "text-red-400") : "text-white"}`}>
+                      {inst}
+                    </span>
+                    <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                      t.direction === "Long" ? "bg-[#22c55e] bg-opacity-20 text-[#22c55e]" : "bg-red-500 bg-opacity-20 text-red-400"
+                    }`}>
+                      {t.direction}
+                    </span>
+                    <span className="text-[10px] text-[#666]">{t.dateOpened}</span>
+                  </div>
+                  <div className="mt-0.5 flex gap-3 text-[10px] text-[#666]">
+                    <span>Entry: {t.entryPrice}</span>
+                    <span>SL: {t.stopLoss}</span>
+                    <span>TP: {t.takeProfit}</span>
+                    <span>Lot: {t.lotSize}</span>
+                    {rr !== null && <span>R:R: {rr.toFixed(2)}</span>}
+                    <span className="text-[#a0a0a0]">{t.strategy}</span>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  {pnl !== null ? (
+                    <p className={`text-sm font-semibold ${pnl >= 0 ? "text-[#22c55e]" : "text-red-400"}`}>
+                      {pnl >= 0 ? "+" : ""}${pnl.toFixed(2)}
+                    </p>
+                  ) : (
+                    <p className="text-sm font-medium text-amber-400">Open</p>
+                  )}
+                  <p className={`text-[10px] ${
+                    t.status === "Closed" ? "text-[#22c55e]" : t.status === "Stopped Out" ? "text-red-400" : "text-amber-400"
+                  }`}>
+                    {t.status}
+                  </p>
+                </div>
+
+                {t.status === "Open" && (
+                  <div className="flex gap-1">
+                    <button onClick={() => closeTrade(t.id, "Closed")} className="rounded bg-[#22c55e] bg-opacity-20 px-2 py-1 text-[10px] font-medium text-[#22c55e]">Close</button>
+                    <button onClick={() => closeTrade(t.id, "Stopped Out")} className="rounded bg-red-500 bg-opacity-20 px-2 py-1 text-[10px] font-medium text-red-400">SL</button>
+                  </div>
+                )}
+
+                <button onClick={() => deleteTrade(t.id)} className="opacity-0 transition-opacity group-hover:opacity-100">
+                  <Trash2 className="h-3.5 w-3.5 text-red-400" />
+                </button>
+              </div>
+              {t.notes && <p className="mt-1 text-[10px] text-[#666]">{t.notes}</p>}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
