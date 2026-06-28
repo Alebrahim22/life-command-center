@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react"
 import { Plus, Trash2, ChevronDown, ChevronRight } from "lucide-react"
+import { supabase } from "@/lib/supabase"
 
 interface HistoryEntry {
+  id?: string
   date: string
   text: string
 }
@@ -20,8 +22,6 @@ interface LegalCase {
   notes: string
   history: HistoryEntry[]
 }
-
-const STORAGE_KEY = "legal-cases"
 
 const STAGES: LegalCase["stage"][] = [
   "Filed", "Under Review", "Hearing Scheduled", "Awaiting Judgment",
@@ -41,15 +41,6 @@ const stageColors: Record<string, string> = {
 
 const CLOSED_STATUSES = ["Closed", "Won", "Lost"]
 
-function load(): LegalCase[] {
-  if (typeof window === "undefined") return []
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
-  } catch {}
-  return []
-}
-
 function todayStr(): string {
   return new Date().toISOString().split("T")[0]
 }
@@ -62,7 +53,7 @@ function in7Days(): string {
 
 export default function LegalCases() {
   const [cases, setCases] = useState<LegalCase[]>([])
-  const [loaded, setLoaded] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
 
@@ -80,34 +71,88 @@ export default function LegalCases() {
   const [editNotes, setEditNotes] = useState<string | null>(null)
 
   useEffect(() => {
-    const d = load()
-    setCases(d)
-    const initCollapsed: Record<string, boolean> = {}
-    for (const c of d) {
-      if (CLOSED_STATUSES.includes(c.stage)) initCollapsed[c.id] = true
-    }
-    setCollapsed(initCollapsed)
-    setLoaded(true)
+    fetchCases()
   }, [])
 
-  useEffect(() => {
-    if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(cases))
-  }, [cases, loaded])
+  async function fetchCases() {
+    const [casesRes, logsRes] = await Promise.all([
+      supabase.from("legal_cases").select("*").order("next_session_date", { ascending: true, nullsFirst: false }),
+      supabase.from("legal_case_logs").select("*").order("log_date", { ascending: true }),
+    ])
 
-  function addCase() {
+    const logsByCase: Record<string, HistoryEntry[]> = {}
+    if (logsRes.data) {
+      for (const log of logsRes.data) {
+        if (!logsByCase[log.case_id]) logsByCase[log.case_id] = []
+        logsByCase[log.case_id].push({
+          id: log.id,
+          date: log.log_date,
+          text: log.log_text,
+        })
+      }
+    }
+
+    if (casesRes.data) {
+      const mapped = casesRes.data.map((r: any) => ({
+        id: r.id,
+        caseNumber: r.case_number,
+        title: r.title,
+        role: r.role,
+        court: r.court,
+        stage: r.stage,
+        nextSessionDate: r.next_session_date,
+        nextSessionTime: r.next_session_time,
+        notes: r.notes ?? "",
+        history: logsByCase[r.id] ?? [],
+      }))
+
+      setCases(mapped)
+
+      const initCollapsed: Record<string, boolean> = {}
+      for (const c of mapped) {
+        if (CLOSED_STATUSES.includes(c.stage)) initCollapsed[c.id] = true
+      }
+      setCollapsed(initCollapsed)
+    }
+
+    setLoading(false)
+  }
+
+  async function addCase() {
     if (!num.trim() || !title.trim() || !court.trim()) return
+
+    const { data, error } = await supabase
+      .from("legal_cases")
+      .insert({
+        case_number: num.trim(),
+        title: title.trim(),
+        role,
+        court: court.trim(),
+        stage,
+        next_session_date: sessionDate || null,
+        next_session_time: sessionTime || null,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error("Failed to add case:", error)
+      return
+    }
+
     const c: LegalCase = {
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
-      caseNumber: num.trim(),
-      title: title.trim(),
-      role,
-      court: court.trim(),
-      stage,
-      nextSessionDate: sessionDate || null,
-      nextSessionTime: sessionTime || null,
-      notes: "",
+      id: data.id,
+      caseNumber: data.case_number,
+      title: data.title,
+      role: data.role,
+      court: data.court,
+      stage: data.stage,
+      nextSessionDate: data.next_session_date,
+      nextSessionTime: data.next_session_time,
+      notes: data.notes ?? "",
       history: [],
     }
+
     setCases((prev) => [...prev, c])
     setNum("")
     setTitle("")
@@ -117,11 +162,27 @@ export default function LegalCases() {
     setShowForm(false)
   }
 
-  function deleteCase(id: string) {
+  async function deleteCase(id: string) {
+    const { error } = await supabase.from("legal_cases").delete().eq("id", id)
+    if (error) {
+      console.error("Failed to delete case:", error)
+      return
+    }
     setCases((prev) => prev.filter((c) => c.id !== id))
   }
 
-  function updateCase(id: string, partial: Partial<LegalCase>) {
+  async function updateCaseInDb(id: string, partial: Partial<LegalCase>) {
+    const dbPayload: Record<string, any> = {}
+    if (partial.stage) dbPayload.stage = partial.stage
+    if (partial.nextSessionDate !== undefined) dbPayload.next_session_date = partial.nextSessionDate
+    if (partial.nextSessionTime !== undefined) dbPayload.next_session_time = partial.nextSessionTime
+    if (partial.notes !== undefined) dbPayload.notes = partial.notes
+
+    if (Object.keys(dbPayload).length > 0) {
+      const { error } = await supabase.from("legal_cases").update(dbPayload).eq("id", id)
+      if (error) console.error("Failed to update case:", error)
+    }
+
     setCases((prev) => prev.map((c) => (c.id === id ? { ...c, ...partial } : c)))
   }
 
@@ -129,15 +190,35 @@ export default function LegalCases() {
     setCollapsed((prev) => ({ ...prev, [id]: !prev[id] }))
   }
 
-  function addHistory(caseId: string) {
+  async function addHistory(caseId: string) {
     if (!historyText.trim()) return
-    const entry: HistoryEntry = {
-      date: new Date().toISOString().split("T")[0],
-      text: historyText.trim(),
+
+    const { data, error } = await supabase
+      .from("legal_case_logs")
+      .insert({
+        case_id: caseId,
+        log_text: historyText.trim(),
+        log_date: todayStr(),
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error("Failed to add history:", error)
+      return
     }
-    updateCase(caseId, {
-      history: [...(cases.find((c) => c.id === caseId)?.history || []), entry],
-    })
+
+    const entry: HistoryEntry = {
+      id: data.id,
+      date: data.log_date,
+      text: data.log_text,
+    }
+
+    setCases((prev) =>
+      prev.map((c) =>
+        c.id === caseId ? { ...c, history: [...c.history, entry] } : c,
+      ),
+    )
     setHistoryText("")
     setAddHistoryFor(null)
   }
@@ -152,7 +233,7 @@ export default function LegalCases() {
     return a.nextSessionDate.localeCompare(b.nextSessionDate)
   })
 
-  if (!loaded) {
+  if (loading) {
     return (
       <div className="rounded-xl border border-border bg-bg-card p-5">
         <h2 className="mb-3 text-lg font-semibold text-text-secondary">Legal Cases</h2>
@@ -230,18 +311,18 @@ export default function LegalCases() {
               {!isCollapsed && (
                 <div className="border-t border-border px-4 pb-4 pt-3">
                   <div className="mb-3 flex flex-wrap gap-2">
-                    <select value={c.stage} onChange={(e) => updateCase(c.id, { stage: e.target.value as LegalCase["stage"] })} className="rounded-lg border border-border bg-bg-card px-2 py-1 text-xs text-text-primary outline-none">
+                    <select value={c.stage} onChange={(e) => updateCaseInDb(c.id, { stage: e.target.value as LegalCase["stage"] })} className="rounded-lg border border-border bg-bg-card px-2 py-1 text-xs text-text-primary outline-none">
                       {STAGES.map((s) => <option key={s} value={s}>{s}</option>)}
                     </select>
-                    <input type="date" value={c.nextSessionDate || ""} onChange={(e) => updateCase(c.id, { nextSessionDate: e.target.value || null })} className="rounded-lg border border-border bg-bg-card px-2 py-1 text-xs text-text-primary outline-none [color-scheme:dark]" />
-                    <input type="time" value={c.nextSessionTime || ""} onChange={(e) => updateCase(c.id, { nextSessionTime: e.target.value || null })} className="rounded-lg border border-border bg-bg-card px-2 py-1 text-xs text-text-primary outline-none [color-scheme:dark]" />
+                    <input type="date" value={c.nextSessionDate || ""} onChange={(e) => updateCaseInDb(c.id, { nextSessionDate: e.target.value || null })} className="rounded-lg border border-border bg-bg-card px-2 py-1 text-xs text-text-primary outline-none [color-scheme:dark]" />
+                    <input type="time" value={c.nextSessionTime || ""} onChange={(e) => updateCaseInDb(c.id, { nextSessionTime: e.target.value || null })} className="rounded-lg border border-border bg-bg-card px-2 py-1 text-xs text-text-primary outline-none [color-scheme:dark]" />
                   </div>
 
                   <div className="mb-3">
                     <span className="text-xs font-medium uppercase tracking-wider text-text-secondary">History Log</span>
                     <div className="mt-1 space-y-1">
                       {c.history.map((h, i) => (
-                        <div key={i} className="flex gap-2 text-xs text-text-secondary">
+                        <div key={h.id ?? i} className="flex gap-2 text-xs text-text-secondary">
                           <span className="shrink-0 text-text-secondary">{h.date}</span>
                           <span>{h.text}</span>
                         </div>
@@ -265,7 +346,7 @@ export default function LegalCases() {
                     <span className="text-xs font-medium uppercase tracking-wider text-text-secondary">Notes</span>
                     {editNotes === c.id ? (
                       <div className="mt-1">
-                        <textarea value={c.notes} onChange={(e) => updateCase(c.id, { notes: e.target.value })} className="w-full rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-text-primary outline-none" rows={3} />
+                        <textarea value={c.notes} onChange={(e) => updateCaseInDb(c.id, { notes: e.target.value })} className="w-full rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-text-primary outline-none" rows={3} />
                         <button onClick={() => setEditNotes(null)} className="mt-1 rounded bg-accent/20 px-3 py-1 text-xs font-medium text-accent">Done</button>
                       </div>
                     ) : (

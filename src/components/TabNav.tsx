@@ -8,6 +8,7 @@ interface Tab {
 }
 
 const TABS: Tab[] = [
+  { id: "overview", label: "Overview" },
   { id: "today", label: "Today" },
   { id: "work", label: "Work & Tasks" },
   { id: "finance", label: "Finance" },
@@ -22,7 +23,7 @@ interface Props {
 }
 
 export default function TabNav({ onTabChange }: Props) {
-  const [activeTab, setActiveTab] = useState("today")
+  const [activeTab, setActiveTab] = useState("overview")
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY)

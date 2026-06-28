@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ChevronDown, ChevronRight, Plus, Trash2, GripVertical } from "lucide-react"
+import { ChevronDown, ChevronRight, Plus, Trash2 } from "lucide-react"
 import Checkbox from "@/components/Checkbox"
+import { supabase } from "@/lib/supabase"
 
 type ProjectStatus = "Active" | "On Hold" | "Launched" | "Archived"
 type ProjectStage = "Idea" | "Building" | "Beta" | "Live" | "Scaling"
@@ -23,6 +24,7 @@ interface Milestone {
 }
 
 interface Project {
+  id: string
   status: ProjectStatus
   stage: ProjectStage
   kpis: KPI[]
@@ -34,8 +36,6 @@ interface Project {
 interface ProjectsData {
   [key: string]: Project
 }
-
-const STORAGE_KEY = "projects-data"
 
 const PROJECT_NAMES = ["Hadeya", "Reluxx", "Osoul", "XYZ Agency", "Personal Brand"]
 
@@ -54,8 +54,9 @@ const stageColors: Record<ProjectStage, string> = {
   Scaling: "bg-purple-500/20 text-purple-400",
 }
 
-function defaultProject(): Project {
+function defaultProject(id: string): Project {
   return {
+    id,
     status: "Active",
     stage: "Idea",
     kpis: [],
@@ -63,28 +64,6 @@ function defaultProject(): Project {
     milestones: [],
     collapsed: false,
   }
-}
-
-function defaultData(): ProjectsData {
-  return Object.fromEntries(PROJECT_NAMES.map((n) => [n, defaultProject()]))
-}
-
-function load(): ProjectsData {
-  if (typeof window === "undefined") return defaultData()
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      const merged = { ...defaultData() }
-      for (const name of PROJECT_NAMES) {
-        if (parsed[name]) {
-          merged[name] = { ...defaultProject(), ...parsed[name] }
-        }
-      }
-      return merged
-    }
-  } catch {}
-  return defaultData()
 }
 
 function weekBounds(): [string, string] {
@@ -103,8 +82,8 @@ function isDateInRange(dateStr: string, start: string, end: string): boolean {
 }
 
 export default function ProjectsTracker() {
-  const [data, setData] = useState<ProjectsData>(defaultData())
-  const [loaded, setLoaded] = useState(false)
+  const [data, setData] = useState<ProjectsData>({})
+  const [loading, setLoading] = useState(true)
 
   const [editKpiProject, setEditKpiProject] = useState<string | null>(null)
   const [kpiName, setKpiName] = useState("")
@@ -119,15 +98,79 @@ export default function ProjectsTracker() {
   const [editNotes, setEditNotes] = useState<string | null>(null)
 
   useEffect(() => {
-    setData(load())
-    setLoaded(true)
+    fetchProjects()
   }, [])
 
-  useEffect(() => {
-    if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-  }, [data, loaded])
+  async function fetchProjects() {
+    const [projRes, kpisRes, msRes] = await Promise.all([
+      supabase.from("projects").select("*"),
+      supabase.from("project_kpis").select("*"),
+      supabase.from("project_milestones").select("*"),
+    ])
 
-  function updateProject(name: string, partial: Partial<Project>) {
+    const map: ProjectsData = {}
+
+    if (projRes.data) {
+      for (const p of projRes.data) {
+        const name = p.name
+        if (!PROJECT_NAMES.includes(name)) continue
+        map[name] = {
+          id: p.id,
+          status: p.status,
+          stage: p.stage,
+          notes: p.notes ?? "",
+          kpis: [],
+          milestones: [],
+          collapsed: false,
+        }
+
+        if (kpisRes.data) {
+          map[name].kpis = kpisRes.data
+            .filter((k: any) => k.project_id === p.id)
+            .map((k: any) => ({
+              id: k.id,
+              name: k.name,
+              currentValue: Number(k.current_value),
+              targetValue: Number(k.target_value),
+              unit: k.unit,
+            }))
+        }
+
+        if (msRes.data) {
+          map[name].milestones = msRes.data
+            .filter((m: any) => m.project_id === p.id)
+            .map((m: any) => ({
+              id: m.id,
+              title: m.title,
+              dueDate: m.due_date,
+              done: m.done,
+            }))
+        }
+      }
+    }
+
+    for (const n of PROJECT_NAMES) {
+      if (!map[n]) map[n] = defaultProject("")
+    }
+
+    setData(map)
+    setLoading(false)
+  }
+
+  async function updateProjectInDb(name: string, partial: Partial<Project>) {
+    const projectId = data[name]?.id
+    if (!projectId) return
+
+    const dbPayload: Record<string, any> = {}
+    if (partial.status) dbPayload.status = partial.status
+    if (partial.stage) dbPayload.stage = partial.stage
+    if (partial.notes !== undefined) dbPayload.notes = partial.notes
+
+    if (Object.keys(dbPayload).length > 0) {
+      const { error } = await supabase.from("projects").update(dbPayload).eq("id", projectId)
+      if (error) console.error("Failed to update project:", error)
+    }
+
     setData((prev) => ({
       ...prev,
       [name]: { ...prev[name], ...partial },
@@ -135,21 +178,49 @@ export default function ProjectsTracker() {
   }
 
   function toggleCollapse(name: string) {
-    updateProject(name, { collapsed: !data[name].collapsed })
+    setData((prev) => ({
+      ...prev,
+      [name]: { ...prev[name], collapsed: !prev[name].collapsed },
+    }))
   }
 
-  function addKpi(projectName: string) {
+  async function addKpi(projectName: string) {
     const target = parseFloat(kpiTarget)
     const current = parseFloat(kpiCurrent)
     if (!kpiName.trim() || isNaN(target) || isNaN(current)) return
-    const kpi: KPI = {
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
-      name: kpiName.trim(),
-      currentValue: current,
-      targetValue: target,
-      unit: kpiUnit.trim(),
+
+    const projectId = data[projectName]?.id
+    if (!projectId) return
+
+    const { data: inserted, error } = await supabase
+      .from("project_kpis")
+      .insert({
+        project_id: projectId,
+        name: kpiName.trim(),
+        current_value: current,
+        target_value: target,
+        unit: kpiUnit.trim(),
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error("Failed to add KPI:", error)
+      return
     }
-    updateProject(projectName, { kpis: [...data[projectName].kpis, kpi] })
+
+    const kpi: KPI = {
+      id: inserted.id,
+      name: inserted.name,
+      currentValue: Number(inserted.current_value),
+      targetValue: Number(inserted.target_value),
+      unit: inserted.unit,
+    }
+
+    setData((prev) => ({
+      ...prev,
+      [projectName]: { ...prev[projectName], kpis: [...prev[projectName].kpis, kpi] },
+    }))
     setKpiName("")
     setKpiTarget("")
     setKpiUnit("")
@@ -157,39 +228,100 @@ export default function ProjectsTracker() {
     setEditKpiProject(null)
   }
 
-  function removeKpi(projectName: string, kpiId: string) {
-    updateProject(projectName, {
-      kpis: data[projectName].kpis.filter((k) => k.id !== kpiId),
-    })
+  async function removeKpi(projectName: string, kpiId: string) {
+    const { error } = await supabase.from("project_kpis").delete().eq("id", kpiId)
+    if (error) {
+      console.error("Failed to remove KPI:", error)
+      return
+    }
+    setData((prev) => ({
+      ...prev,
+      [projectName]: { ...prev[projectName], kpis: prev[projectName].kpis.filter((k) => k.id !== kpiId) },
+    }))
   }
 
-  function addMilestone(projectName: string) {
+  async function addMilestone(projectName: string) {
     if (!msTitle.trim() || !msDate) return
     if (data[projectName].milestones.length >= 5) return
-    const ms: Milestone = {
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
-      title: msTitle.trim(),
-      dueDate: msDate,
-      done: false,
+
+    const projectId = data[projectName]?.id
+    if (!projectId) return
+
+    const { data: inserted, error } = await supabase
+      .from("project_milestones")
+      .insert({
+        project_id: projectId,
+        title: msTitle.trim(),
+        due_date: msDate,
+        done: false,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error("Failed to add milestone:", error)
+      return
     }
-    updateProject(projectName, { milestones: [...data[projectName].milestones, ms] })
+
+    const ms: Milestone = {
+      id: inserted.id,
+      title: inserted.title,
+      dueDate: inserted.due_date,
+      done: inserted.done,
+    }
+
+    setData((prev) => ({
+      ...prev,
+      [projectName]: { ...prev[projectName], milestones: [...prev[projectName].milestones, ms] },
+    }))
     setMsTitle("")
     setMsDate("")
     setEditMilestoneProject(null)
   }
 
-  function toggleMilestone(projectName: string, msId: string) {
-    updateProject(projectName, {
-      milestones: data[projectName].milestones.map((m) =>
-        m.id === msId ? { ...m, done: !m.done } : m,
-      ),
-    })
+  async function toggleMilestone(projectName: string, msId: string) {
+    const ms = data[projectName]?.milestones.find((m) => m.id === msId)
+    if (!ms) return
+
+    const { error } = await supabase
+      .from("project_milestones")
+      .update({ done: !ms.done })
+      .eq("id", msId)
+
+    if (error) {
+      console.error("Failed to toggle milestone:", error)
+      return
+    }
+
+    setData((prev) => ({
+      ...prev,
+      [projectName]: {
+        ...prev[projectName],
+        milestones: prev[projectName].milestones.map((m) =>
+          m.id === msId ? { ...m, done: !m.done } : m,
+        ),
+      },
+    }))
   }
 
-  function removeMilestone(projectName: string, msId: string) {
-    updateProject(projectName, {
-      milestones: data[projectName].milestones.filter((m) => m.id !== msId),
-    })
+  async function removeMilestone(projectName: string, msId: string) {
+    const { error } = await supabase.from("project_milestones").delete().eq("id", msId)
+    if (error) {
+      console.error("Failed to remove milestone:", error)
+      return
+    }
+    setData((prev) => ({
+      ...prev,
+      [projectName]: {
+        ...prev[projectName],
+        milestones: prev[projectName].milestones.filter((m) => m.id !== msId),
+      },
+    }))
+  }
+
+  async function saveNotes(name: string) {
+    await updateProjectInDb(name, { notes: data[name].notes })
+    setEditNotes(null)
   }
 
   const [weekStart, weekEnd] = weekBounds()
@@ -205,7 +337,7 @@ export default function ProjectsTracker() {
     }
   }
 
-  if (!loaded) {
+  if (loading) {
     return (
       <div className="rounded-xl border border-border bg-bg-card p-5">
         <h2 className="mb-3 text-lg font-semibold text-text-secondary">Projects</h2>
@@ -232,6 +364,7 @@ export default function ProjectsTracker() {
       <div className="space-y-3">
         {PROJECT_NAMES.map((name) => {
           const proj = data[name]
+          if (!proj) return null
           return (
             <div
               key={name}
@@ -260,7 +393,7 @@ export default function ProjectsTracker() {
                   <div className="mb-3 flex gap-2">
                     <select
                       value={proj.status}
-                      onChange={(e) => updateProject(name, { status: e.target.value as ProjectStatus })}
+                      onChange={(e) => updateProjectInDb(name, { status: e.target.value as ProjectStatus })}
                       className="rounded-lg border border-border bg-bg-card px-2 py-1 text-xs text-text-primary outline-none"
                     >
                       {(["Active", "On Hold", "Launched", "Archived"] as ProjectStatus[]).map((s) => (
@@ -269,7 +402,7 @@ export default function ProjectsTracker() {
                     </select>
                     <select
                       value={proj.stage}
-                      onChange={(e) => updateProject(name, { stage: e.target.value as ProjectStage })}
+                      onChange={(e) => updateProjectInDb(name, { stage: e.target.value as ProjectStage })}
                       className="rounded-lg border border-border bg-bg-card px-2 py-1 text-xs text-text-primary outline-none"
                     >
                       {(["Idea", "Building", "Beta", "Live", "Scaling"] as ProjectStage[]).map((s) => (
@@ -382,11 +515,16 @@ export default function ProjectsTracker() {
                       <div className="mt-1">
                         <textarea
                           value={proj.notes}
-                          onChange={(e) => updateProject(name, { notes: e.target.value })}
+                          onChange={(e) =>
+                            setData((prev) => ({
+                              ...prev,
+                              [name]: { ...prev[name], notes: e.target.value },
+                            }))
+                          }
                           className="w-full rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-text-primary outline-none"
                           rows={3}
                         />
-                        <button onClick={() => setEditNotes(null)} className="mt-1 rounded bg-accent/20 px-3 py-1 text-xs font-medium text-accent">Done</button>
+                        <button onClick={() => saveNotes(name)} className="mt-1 rounded bg-accent/20 px-3 py-1 text-xs font-medium text-accent">Done</button>
                       </div>
                     ) : (
                       <div

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { X } from "lucide-react"
+import { supabase } from "@/lib/supabase"
 
 interface Event {
   id: string
@@ -9,10 +10,8 @@ interface Event {
   date: string
   time: string | null
   category: "Personal" | "Work" | "Business" | "Legal" | "Medical"
-  createdAt: string
 }
 
-const STORAGE_KEY = "events"
 const CATEGORIES: Event["category"][] = ["Personal", "Work", "Business", "Legal", "Medical"]
 
 const categoryColors: Record<string, string> = {
@@ -21,15 +20,6 @@ const categoryColors: Record<string, string> = {
   Business: "bg-amber-500/20 text-amber-400",
   Legal: "bg-purple-500/20 text-purple-400",
   Medical: "bg-red-500/20 text-red-400",
-}
-
-function load(): Event[] {
-  if (typeof window === "undefined") return []
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
-  } catch {}
-  return []
 }
 
 function todayStr(): string {
@@ -51,7 +41,7 @@ interface Group {
 
 export default function UpcomingEvents() {
   const [events, setEvents] = useState<Event[]>([])
-  const [loaded, setLoaded] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [title, setTitle] = useState("")
   const [date, setDate] = useState("")
@@ -59,32 +49,71 @@ export default function UpcomingEvents() {
   const [category, setCategory] = useState<Event["category"]>("Personal")
 
   useEffect(() => {
-    setEvents(load())
-    setLoaded(true)
+    fetchEvents()
   }, [])
 
-  useEffect(() => {
-    if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(events))
-  }, [events, loaded])
+  async function fetchEvents() {
+    const today = todayStr()
+    const { data, error } = await supabase
+      .from("events")
+      .select("*")
+      .gte("date", today)
+      .order("date", { ascending: true })
+      .order("time", { ascending: true })
 
-  function addEvent() {
-    if (!title.trim() || !date) return
-    const ev: Event = {
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
-      title: title.trim(),
-      date,
-      time: time || null,
-      category,
-      createdAt: new Date().toISOString(),
+    if (error) {
+      console.error("Failed to fetch events:", error)
+    } else if (data) {
+      setEvents(
+        data.map((row: any) => ({
+          id: row.id,
+          title: row.title,
+          date: row.date,
+          time: row.time,
+          category: row.category,
+        })),
+      )
     }
-    setEvents((prev) => [...prev, ev])
+    setLoading(false)
+  }
+
+  async function addEvent() {
+    if (!title.trim() || !date) return
+
+    const { data, error } = await supabase
+      .from("events")
+      .insert({
+        title: title.trim(),
+        date,
+        time: time || null,
+        category,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error("Failed to add event:", error)
+      return
+    }
+
+    setEvents((prev) => [
+      ...prev,
+      { id: data.id, title: data.title, date: data.date, time: data.time, category: data.category },
+    ])
     setTitle("")
     setDate("")
     setTime("")
     setShowForm(false)
   }
 
-  function deleteEvent(id: string) {
+  async function deleteEvent(id: string) {
+    const { error } = await supabase.from("events").delete().eq("id", id)
+
+    if (error) {
+      console.error("Failed to delete event:", error)
+      return
+    }
+
     setEvents((prev) => prev.filter((e) => e.id !== id))
   }
 
@@ -104,7 +133,7 @@ export default function UpcomingEvents() {
     { label: "Later", events: upcoming.filter((e) => e.date > weekEnd) },
   ].filter((g) => g.events.length > 0)
 
-  if (!loaded) {
+  if (loading) {
     return (
       <div className="rounded-xl border border-border bg-bg-card p-5">
         <h2 className="mb-3 text-lg font-semibold text-text-secondary">Upcoming Events</h2>

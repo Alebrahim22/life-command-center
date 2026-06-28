@@ -1,18 +1,15 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { supabase } from "@/lib/supabase"
 
 interface ShiftRecord {
+  id: string
   date: string
-  type: "work" | "sick" | "excused"
+  type: "work" | "sick" | "excused" | "allowance"
+  allowance_hours: number
 }
 
-interface ShiftData {
-  records: ShiftRecord[]
-  allowanceHoursUsed: number
-}
-
-const STORAGE_KEY = "shift-data"
 const YEAR_TARGET = 128
 const ALLOWANCE_MAX_HOURS = 12
 const ALLOWANCE_MAX_MONTHLY = 4
@@ -20,8 +17,7 @@ const SICK_MAX_DAYS = 15
 const EXCUSED_MAX_DAYS = 4
 
 function now() {
-  const d = new Date()
-  return d.toISOString().split("T")[0]
+  return new Date().toISOString().split("T")[0]
 }
 
 function currentMonth(): string {
@@ -33,95 +29,122 @@ function currentYear(): number {
   return new Date().getFullYear()
 }
 
-function loadData(): ShiftData {
-  if (typeof window === "undefined") return { records: [], allowanceHoursUsed: 0 }
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
-  } catch {}
-  return { records: [], allowanceHoursUsed: 0 }
-}
-
-function saveData(data: ShiftData) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-}
-
 export default function ShiftTracker() {
-  const [data, setData] = useState<ShiftData>({ records: [], allowanceHoursUsed: 0 })
-  const [loaded, setLoaded] = useState(false)
+  const [records, setRecords] = useState<ShiftRecord[]>([])
+  const [loading, setLoading] = useState(true)
+  const [allowanceInput, setAllowanceInput] = useState("")
+  const [showAllowanceInput, setShowAllowanceInput] = useState(false)
 
   useEffect(() => {
-    setData(loadData())
-    setLoaded(true)
+    fetchShifts()
   }, [])
 
-  useEffect(() => {
-    if (loaded) saveData(data)
-  }, [data, loaded])
+  async function fetchShifts() {
+    const { data, error } = await supabase
+      .from("shifts")
+      .select("*")
+      .order("date", { ascending: false })
+
+    if (error) {
+      console.error("Failed to fetch shifts:", error)
+    } else if (data) {
+      setRecords(
+        data.map((row: any) => ({
+          id: row.id,
+          date: row.date,
+          type: row.type,
+          allowance_hours: row.allowance_hours ?? 0,
+        })),
+      )
+    }
+    setLoading(false)
+  }
 
   const year = currentYear()
   const month = currentMonth()
 
-  const shiftsThisMonth = data.records.filter(
+  const shiftsThisMonth = records.filter(
     (r) => r.type === "work" && r.date.startsWith(month),
   ).length
 
-  const shiftsThisYear = data.records.filter(
+  const shiftsThisYear = records.filter(
     (r) => r.type === "work" && r.date.startsWith(String(year)),
+  ).length
+
+  const allowanceHoursUsed = records
+    .filter((r) => r.type === "allowance" && r.date.startsWith(String(year)))
+    .reduce((sum, r) => sum + r.allowance_hours, 0)
+
+  const allowanceThisMonth = records
+    .filter((r) => r.type === "allowance" && r.date.startsWith(month))
+    .reduce((sum, r) => sum + r.allowance_hours, 0)
+
+  const sickUsed = records.filter(
+    (r) => r.type === "sick" && r.date.startsWith(String(year)),
+  ).length
+
+  const excusedUsed = records.filter(
+    (r) => r.type === "excused" && r.date.startsWith(String(year)),
   ).length
 
   const remaining = Math.max(0, YEAR_TARGET - shiftsThisYear)
   const progress = Math.min(100, (shiftsThisYear / YEAR_TARGET) * 100)
-
-  const sickUsed = data.records.filter(
-    (r) => r.type === "sick" && r.date.startsWith(String(year)),
-  ).length
-
-  const excusedUsed = data.records.filter(
-    (r) => r.type === "excused" && r.date.startsWith(String(year)),
-  ).length
-
   const sickRemaining = Math.max(0, SICK_MAX_DAYS - sickUsed)
   const excusedRemaining = Math.max(0, EXCUSED_MAX_DAYS - excusedUsed)
-  const allowanceRemaining = Math.max(0, ALLOWANCE_MAX_HOURS - data.allowanceHoursUsed)
+  const allowanceRemaining = Math.max(0, ALLOWANCE_MAX_HOURS - allowanceHoursUsed)
 
-  function addShift(type: "work" | "sick" | "excused") {
-    setData((prev) => {
-      const updated = { ...prev, records: [...prev.records, { date: now(), type }] }
-      return updated
-    })
+  async function addShift(type: "work" | "sick" | "excused") {
+    const { data, error } = await supabase
+      .from("shifts")
+      .insert({ type, date: now() })
+      .select()
+      .single()
+
+    if (error) {
+      console.error("Failed to add shift:", error)
+      return
+    }
+
+    setRecords((prev) => [
+      ...prev,
+      { id: data.id, date: data.date, type: data.type, allowance_hours: data.allowance_hours ?? 0 },
+    ])
   }
 
-  const [allowanceInput, setAllowanceInput] = useState("")
-  const [showAllowanceInput, setShowAllowanceInput] = useState(false)
-
-  function addAllowance() {
+  async function addAllowance() {
     const hours = parseInt(allowanceInput, 10)
     if (isNaN(hours) || hours < 1) return
-
-    const monthKey = currentMonth()
-    const allowanceThisMonth = data.allowanceHoursUsed
 
     if (allowanceThisMonth + hours > ALLOWANCE_MAX_MONTHLY) {
       alert(`Max ${ALLOWANCE_MAX_MONTHLY}h/month allowance. ${ALLOWANCE_MAX_MONTHLY - allowanceThisMonth}h remaining this month.`)
       return
     }
 
-    if (data.allowanceHoursUsed + hours > ALLOWANCE_MAX_HOURS) {
+    if (allowanceHoursUsed + hours > ALLOWANCE_MAX_HOURS) {
       alert(`Max ${ALLOWANCE_MAX_HOURS}h/year allowance exceeded.`)
       return
     }
 
-    setData((prev) => ({
+    const { data, error } = await supabase
+      .from("shifts")
+      .insert({ type: "allowance", date: now(), allowance_hours: hours })
+      .select()
+      .single()
+
+    if (error) {
+      console.error("Failed to add allowance:", error)
+      return
+    }
+
+    setRecords((prev) => [
       ...prev,
-      allowanceHoursUsed: prev.allowanceHoursUsed + hours,
-      records: [...prev.records, { date: now(), type: "work" }],
-    }))
+      { id: data.id, date: data.date, type: data.type, allowance_hours: data.allowance_hours ?? 0 },
+    ])
     setAllowanceInput("")
     setShowAllowanceInput(false)
   }
 
-  if (!loaded) {
+  if (loading) {
     return (
       <div className="rounded-xl border border-border bg-bg-card p-5">
         <h2 className="mb-3 text-lg font-semibold text-text-secondary">Shift Tracker</h2>
@@ -220,8 +243,8 @@ export default function ShiftTracker() {
           />
           <button
             onClick={addAllowance}
-className="rounded-lg bg-blue-500/20 px-4 py-2 text-sm font-medium text-blue-400 transition-colors hover:bg-blue-500/30"
-        >
+            className="rounded-lg bg-blue-500/20 px-4 py-2 text-sm font-medium text-blue-400 transition-colors hover:bg-blue-500/30"
+          >
             Submit
           </button>
         </div>

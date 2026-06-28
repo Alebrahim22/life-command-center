@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { supabase } from "@/lib/supabase"
 
 interface BudgetData {
   monthKey: string
@@ -9,8 +10,17 @@ interface BudgetData {
   categories: Record<string, number>
 }
 
-const STORAGE_KEY = "budget-data"
 const CATEGORIES = ["Housing", "Food", "Transport", "Subscriptions", "Business Expenses", "Personal", "Other"]
+
+const CATEGORY_COLUMNS: Record<string, string> = {
+  Housing: "housing",
+  Food: "food",
+  Transport: "transport",
+  Subscriptions: "subscriptions",
+  "Business Expenses": "business_expenses",
+  Personal: "personal",
+  Other: "other",
+}
 
 function currentMonthKey(): string {
   const d = new Date()
@@ -26,62 +36,103 @@ function defaultData(): BudgetData {
   }
 }
 
-function load(): BudgetData {
-  if (typeof window === "undefined") return defaultData()
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      if (parsed.monthKey !== currentMonthKey()) return defaultData()
-      return {
-        monthKey: parsed.monthKey,
-        income: parsed.income ?? 0,
-        savingsGoalPercent: parsed.savingsGoalPercent ?? 20,
-        categories: { ...defaultData().categories, ...parsed.categories },
-      }
-    }
-  } catch {}
-  return defaultData()
-}
-
 export default function BudgetSnapshot() {
   const [data, setData] = useState<BudgetData>(defaultData())
-  const [loaded, setLoaded] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [incomeInput, setIncomeInput] = useState("")
   const [goalInput, setGoalInput] = useState("20")
   const [editCat, setEditCat] = useState<string | null>(null)
   const [catInput, setCatInput] = useState("")
 
   useEffect(() => {
-    const d = load()
-    setData(d)
-    setIncomeInput(String(d.income || ""))
-    setGoalInput(String(d.savingsGoalPercent))
-    setLoaded(true)
+    fetchBudget()
   }, [])
 
-  useEffect(() => {
-    if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-  }, [data, loaded])
+  async function fetchBudget() {
+    const monthKey = currentMonthKey()
+    const { data: row } = await supabase
+      .from("budget")
+      .select("*")
+      .eq("month_key", monthKey)
+      .maybeSingle()
 
-  function updateIncome() {
-    const v = parseFloat(incomeInput)
-    if (!isNaN(v) && v >= 0) setData((prev) => ({ ...prev, income: v }))
-  }
-
-  function updateGoal() {
-    const v = parseInt(goalInput, 10)
-    if (!isNaN(v) && v >= 0 && v <= 100) setData((prev) => ({ ...prev, savingsGoalPercent: v }))
-  }
-
-  function updateCategory(cat: string) {
-    const v = parseFloat(catInput)
-    if (!isNaN(v) && v >= 0) {
-      setData((prev) => ({
-        ...prev,
-        categories: { ...prev.categories, [cat]: v },
-      }))
+    if (row) {
+      const d: BudgetData = {
+        monthKey,
+        income: Number(row.income),
+        savingsGoalPercent: row.savings_goal_percent,
+        categories: {
+          Housing: Number(row.housing),
+          Food: Number(row.food),
+          Transport: Number(row.transport),
+          Subscriptions: Number(row.subscriptions),
+          "Business Expenses": Number(row.business_expenses),
+          Personal: Number(row.personal),
+          Other: Number(row.other),
+        },
+      }
+      setData(d)
+      setIncomeInput(String(d.income || ""))
+      setGoalInput(String(d.savingsGoalPercent))
+    } else {
+      const d = defaultData()
+      setData(d)
+      setIncomeInput("")
+      setGoalInput("20")
     }
+
+    setLoading(false)
+  }
+
+  async function upsertBudget(partial: Partial<{
+    income: number
+    savings_goal_percent: number
+    housing: number
+    food: number
+    transport: number
+    subscriptions: number
+    business_expenses: number
+    personal: number
+    other: number
+  }>) {
+    const monthKey = currentMonthKey()
+    const { error } = await supabase.from("budget").upsert(
+      { month_key: monthKey, ...partial },
+      { onConflict: "month_key" },
+    )
+    if (error) console.error("Failed to save budget:", error)
+  }
+
+  async function updateIncome() {
+    const v = parseFloat(incomeInput)
+    if (isNaN(v) || v < 0) return
+    setData((prev) => ({ ...prev, income: v }))
+    await upsertBudget({ income: v })
+  }
+
+  async function updateGoal() {
+    const v = parseInt(goalInput, 10)
+    if (isNaN(v) || v < 0 || v > 100) return
+    setData((prev) => ({ ...prev, savingsGoalPercent: v }))
+    await upsertBudget({ savings_goal_percent: v })
+  }
+
+  async function updateCategory(cat: string) {
+    const v = parseFloat(catInput)
+    if (isNaN(v) || v < 0) {
+      setEditCat(null)
+      setCatInput("")
+      return
+    }
+
+    setData((prev) => ({
+      ...prev,
+      categories: { ...prev.categories, [cat]: v },
+    }))
+
+    const col = CATEGORY_COLUMNS[cat]
+    if (col) await upsertBudget({ [col]: v })
+
     setEditCat(null)
     setCatInput("")
   }
@@ -105,7 +156,7 @@ export default function BudgetSnapshot() {
 
   const progressColor = totalSpent > available ? "bg-red-400" : totalSpent > available * 0.9 ? "bg-amber-400" : "bg-accent"
 
-  if (!loaded) {
+  if (loading) {
     return (
       <div className="rounded-xl border border-border bg-bg-card p-5">
         <h2 className="mb-3 text-lg font-semibold text-text-secondary">Budget Snapshot</h2>

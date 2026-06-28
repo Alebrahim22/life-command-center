@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Plus, Trash2, CheckCircle2 } from "lucide-react"
 import Checkbox from "@/components/Checkbox"
+import { supabase } from "@/lib/supabase"
 
 interface Bill {
   id: string
@@ -14,13 +15,6 @@ interface Bill {
   autoRenews: boolean
 }
 
-interface BillsData {
-  usdToKwdRate: number
-  bills: Bill[]
-  paidByMonth: Record<string, string[]>
-}
-
-const STORAGE_KEY = "bills-data"
 const CATEGORIES: Bill["category"][] = ["Utility", "Subscription", "Insurance", "Loan", "Other"]
 
 function currentMonthKey(): string {
@@ -32,22 +26,10 @@ function currentDay(): number {
   return new Date().getDate()
 }
 
-function defaultData(): BillsData {
-  return { usdToKwdRate: 0.307, bills: [], paidByMonth: {} }
-}
-
-function load(): BillsData {
-  if (typeof window === "undefined") return defaultData()
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
-  } catch {}
-  return defaultData()
-}
-
 export default function BillsTracker() {
-  const [data, setData] = useState<BillsData>(defaultData())
-  const [loaded, setLoaded] = useState(false)
+  const [bills, setBills] = useState<Bill[]>([])
+  const [paidIds, setPaidIds] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [rateInput, setRateInput] = useState("0.307")
 
@@ -59,70 +41,116 @@ export default function BillsTracker() {
   const [autoRenews, setAutoRenews] = useState(true)
 
   useEffect(() => {
-    const d = load()
-    setData(d)
-    setRateInput(String(d.usdToKwdRate))
-    setLoaded(true)
+    fetchBills()
   }, [])
 
-  useEffect(() => {
-    if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-  }, [data, loaded])
+  async function fetchBills() {
+    const monthKey = currentMonthKey()
 
-  function updateRate() {
-    const v = parseFloat(rateInput)
-    if (v > 0) setData((prev) => ({ ...prev, usdToKwdRate: v }))
+    const [billsRes, paymentsRes] = await Promise.all([
+      supabase.from("bills").select("*").order("due_day", { ascending: true }),
+      supabase.from("bill_payments").select("bill_id").eq("month_key", monthKey),
+    ])
+
+    if (billsRes.data) {
+      setBills(
+        billsRes.data.map((r: any) => ({
+          id: r.id,
+          name: r.name,
+          amount: Number(r.amount),
+          currency: r.currency,
+          dueDay: r.due_day,
+          category: r.category,
+          autoRenews: r.auto_renews,
+        })),
+      )
+    }
+
+    if (paymentsRes.data) {
+      setPaidIds(paymentsRes.data.map((r: any) => r.bill_id))
+    }
+
+    setLoading(false)
   }
 
-  function addBill() {
+  async function addBill() {
     const amt = parseFloat(amount)
     const day = parseInt(dueDay, 10)
     if (!name.trim() || isNaN(amt) || isNaN(day) || day < 1 || day > 31) return
-    const bill: Bill = {
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
-      name: name.trim(),
-      amount: amt,
-      currency,
-      dueDay: day,
-      category,
-      autoRenews,
+
+    const { data, error } = await supabase
+      .from("bills")
+      .insert({
+        name: name.trim(),
+        amount: amt,
+        currency,
+        due_day: day,
+        category,
+        auto_renews: autoRenews,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error("Failed to add bill:", error)
+      return
     }
-    setData((prev) => ({ ...prev, bills: [...prev.bills, bill].sort((a, b) => a.dueDay - b.dueDay) }))
+
+    setBills((prev) =>
+      [
+        ...prev,
+        { id: data.id, name: data.name, amount: Number(data.amount), currency: data.currency, dueDay: data.due_day, category: data.category, autoRenews: data.auto_renews },
+      ].sort((a, b) => a.dueDay - b.dueDay),
+    )
     setName("")
     setAmount("")
     setDueDay("1")
     setShowForm(false)
   }
 
-  function deleteBill(id: string) {
-    setData((prev) => ({
-      ...prev,
-      bills: prev.bills.filter((b) => b.id !== id),
-    }))
+  async function deleteBill(id: string) {
+    const { error } = await supabase.from("bills").delete().eq("id", id)
+    if (error) {
+      console.error("Failed to delete bill:", error)
+      return
+    }
+    setBills((prev) => prev.filter((b) => b.id !== id))
   }
 
-  function togglePaid(billId: string) {
-    setData((prev) => {
-      const monthKey = currentMonthKey()
-      const paid = prev.paidByMonth[monthKey] || []
-      const exists = paid.includes(billId)
-      return {
-        ...prev,
-        paidByMonth: {
-          ...prev.paidByMonth,
-          [monthKey]: exists ? paid.filter((id) => id !== billId) : [...paid, billId],
-        },
+  async function togglePaid(billId: string) {
+    const monthKey = currentMonthKey()
+    const exists = paidIds.includes(billId)
+
+    if (exists) {
+      const { error } = await supabase
+        .from("bill_payments")
+        .delete()
+        .eq("bill_id", billId)
+        .eq("month_key", monthKey)
+      if (error) {
+        console.error("Failed to unpay bill:", error)
+        return
       }
-    })
+      setPaidIds((prev) => prev.filter((id) => id !== billId))
+    } else {
+      const { error } = await supabase
+        .from("bill_payments")
+        .insert({ bill_id: billId, month_key: monthKey })
+      if (error) {
+        console.error("Failed to pay bill:", error)
+        return
+      }
+      setPaidIds((prev) => [...prev, billId])
+    }
   }
 
   const monthKey = currentMonthKey()
   const today = currentDay()
-  const paidIds = data.paidByMonth[monthKey] || []
+  const usdToKwdRate = parseFloat(rateInput) || 0.307
 
   let totalKwd = 0
-  const billsWithStatus = data.bills.map((b) => {
-    const inKwd = b.currency === "KWD" ? b.amount : b.amount * data.usdToKwdRate
+  const billsWithStatus = bills.map((b) => {
+    const inKwd = b.currency === "KWD" ? b.amount : b.amount * usdToKwdRate
     totalKwd += inKwd
 
     const isPaid = paidIds.includes(b.id)
@@ -138,7 +166,7 @@ export default function BillsTracker() {
     return { ...b, inKwd, status }
   })
 
-  if (!loaded) {
+  if (loading) {
     return (
       <div className="rounded-xl border border-border bg-bg-card p-5">
         <h2 className="mb-3 text-lg font-semibold text-text-secondary">Bills & Subscriptions</h2>
@@ -173,8 +201,6 @@ export default function BillsTracker() {
           step="0.001"
           value={rateInput}
           onChange={(e) => setRateInput(e.target.value)}
-          onBlur={updateRate}
-          onKeyDown={(e) => e.key === "Enter" && updateRate()}
           className="w-20 rounded-lg border border-border bg-bg-card-hover px-2 py-1 text-sm text-text-primary outline-none"
         />
         <span className="text-xs text-text-secondary">KWD</span>

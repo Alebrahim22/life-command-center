@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Trash2 } from "lucide-react"
+import { supabase } from "@/lib/supabase"
 
 interface Trade {
   id: string
@@ -20,7 +21,6 @@ interface Trade {
   notes: string
 }
 
-const STORAGE_KEY = "trading-journal"
 const INSTRUMENTS = ["XAU/USD", "EUR/USD", "GBP/USD", "Custom"]
 const STRATEGIES: Trade["strategy"][] = ["Inside Bar", "EMA Ribbon", "Manual", "Other"]
 
@@ -53,18 +53,9 @@ function calcRR(t: Trade): number | null {
   return r / rLoss
 }
 
-function load(): Trade[] {
-  if (typeof window === "undefined") return []
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
-  } catch {}
-  return []
-}
-
 export default function TradingJournal() {
   const [trades, setTrades] = useState<Trade[]>([])
-  const [loaded, setLoaded] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<"All" | "Open" | "Closed">("All")
   const [showForm, setShowForm] = useState(false)
 
@@ -80,15 +71,41 @@ export default function TradingJournal() {
   const [notes, setNotes] = useState("")
 
   useEffect(() => {
-    setTrades(load())
-    setLoaded(true)
+    fetchTrades()
   }, [])
 
-  useEffect(() => {
-    if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(trades))
-  }, [trades, loaded])
+  async function fetchTrades() {
+    const { data, error } = await supabase
+      .from("trading_journal")
+      .select("*")
+      .order("date_opened", { ascending: false })
 
-  function addTrade() {
+    if (error) {
+      console.error("Failed to fetch trades:", error)
+    } else if (data) {
+      setTrades(
+        data.map((r: any) => ({
+          id: r.id,
+          instrument: r.instrument,
+          instrumentCustom: r.instrument_custom ?? "",
+          direction: r.direction,
+          entryPrice: Number(r.entry_price),
+          exitPrice: r.exit_price !== null ? Number(r.exit_price) : null,
+          lotSize: Number(r.lot_size),
+          stopLoss: Number(r.stop_loss),
+          takeProfit: Number(r.take_profit),
+          status: r.status,
+          dateOpened: r.date_opened,
+          dateClosed: r.date_closed,
+          strategy: r.strategy,
+          notes: r.notes ?? "",
+        })),
+      )
+    }
+    setLoading(false)
+  }
+
+  async function addTrade() {
     const entry = parseFloat(entryPrice)
     const exit = exitPrice ? parseFloat(exitPrice) : null
     const lot = parseFloat(lotSize)
@@ -96,23 +113,51 @@ export default function TradingJournal() {
     const tp = parseFloat(takeProfit)
     if (isNaN(entry) || isNaN(lot) || isNaN(sl) || isNaN(tp)) return
 
-    const t: Trade = {
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
-      instrument,
-      instrumentCustom: instrument === "Custom" ? instrumentCustom : "",
-      direction,
-      entryPrice: entry,
-      exitPrice: exit,
-      lotSize: lot,
-      stopLoss: sl,
-      takeProfit: tp,
-      status: exit !== null ? "Closed" : "Open",
-      dateOpened: today(),
-      dateClosed: exit !== null ? today() : null,
-      strategy,
-      notes,
+    const isClosed = exit !== null
+
+    const { data, error } = await supabase
+      .from("trading_journal")
+      .insert({
+        instrument,
+        instrument_custom: instrument === "Custom" ? instrumentCustom : "",
+        direction,
+        entry_price: entry,
+        exit_price: exit,
+        lot_size: lot,
+        stop_loss: sl,
+        take_profit: tp,
+        status: isClosed ? "Closed" : "Open",
+        date_closed: isClosed ? today() : null,
+        strategy,
+        notes,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error("Failed to add trade:", error)
+      return
     }
-    setTrades((prev) => [t, ...prev])
+
+    setTrades((prev) => [
+      {
+        id: data.id,
+        instrument: data.instrument,
+        instrumentCustom: data.instrument_custom ?? "",
+        direction: data.direction,
+        entryPrice: Number(data.entry_price),
+        exitPrice: data.exit_price !== null ? Number(data.exit_price) : null,
+        lotSize: Number(data.lot_size),
+        stopLoss: Number(data.stop_loss),
+        takeProfit: Number(data.take_profit),
+        status: data.status,
+        dateOpened: data.date_opened,
+        dateClosed: data.date_closed,
+        strategy: data.strategy,
+        notes: data.notes ?? "",
+      },
+      ...prev,
+    ])
     setEntryPrice("")
     setExitPrice("")
     setLotSize("")
@@ -122,22 +167,36 @@ export default function TradingJournal() {
     setShowForm(false)
   }
 
-  function closeTrade(id: string, status: "Closed" | "Stopped Out") {
+  async function closeTrade(id: string, status: "Closed" | "Stopped Out") {
+    const trade = trades.find((t) => t.id === id)
+    if (!trade) return
+
+    const exit = trade.exitPrice ?? trade.entryPrice
+
+    const { error } = await supabase
+      .from("trading_journal")
+      .update({ status, exit_price: exit, date_closed: today() })
+      .eq("id", id)
+
+    if (error) {
+      console.error("Failed to close trade:", error)
+      return
+    }
+
     setTrades((prev) =>
       prev.map((t) =>
-        t.id === id ? { ...t, status, exitPrice: t.exitPrice ?? t.entryPrice, dateClosed: today() } : t,
+        t.id === id ? { ...t, status, exitPrice: exit, dateClosed: today() } : t,
       ),
     )
   }
 
-  function deleteTrade(id: string) {
+  async function deleteTrade(id: string) {
+    const { error } = await supabase.from("trading_journal").delete().eq("id", id)
+    if (error) {
+      console.error("Failed to delete trade:", error)
+      return
+    }
     setTrades((prev) => prev.filter((t) => t.id !== id))
-  }
-
-  function updateField(id: string, field: string, value: any) {
-    setTrades((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, [field]: value } : t)),
-    )
   }
 
   const filtered = trades.filter((t) => {
@@ -162,10 +221,9 @@ export default function TradingJournal() {
 
   const maxAbsPnl = Math.max(...closedPnlValues.map(Math.abs), 1)
   const MAX_EQUITY_BARS = 50
-
   const equityTrades = [...closedTrades].slice(-MAX_EQUITY_BARS)
 
-  if (!loaded) {
+  if (loading) {
     return (
       <div className="rounded-xl border border-border bg-bg-card p-5">
         <h2 className="mb-3 text-lg font-semibold text-text-secondary">Trading Journal</h2>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Trash2 } from "lucide-react"
 import Checkbox from "@/components/Checkbox"
+import { supabase } from "@/lib/supabase"
 
 interface Todo {
   id: string
@@ -14,17 +15,6 @@ interface Todo {
 }
 
 type Filter = "all" | "active" | "completed"
-
-const STORAGE_KEY = "todos"
-
-function load(): Todo[] {
-  if (typeof window === "undefined") return []
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
-  } catch {}
-  return []
-}
 
 const priorityColors: Record<string, string> = {
   high: "text-red-400",
@@ -40,44 +30,102 @@ const priorityLabels: Record<string, string> = {
 
 export default function TodoList() {
   const [todos, setTodos] = useState<Todo[]>([])
-  const [loaded, setLoaded] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<Filter>("all")
   const [text, setText] = useState("")
   const [priority, setPriority] = useState<"medium" | "high" | "low">("medium")
   const [dueDate, setDueDate] = useState("")
 
   useEffect(() => {
-    setTodos(load())
-    setLoaded(true)
+    fetchTodos()
   }, [])
 
-  useEffect(() => {
-    if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
-  }, [todos, loaded])
+  async function fetchTodos() {
+    const { data, error } = await supabase
+      .from("todos")
+      .select("*")
+      .order("created_at", { ascending: false })
 
-  function addTodo() {
+    if (error) {
+      console.error("Failed to fetch todos:", error)
+    } else if (data) {
+      setTodos(
+        data.map((row: any) => ({
+          id: row.id,
+          text: row.text,
+          priority: row.priority,
+          dueDate: row.due_date,
+          completed: row.completed,
+          createdAt: row.created_at,
+        })),
+      )
+    }
+    setLoading(false)
+  }
+
+  async function addTodo() {
     const trimmed = text.trim()
     if (!trimmed) return
-    const todo: Todo = {
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
-      text: trimmed,
-      priority,
-      dueDate: dueDate || null,
-      completed: false,
-      createdAt: new Date().toISOString(),
+
+    const { data, error } = await supabase
+      .from("todos")
+      .insert({
+        text: trimmed,
+        priority,
+        due_date: dueDate || null,
+        completed: false,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error("Failed to add todo:", error)
+      return
     }
-    setTodos((prev) => [todo, ...prev])
+
+    setTodos((prev) => [
+      {
+        id: data.id,
+        text: data.text,
+        priority: data.priority,
+        dueDate: data.due_date,
+        completed: data.completed,
+        createdAt: data.created_at,
+      },
+      ...prev,
+    ])
     setText("")
     setDueDate("")
   }
 
-  function toggleComplete(id: string) {
+  async function toggleComplete(id: string) {
+    const todo = todos.find((t) => t.id === id)
+    if (!todo) return
+    const newCompleted = !todo.completed
+
+    const { error } = await supabase
+      .from("todos")
+      .update({ completed: newCompleted })
+      .eq("id", id)
+
+    if (error) {
+      console.error("Failed to update todo:", error)
+      return
+    }
+
     setTodos((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)),
+      prev.map((t) => (t.id === id ? { ...t, completed: newCompleted } : t)),
     )
   }
 
-  function deleteTodo(id: string) {
+  async function deleteTodo(id: string) {
+    const { error } = await supabase.from("todos").delete().eq("id", id)
+
+    if (error) {
+      console.error("Failed to delete todo:", error)
+      return
+    }
+
     setTodos((prev) => prev.filter((t) => t.id !== id))
   }
 
@@ -87,11 +135,11 @@ export default function TodoList() {
     return true
   })
 
-  if (!loaded) {
+  if (loading) {
     return (
       <div className="rounded-xl border border-border bg-bg-card p-5">
         <h2 className="mb-3 text-lg font-semibold text-text-secondary">Todo</h2>
-        <div className="h-32 animate-pulse rounded bg-border" />
+        <p className="py-6 text-center text-sm text-text-secondary">Loading tasks...</p>
       </div>
     )
   }
