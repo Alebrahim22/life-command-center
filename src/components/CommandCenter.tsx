@@ -464,11 +464,32 @@ function WarrantyChecker() {
 // Desktop 3-Column Layout
 // ---------------------------------------------------------------------------
 function DesktopLayout() {
+  const handleRegisterDevice = async () => {
+    try {
+      const { data, error } = await supabase.auth.registerPasskey()
+      if (error) {
+        alert(`Registration Sync Error: ${error.message}`)
+      } else {
+        alert("Success! This device's biometric signature is securely paired to your vault.")
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-4 pb-12 pt-6 sm:px-6 lg:px-8">
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold tracking-tight text-text-primary">Command Center</h1>
-        <p className="mt-0.5 text-xs text-text-secondary">Your daily operational overview</p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight text-text-primary">Command Center</h1>
+          <p className="mt-0.5 text-xs text-text-secondary">Your daily operational overview</p>
+        </div>
+        <button
+          onClick={handleRegisterDevice}
+          className="rounded-lg border border-border bg-bg-card px-3 py-1.5 text-xs text-text-secondary transition-colors hover:border-accent hover:text-white"
+        >
+          🔗 Pair Device Passkey
+        </button>
       </div>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-5">
         <div className="flex flex-col gap-4">
