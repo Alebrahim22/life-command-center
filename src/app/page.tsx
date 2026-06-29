@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import HeaderStrip from "@/components/HeaderStrip"
+import TodayWidget from "@/components/TodayWidget"
 import TabNav from "@/components/TabNav"
 import QuickActionFab from "@/components/QuickActionFab"
 import PrayerTimes from "@/components/PrayerTimes"
@@ -51,7 +51,9 @@ export default function Home() {
   return (
     <AuthGuard>
     <div className="min-h-screen bg-bg-primary pb-[72px] md:pb-0">
-      <HeaderStrip />
+      <div className="mx-auto max-w-6xl px-4 pt-4 sm:px-6 lg:px-8">
+        <TodayWidget />
+      </div>
       <TabNav onTabChange={setActiveTab} />
 
       {activeTab === "overview" ? (
@@ -61,10 +63,7 @@ export default function Home() {
         {/* ==================== TODAY TAB ==================== */}
         {activeTab === "today" && (
           <div key="today-tab" className="animate-fade-slide-up">
-            <Grid>
-              <PrayerTimes />
-              <WeatherWidget />
-            </Grid>
+            <TodayWidget />
             <Grid>
               <div id="habits-section">
                 <HabitTracker />

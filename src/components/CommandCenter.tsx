@@ -1,9 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ArrowUpRight, TrendingUp, Bell, Target, ShieldCheck, Sun, Cloud, Zap, Coins } from "lucide-react"
-import PrayerTimes from "@/components/PrayerTimes"
-import WeatherWidget from "@/components/WeatherWidget"
+import { ArrowUpRight, TrendingUp, Bell, Target, ShieldCheck, Sun, Cloud, Zap, Coins, Sparkles } from "lucide-react"
 import Checkbox from "@/components/Checkbox"
 import { supabase } from "@/lib/supabase"
 
@@ -546,17 +544,22 @@ function DesktopLayout() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-24 pt-6 sm:px-6 lg:px-8">
-      {/* Premium Header */}
+    <div className="mx-auto max-w-6xl px-4 pb-24 pt-5 sm:px-6 lg:px-8">
+      {/* Mohammed's Premium Header */}
       <div className="mb-6 flex items-center justify-between animate-fade-slide-up">
         <div>
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-accent to-accent/80 shadow-[0_0_16px_rgba(34,197,94,0.15)]">
-              <ShieldCheck className="h-4.5 w-4.5 text-white" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-accent via-emerald-500 to-accent/80 shadow-[0_0_20px_rgba(34,197,94,0.2)] ring-1 ring-white/10">
+              <span className="text-sm font-bold text-white">م</span>
             </div>
             <div>
-              <h1 className="text-lg font-semibold tracking-tight text-text-primary">Command Center</h1>
-              <p className="text-xs text-text-muted">Your daily operational overview</p>
+              <h1 className="text-lg font-semibold tracking-tight text-text-primary">
+                Mohammed's <span className="text-accent">Command Center</span>
+              </h1>
+              <p className="text-xs text-text-muted flex items-center gap-1">
+                <Sparkles className="h-3 w-3 text-accent/60" />
+                Your daily operational overview
+              </p>
             </div>
           </div>
         </div>
@@ -572,9 +575,7 @@ function DesktopLayout() {
       {/* 3-Column Grid */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-5">
         <div className="flex flex-col gap-4">
-          <div className="animate-fade-slide-up" style={{ animationDelay: "50ms" }}><PrayerTimes /></div>
-          <div className="animate-fade-slide-up" style={{ animationDelay: "100ms" }}><WeatherWidget /></div>
-          <div className="animate-fade-slide-up" style={{ animationDelay: "150ms" }}><HabitQuickChecks /></div>
+          <div className="animate-fade-slide-up" style={{ animationDelay: "50ms" }}><HabitQuickChecks /></div>
         </div>
         <div className="flex flex-col gap-4">
           <div className="animate-fade-slide-up" style={{ animationDelay: "100ms" }}>
@@ -616,8 +617,6 @@ function MobileLayout() {
         <div className="animate-fade-slide-up">
           {tab === "cadence" && (
             <div className="flex flex-col gap-3">
-              <PrayerTimes />
-              <WeatherWidget />
               <HabitQuickChecks />
             </div>
           )}
