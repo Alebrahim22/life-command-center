@@ -1,9 +1,25 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ArrowUpRight, TrendingUp, Bell, Target, ShieldCheck, Sun, Cloud, Zap, Coins, Sparkles } from "lucide-react"
+import {
+  ArrowUpRight, TrendingUp, Bell, Target, ShieldCheck, Sun, Cloud,
+  Zap, Coins, Sparkles, LayoutDashboard, Briefcase, Shield,
+  BarChart3, Wallet, ChartCandlestick,
+} from "lucide-react"
 import Checkbox from "@/components/Checkbox"
+import ShiftTracker from "@/components/ShiftTracker"
+import TodoList from "@/components/TodoList"
+import PortfolioTracker from "@/components/PortfolioTracker"
+import BillsTracker from "@/components/BillsTracker"
+import BudgetSnapshot from "@/components/BudgetSnapshot"
+import TradingJournal from "@/components/TradingJournal"
+import ProjectsTracker from "@/components/ProjectsTracker"
+import LegalCases from "@/components/LegalCases"
+import HabitTracker from "@/components/HabitTracker"
+import OsoulArchitect from "@/components/OsoulArchitect"
 import { supabase } from "@/lib/supabase"
+
+// ─── Types ───────────────────────────────────────────────────────
 
 interface Todo {
   id: string
@@ -49,6 +65,14 @@ interface WarrantyItem {
   totalDays: number
 }
 
+type DeskId = "financial" | "operating" | "vault"
+
+const DESKS: { id: DeskId; label: string; icon: React.ElementType; desc: string }[] = [
+  { id: "financial", label: "Financial", icon: BarChart3, desc: "Portfolio, Osoul & Trades" },
+  { id: "operating", label: "Operating", icon: LayoutDashboard, desc: "Shifts, Tasks & Projects" },
+  { id: "vault", label: "The Vault", icon: Shield, desc: "Legal, Bills & Budget" },
+]
+
 const HABITS = [
   { id: "fajr", label: "Fajr" },
   { id: "dhuhr", label: "Dhuhr" },
@@ -80,7 +104,7 @@ function daysBetween(a: Date, b: Date): number {
 }
 
 // ================================================================
-// 🃏 Premium MiniCard — Glassmorphism + Glow on Hover
+// 🃏 MiniCard — Glassmorphism
 // ================================================================
 function MiniCard({ title, children, className = "", accent }: { title: string; children: React.ReactNode; className?: string; accent?: "green" | "gold" }) {
   return (
@@ -101,14 +125,14 @@ function MiniCard({ title, children, className = "", accent }: { title: string; 
 }
 
 // ================================================================
-// 💀 Premium Skeleton — Shimmer
+// 💀 Skeleton — Shimmer
 // ================================================================
 function Skeleton({ className = "" }: { className?: string }) {
   return <div className={`skeleton-shimmer ${className}`} />
 }
 
 // ================================================================
-// 💪 Habit Quick-Checks (localStorage)
+// 💪 Habit Quick-Checks
 // ================================================================
 function HabitQuickChecks() {
   const [data, setData] = useState<Record<string, string[]>>({})
@@ -398,7 +422,7 @@ function UpcomingBills() {
 }
 
 // ================================================================
-// 📈 High-Conviction Stocks
+// 📈 High-Conviction Stocks (Value Watch)
 // ================================================================
 function ValueWatch() {
   const [stocks, setStocks] = useState<MarketRadar[]>([])
@@ -527,9 +551,96 @@ function WarrantyChecker() {
 }
 
 // ================================================================
-// 🖥️ Desktop 3-Column Layout
+// 📐 Section & Grid wrappers
+// ================================================================
+function Section({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return <div className={`animate-fade-slide-up ${className}`}>{children}</div>
+}
+
+function Grid({ children }: { children: React.ReactNode }) {
+  return <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-5">{children}</div>
+}
+
+// ================================================================
+// 📊 Desk: Financial
+// ================================================================
+function FinancialDesk() {
+  return (
+    <div className="space-y-4">
+      <Section>
+        <div className="glass-card-static inline-flex p-1">
+          <button
+            onClick={() => {}}
+            className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 min-h-[44px] bg-accent text-white shadow-[0_2px_12px_rgba(34,197,94,0.2)]"
+          >
+            <Wallet className="h-4 w-4" />
+            Tracker
+          </button>
+          <button
+            onClick={() => {}}
+            className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 min-h-[44px] text-text-secondary hover:text-text-primary"
+          >
+            <ChartCandlestick className="h-4 w-4" />
+            Osoul
+          </button>
+        </div>
+      </Section>
+      <Section><PortfolioTracker /></Section>
+      <Grid>
+        <ValueWatch />
+        <CashRunway />
+      </Grid>
+      <Section><TradingJournal /></Section>
+      <Section><OsoulArchitect /></Section>
+    </div>
+  )
+}
+
+// ================================================================
+// 🏭 Desk: Operating
+// ================================================================
+function OperatingDesk() {
+  return (
+    <div className="space-y-4">
+      <Section><ShiftTracker /></Section>
+      <Grid>
+        <TodoList />
+        <HabitTracker />
+      </Grid>
+      <Grid>
+        <TopTasks />
+        <ActiveMilestones />
+      </Grid>
+      <Section><ProjectsTracker /></Section>
+    </div>
+  )
+}
+
+// ================================================================
+// 🛡️ Desk: The Vault
+// ================================================================
+function VaultDesk() {
+  return (
+    <div className="space-y-4">
+      <Section><LegalCases /></Section>
+      <Grid>
+        <BillsTracker />
+        <BudgetSnapshot />
+      </Grid>
+      <Grid>
+        <UpcomingBills />
+        <WarrantyChecker />
+      </Grid>
+    </div>
+  )
+}
+
+// ================================================================
+// 🖥️ Desktop Layout — Multi-Desk
 // ================================================================
 function DesktopLayout() {
+  const [activeDesk, setActiveDesk] = useState<DeskId>("operating")
+
   const handleRegisterDevice = async () => {
     try {
       const { data, error } = await supabase.auth.registerPasskey()
@@ -546,7 +657,7 @@ function DesktopLayout() {
   return (
     <div className="mx-auto max-w-6xl px-4 pb-24 pt-5 sm:px-6 lg:px-8">
       {/* Mohammed's Premium Header */}
-      <div className="mb-6 flex items-center justify-between animate-fade-slide-up">
+      <div className="mb-5 flex items-center justify-between animate-fade-slide-up">
         <div>
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-accent via-emerald-500 to-accent/80 shadow-[0_0_20px_rgba(34,197,94,0.2)] ring-1 ring-white/10">
@@ -572,26 +683,40 @@ function DesktopLayout() {
         </button>
       </div>
 
-      {/* 3-Column Grid */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-5">
-        <div className="flex flex-col gap-4">
-          <div className="animate-fade-slide-up" style={{ animationDelay: "50ms" }}><HabitQuickChecks /></div>
+      {/* ─────────────── Desk Bar ─────────────── */}
+      <div className="mb-5 animate-fade-slide-up">
+        <div className="glass-card-static flex items-center gap-1 px-1.5 py-1.5 rounded-xl border border-white/[0.06] bg-zinc-900/40 backdrop-blur-sm">
+          {DESKS.map((desk, idx) => {
+            const active = activeDesk === desk.id
+            const Icon = desk.icon
+            return (
+              <button
+                key={desk.id}
+                onClick={() => setActiveDesk(desk.id)}
+                className={`relative flex flex-1 items-center justify-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-300 min-h-[44px] ${
+                  active
+                    ? "text-white bg-accent/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                    : "text-text-muted hover:text-text-secondary hover:bg-white/[0.03]"
+                }`}
+              >
+                <Icon className={`h-4 w-4 transition-all duration-300 ${
+                  active ? "text-accent drop-shadow-[0_0_6px_rgba(34,197,94,0.3)]" : ""
+                }`} />
+                <span className="hidden sm:inline">{desk.label}</span>
+                {active && (
+                  <span className="absolute bottom-0 left-3 right-3 h-[2px] bg-gradient-to-r from-accent/60 via-accent to-accent/60 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.3)]" />
+                )}
+              </button>
+            )
+          })}
         </div>
-        <div className="flex flex-col gap-4">
-          <div className="animate-fade-slide-up" style={{ animationDelay: "100ms" }}>
-            <MiniCard title="Quick Actions">
-              <p className="text-sm text-text-muted">Use the navigation bar above to access full tools.</p>
-            </MiniCard>
-          </div>
-          <div className="animate-fade-slide-up" style={{ animationDelay: "150ms" }}><TopTasks /></div>
-          <div className="animate-fade-slide-up" style={{ animationDelay: "200ms" }}><ActiveMilestones /></div>
-        </div>
-        <div className="flex flex-col gap-4">
-          <div className="animate-fade-slide-up" style={{ animationDelay: "150ms" }}><CashRunway /></div>
-          <div className="animate-fade-slide-up" style={{ animationDelay: "200ms" }}><UpcomingBills /></div>
-          <div className="animate-fade-slide-up" style={{ animationDelay: "250ms" }}><ValueWatch /></div>
-          <div className="animate-fade-slide-up" style={{ animationDelay: "300ms" }}><WarrantyChecker /></div>
-        </div>
+      </div>
+
+      {/* ─────────────── Desk Content ─────────────── */}
+      <div className="animate-fade-slide-up" key={activeDesk}>
+        {activeDesk === "financial" && <FinancialDesk />}
+        {activeDesk === "operating" && <OperatingDesk />}
+        {activeDesk === "vault" && <VaultDesk />}
       </div>
     </div>
   )
@@ -600,61 +725,54 @@ function DesktopLayout() {
 // ================================================================
 // 📱 Mobile Layout — zero-scroll, sub-tabbed
 // ================================================================
-type MobileTab = "cadence" | "ops" | "runway"
+type MobileTab = "financial" | "operating" | "vault"
 
-const MOBILE_TABS: { key: MobileTab; label: string; icon: React.ElementType }[] = [
-  { key: "cadence", label: "Cadence", icon: Sun },
-  { key: "ops", label: "Ops", icon: Cloud },
-  { key: "runway", label: "Runway", icon: TrendingUp },
+const MOBILE_DESKS: { key: MobileTab; label: string; icon: React.ElementType }[] = [
+  { key: "financial", label: "Financial", icon: BarChart3 },
+  { key: "operating", label: "Operating", icon: LayoutDashboard },
+  { key: "vault", label: "Vault", icon: Shield },
 ]
 
 function MobileLayout() {
-  const [tab, setTab] = useState<MobileTab>("cadence")
+  const [desk, setDesk] = useState<MobileTab>("operating")
 
   return (
     <div className="h-screen overflow-hidden flex flex-col justify-between md:hidden">
       <div className="flex-1 overflow-y-auto px-4 pt-4 pb-4">
         <div className="animate-fade-slide-up">
-          {tab === "cadence" && (
+          {desk === "financial" && (
             <div className="flex flex-col gap-3">
-              <HabitQuickChecks />
+              <FinancialDesk />
             </div>
           )}
-          {tab === "ops" && (
+          {desk === "operating" && (
             <div className="flex flex-col gap-3">
-              <MiniCard title="Quick Actions">
-                <p className="text-sm text-text-muted">Use the navigation bar above to access full tools.</p>
-              </MiniCard>
-              <TopTasks />
-              <ActiveMilestones />
+              <OperatingDesk />
             </div>
           )}
-          {tab === "runway" && (
+          {desk === "vault" && (
             <div className="flex flex-col gap-3">
-              <CashRunway />
-              <UpcomingBills />
-              <ValueWatch />
-              <WarrantyChecker />
+              <VaultDesk />
             </div>
           )}
         </div>
       </div>
 
-      {/* Mobile Sub-tabs */}
-      <div className="flex items-center justify-evenly border-t border-border bg-bg-glass-strong backdrop-blur-2xl supports-[backdrop-filter]:bg-bg-glass-strong pb-safe">
-        {MOBILE_TABS.map((t) => {
-          const active = tab === t.key
-          const Icon = t.icon
+      {/* Mobile Desk Bar */}
+      <div className="flex items-center justify-evenly border-t border-white/[0.06] bg-zinc-900/90 backdrop-blur-xl supports-[backdrop-filter]:bg-zinc-900/90 pb-safe">
+        {MOBILE_DESKS.map((d) => {
+          const active = desk === d.key
+          const Icon = d.icon
           return (
             <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
+              key={d.key}
+              onClick={() => setDesk(d.key)}
               className={`relative flex items-center gap-2 px-4 py-3 text-xs font-medium tracking-wide transition-all duration-200 min-h-[44px] ${
                 active ? "text-accent" : "text-text-secondary hover:text-text-primary"
               }`}
             >
               <Icon className={`h-4 w-4 ${active ? "drop-shadow-[0_0_4px_rgba(34,197,94,0.3)]" : ""}`} />
-              {t.label}
+              {d.label}
               {active && <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-accent rounded-full shadow-[0_0_6px_rgba(34,197,94,0.3)]" />}
             </button>
           )
