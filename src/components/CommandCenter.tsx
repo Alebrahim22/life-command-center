@@ -7,11 +7,6 @@ import {
   BarChart3, Wallet, ChartCandlestick, ChevronDown,
 } from "lucide-react"
 import Checkbox from "@/components/Checkbox"
-import ShiftTracker from "@/components/ShiftTracker"
-import TodoList from "@/components/TodoList"
-import BillsTracker from "@/components/BillsTracker"
-import BudgetSnapshot from "@/components/BudgetSnapshot"
-import HabitTracker from "@/components/HabitTracker"
 import QuickActionFab from "@/components/QuickActionFab"
 
 // Lazy-loaded widgets (largest files — loaded on-demand per desk tab)
@@ -20,6 +15,11 @@ const TradingJournal = lazy(() => import("@/components/TradingJournal"))
 const ProjectsTracker = lazy(() => import("@/components/ProjectsTracker"))
 const LegalCases = lazy(() => import("@/components/LegalCases"))
 const OsoulArchitect = lazy(() => import("@/components/OsoulArchitect"))
+const ShiftTracker = lazy(() => import("@/components/ShiftTracker"))
+const TodoList = lazy(() => import("@/components/TodoList"))
+const BillsTracker = lazy(() => import("@/components/BillsTracker"))
+const BudgetSnapshot = lazy(() => import("@/components/BudgetSnapshot"))
+const HabitTracker = lazy(() => import("@/components/HabitTracker"))
 
 // ─── Suspense fallback for lazy widgets ───
 function WidgetSkeleton() {
@@ -702,13 +702,15 @@ function OverviewDesk() {
   return (
     <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0 xl:grid-cols-3 xl:gap-4">
       <SummaryCard
-        {...cardProps("operations")}
-        emoji="📅"
-        title="Operations"
-        summary={dataLoaded ? `Shift & leave management` : `Loading...`}
-      >
-        <ShiftTracker />
-      </SummaryCard>
+          {...cardProps("operations")}
+          emoji="📅"
+          title="Operations"
+          summary={dataLoaded ? `Shift & leave management` : `Loading...`}
+        >
+          <Suspense fallback={<WidgetSkeleton />}>
+            <ShiftTracker />
+          </Suspense>
+        </SummaryCard>
 
       <SummaryCard
         {...cardProps("capital")}
@@ -823,10 +825,18 @@ function FinancialDesk() {
 function OperatingDesk() {
   return (
     <div className="space-y-4">
-      <Section><ShiftTracker /></Section>
+      <Section>
+        <Suspense fallback={<WidgetSkeleton />}>
+          <ShiftTracker />
+        </Suspense>
+      </Section>
       <Grid>
-        <TodoList />
-        <HabitTracker />
+        <Suspense fallback={<WidgetSkeleton />}>
+          <TodoList />
+        </Suspense>
+        <Suspense fallback={<WidgetSkeleton />}>
+          <HabitTracker />
+        </Suspense>
       </Grid>
       <Grid>
         <TopTasks />
@@ -853,8 +863,12 @@ function VaultDesk() {
         </Suspense>
       </Section>
       <Grid>
-        <BillsTracker />
-        <BudgetSnapshot />
+        <Suspense fallback={<WidgetSkeleton />}>
+          <BillsTracker />
+        </Suspense>
+        <Suspense fallback={<WidgetSkeleton />}>
+          <BudgetSnapshot />
+        </Suspense>
       </Grid>
       <Grid>
         <UpcomingBills />
