@@ -120,7 +120,7 @@ body {
   background: var(--color-bg-card);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border);
   border-radius: 16px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.03);
   transition: all 250ms ease;
@@ -128,31 +128,31 @@ body {
 
 .glass-card:hover {
   background: var(--color-bg-card-hover);
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--color-border-hover);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
               0 0 20px rgba(34, 197, 94, 0.05),
               inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .glass-card-static {
-  background: rgba(24, 24, 27, 0.3);
+  background: var(--color-bg-glass);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--color-border);
   border-radius: 16px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2), 0 10px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.03);
   transition: all 300ms ease;
 }
 
 .glass-card-static:hover {
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: var(--color-border-hover);
 }
 
 .glass-panel {
   background: var(--color-bg-glass);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
 }
 
