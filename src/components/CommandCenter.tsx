@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, lazy, Suspense } from "react"
 import {
   ArrowUpRight, TrendingUp, Bell, Target, ShieldCheck, Sun, Cloud,
   Zap, Coins, Sparkles, LayoutDashboard, Briefcase, Shield,
@@ -9,15 +9,31 @@ import {
 import Checkbox from "@/components/Checkbox"
 import ShiftTracker from "@/components/ShiftTracker"
 import TodoList from "@/components/TodoList"
-import PortfolioTracker from "@/components/PortfolioTracker"
 import BillsTracker from "@/components/BillsTracker"
 import BudgetSnapshot from "@/components/BudgetSnapshot"
-import TradingJournal from "@/components/TradingJournal"
-import ProjectsTracker from "@/components/ProjectsTracker"
-import LegalCases from "@/components/LegalCases"
 import HabitTracker from "@/components/HabitTracker"
-import OsoulArchitect from "@/components/OsoulArchitect"
 import QuickActionFab from "@/components/QuickActionFab"
+
+// Lazy-loaded widgets (largest files — loaded on-demand per desk tab)
+const PortfolioTracker = lazy(() => import("@/components/PortfolioTracker"))
+const TradingJournal = lazy(() => import("@/components/TradingJournal"))
+const ProjectsTracker = lazy(() => import("@/components/ProjectsTracker"))
+const LegalCases = lazy(() => import("@/components/LegalCases"))
+const OsoulArchitect = lazy(() => import("@/components/OsoulArchitect"))
+
+// ─── Suspense fallback for lazy widgets ───
+function WidgetSkeleton() {
+  return (
+    <div className="space-y-3 rounded-xl border border-white/[0.04] bg-bg-card p-5">
+      <div className="skeleton-shimmer h-4 w-2/5" />
+      <div className="skeleton-shimmer h-3 w-4/5" />
+      <div className="skeleton-shimmer h-3 w-3/5" />
+      <div className="skeleton-shimmer h-[1px] w-full" />
+      <div className="skeleton-shimmer h-8 w-full" />
+      <div className="skeleton-shimmer h-8 w-full" />
+    </div>
+  )
+}
 import { supabase } from "@/lib/supabase"
 
 // ─── Types ───────────────────────────────────────────────────────
@@ -674,7 +690,9 @@ function OverviewDesk() {
         title="Capital & Assets"
         summary={dataLoaded ? portfolioVal : `Loading...`}
       >
-        <PortfolioTracker />
+        <Suspense fallback={<WidgetSkeleton />}>
+          <PortfolioTracker />
+        </Suspense>
       </SummaryCard>
 
       <SummaryCard
@@ -706,7 +724,9 @@ function OverviewDesk() {
       >
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <UpcomingBills />
-          <LegalCases />
+          <Suspense fallback={<WidgetSkeleton />}>
+            <LegalCases />
+          </Suspense>
         </div>
       </SummaryCard>
     </div>
@@ -748,13 +768,25 @@ function FinancialDesk() {
           </button>
         </div>
       </Section>
-      <Section><PortfolioTracker /></Section>
+      <Section>
+        <Suspense fallback={<WidgetSkeleton />}>
+          <PortfolioTracker />
+        </Suspense>
+      </Section>
       <Grid>
         <ValueWatch />
         <CashRunway />
       </Grid>
-      <Section><TradingJournal /></Section>
-      <Section><OsoulArchitect /></Section>
+      <Section>
+        <Suspense fallback={<WidgetSkeleton />}>
+          <TradingJournal />
+        </Suspense>
+      </Section>
+      <Section>
+        <Suspense fallback={<WidgetSkeleton />}>
+          <OsoulArchitect />
+        </Suspense>
+      </Section>
     </div>
   )
 }
@@ -774,7 +806,11 @@ function OperatingDesk() {
         <TopTasks />
         <ActiveMilestones />
       </Grid>
-      <Section><ProjectsTracker /></Section>
+      <Section>
+        <Suspense fallback={<WidgetSkeleton />}>
+          <ProjectsTracker />
+        </Suspense>
+      </Section>
     </div>
   )
 }
@@ -785,7 +821,11 @@ function OperatingDesk() {
 function VaultDesk() {
   return (
     <div className="space-y-4">
-      <Section><LegalCases /></Section>
+      <Section>
+        <Suspense fallback={<WidgetSkeleton />}>
+          <LegalCases />
+        </Suspense>
+      </Section>
       <Grid>
         <BillsTracker />
         <BudgetSnapshot />
