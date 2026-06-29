@@ -1,8 +1,11 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { supabase } from "@/lib/supabase"
-import { Fingerprint, ChevronDown, ChevronUp, Lock, Mail, ShieldCheck } from "lucide-react"
+import { Fingerprint, ChevronDown, ChevronUp, Eye, Lock, Mail, ShieldCheck } from "lucide-react"
+
+const GUEST_KEY = "lcc-guest-mode"
+const AUTH_TIMEOUT = 5000 // 5s timeout → show auth screen with guest option
 
 interface Props {
   children: React.ReactNode
@@ -18,16 +21,45 @@ export default function AuthGuard({ children }: Props) {
   const [passwordBusy, setPasswordBusy] = useState(false)
   const [passwordError, setPasswordError] = useState("")
   const [showBg, setShowBg] = useState(false)
+  const [guestMode, setGuestMode] = useState(false)
+  const [authTimedOut, setAuthTimedOut] = useState(false)
+  const mountedRef = useRef(true)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
+    mountedRef.current = true
+
+    // 1) Guest session in localStorage → skip auth entirely
+    const storedGuest = localStorage.getItem(GUEST_KEY)
+    if (storedGuest === "true") {
+      setGuestMode(true)
+      setAuthed(true)
+      setChecking(false)
+      requestAnimationFrame(() => setShowBg(true))
+      return
+    }
+
+    // 2) Timeout guard — if Supabase doesn't respond in 5s, show auth screen
+    timeoutRef.current = setTimeout(() => {
+      if (mountedRef.current) {
+        setAuthTimedOut(true)
+        setChecking(false)
+      }
+    }, AUTH_TIMEOUT)
+
+    // 3) Try Supabase auth
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mountedRef.current) return
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
       setAuthed(!!session)
       setChecking(false)
-      // Trigger entrance animation
       requestAnimationFrame(() => setShowBg(true))
     })
 
+    // 4) Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (!mountedRef.current) return
       if (event === "SIGNED_IN") {
         setAuthed(true)
         setBusy(false)
@@ -35,10 +67,16 @@ export default function AuthGuard({ children }: Props) {
       }
       if (event === "SIGNED_OUT") {
         setAuthed(false)
+        setGuestMode(false)
+        localStorage.removeItem(GUEST_KEY)
       }
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      mountedRef.current = false
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
+      subscription.unsubscribe()
+    }
   }, [])
 
   const handleAuth = useCallback(async () => {
@@ -63,7 +101,14 @@ export default function AuthGuard({ children }: Props) {
     }
   }, [email, password])
 
-  // Loading state — premium spinner
+  const handleGuestMode = useCallback(() => {
+    localStorage.setItem(GUEST_KEY, "true")
+    setGuestMode(true)
+    setAuthed(true)
+    setChecking(false)
+  }, [])
+
+  // ── Loading spinner (initial, before timeout) ──
   if (checking) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-primary">
@@ -77,25 +122,22 @@ export default function AuthGuard({ children }: Props) {
     )
   }
 
-  // Auth screen
+  // ── Auth screen ──
   if (!authed) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-bg-primary">
-        {/* Animated Background Elements */}
+        {/* Animated Background */}
         <div
           className={`absolute inset-0 transition-opacity duration-1000 ${
             showBg ? "opacity-100" : "opacity-0"
           }`}
         >
-          {/* Radial glow */}
           <div
             className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full"
             style={{
               background: "radial-gradient(circle, rgba(34,197,94,0.04) 0%, transparent 70%)",
             }}
           />
-          
-          {/* Grid pattern overlay */}
           <div
             className="absolute inset-0 opacity-[0.03]"
             style={{
@@ -104,8 +146,6 @@ export default function AuthGuard({ children }: Props) {
               backgroundSize: "48px 48px",
             }}
           />
-
-          {/* Floating orbs */}
           <div
             className="absolute -left-24 -top-24 h-64 w-64 rounded-full bg-accent/5 blur-[100px] animate-fade-in"
             style={{ animationDelay: "300ms", animationFillMode: "both" }}
@@ -134,109 +174,140 @@ export default function AuthGuard({ children }: Props) {
                 Command Center
               </h1>
               <p className="mt-1.5 text-sm text-text-secondary">
-                Biometric authentication required
+                {authTimedOut
+                  ? "Could not reach auth server"
+                  : "Biometric authentication required"
+                }
               </p>
             </div>
 
-            {/* Auth Button — Premium */}
-            <button
-              onClick={handleAuth}
-              disabled={busy}
-              className="btn-primary w-full py-3 text-base"
-            >
-              {busy ? (
-                <span className="flex items-center gap-2">
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                  Authenticating...
-                </span>
-              ) : (
-                <>
-                  <Fingerprint className="h-5 w-5" />
-                  Authenticate Command Center
-                </>
-              )}
-            </button>
-
-            {/* Divider */}
-            <div className="my-5 flex items-center gap-3">
-              <div className="h-px flex-1 bg-border" />
-              <span className="text-[11px] uppercase tracking-widest text-text-muted">or</span>
-              <div className="h-px flex-1 bg-border" />
-            </div>
-
-            {/* Toggle Admin Override */}
-            <button
-              onClick={() => setShowPasswordForm(!showPasswordForm)}
-              className="btn-ghost w-full justify-center text-sm"
-            >
-              <Lock className="h-3.5 w-3.5" />
-              Admin Override
-              {showPasswordForm ? (
-                <ChevronUp className="h-3.5 w-3.5" />
-              ) : (
-                <ChevronDown className="h-3.5 w-3.5" />
-              )}
-            </button>
-
-            {/* Password Form */}
-            {showPasswordForm && (
-              <div className="mt-4 animate-scale-in space-y-3">
-                <div className="space-y-0.5">
-                  <label className="block text-[11px] font-medium uppercase tracking-wider text-text-secondary">
-                    Email
-                  </label>
-                  <div className="relative">
-                    <Mail className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
-                    <input
-                      type="email"
-                      placeholder="you@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full rounded-xl border border-border bg-bg-glass py-2.5 pl-10 pr-3 text-sm text-text-primary placeholder-text-muted outline-none transition-all duration-200 focus:border-accent/50 focus:bg-bg-card focus:shadow-[0_0_12px_rgba(34,197,94,0.06)]"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-0.5">
-                  <label className="block text-[11px] font-medium uppercase tracking-wider text-text-secondary">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
-                    <input
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full rounded-xl border border-border bg-bg-glass py-2.5 pl-10 pr-3 text-sm text-text-primary placeholder-text-muted outline-none transition-all duration-200 focus:border-accent/50 focus:bg-bg-card focus:shadow-[0_0_12px_rgba(34,197,94,0.06)]"
-                    />
-                  </div>
-                </div>
-
-                {passwordError && (
-                  <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-400">
-                    {passwordError}
-                  </p>
-                )}
-
+            {/* Auth button — Passkey */}
+            {!authTimedOut && (
+              <>
                 <button
-                  onClick={handlePasswordSignIn}
-                  disabled={passwordBusy || !email.trim() || !password.trim()}
-                  className="btn-secondary w-full py-2.5 text-sm"
+                  onClick={handleAuth}
+                  disabled={busy}
+                  className="btn-primary w-full py-3 text-base"
                 >
-                  {passwordBusy ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
-                      Signing in...
+                  {busy ? (
+                    <span className="flex items-center gap-2">
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                      Authenticating...
                     </span>
                   ) : (
                     <>
-                      <Mail className="h-4 w-4" />
-                      Sign In
+                      <Fingerprint className="h-5 w-5" />
+                      Authenticate Command Center
                     </>
                   )}
                 </button>
+
+                {/* Divider */}
+                <div className="my-5 flex items-center gap-3">
+                  <div className="h-px flex-1 bg-border" />
+                  <span className="text-[11px] uppercase tracking-widest text-text-muted">or</span>
+                  <div className="h-px flex-1 bg-border" />
+                </div>
+              </>
+            )}
+
+            {/* Show passkey timeout message */}
+            {authTimedOut && (
+              <div className="mb-5 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
+                <p className="text-xs text-amber-400/80 leading-relaxed">
+                  Supabase auth server unreachable. You can continue as a guest — some features
+                  (todos, bills, portfolio) will use sample data until authentication is restored.
+                </p>
               </div>
+            )}
+
+            {/* Guest Mode Button */}
+            <button
+              onClick={handleGuestMode}
+              className="btn-ghost w-full justify-center py-3 text-sm"
+            >
+              <Eye className="h-4 w-4" />
+              {authTimedOut ? "Continue as Guest" : "Continue as Guest (skip auth)"}
+            </button>
+
+            {/* Admin Override (only show when auth server is reachable) */}
+            {!authTimedOut && (
+              <>
+                {/* Toggle Admin Override */}
+                <button
+                  onClick={() => setShowPasswordForm(!showPasswordForm)}
+                  className="btn-ghost mt-2 w-full justify-center text-sm"
+                >
+                  <Lock className="h-3.5 w-3.5" />
+                  Admin Override
+                  {showPasswordForm ? (
+                    <ChevronUp className="h-3.5 w-3.5" />
+                  ) : (
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  )}
+                </button>
+
+                {/* Password Form */}
+                {showPasswordForm && (
+                  <div className="mt-4 animate-scale-in space-y-3">
+                    <div className="space-y-0.5">
+                      <label className="block text-[11px] font-medium uppercase tracking-wider text-text-secondary">
+                        Email
+                      </label>
+                      <div className="relative">
+                        <Mail className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
+                        <input
+                          type="email"
+                          placeholder="you@example.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="w-full rounded-xl border border-border bg-bg-glass py-2.5 pl-10 pr-3 text-sm text-text-primary placeholder-text-muted outline-none transition-all duration-200 focus:border-accent/50 focus:bg-bg-card focus:shadow-[0_0_12px_rgba(34,197,94,0.06)]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-0.5">
+                      <label className="block text-[11px] font-medium uppercase tracking-wider text-text-secondary">
+                        Password
+                      </label>
+                      <div className="relative">
+                        <Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
+                        <input
+                          type="password"
+                          placeholder="••••••••"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="w-full rounded-xl border border-border bg-bg-glass py-2.5 pl-10 pr-3 text-sm text-text-primary placeholder-text-muted outline-none transition-all duration-200 focus:border-accent/50 focus:bg-bg-card focus:shadow-[0_0_12px_rgba(34,197,94,0.06)]"
+                        />
+                      </div>
+                    </div>
+
+                    {passwordError && (
+                      <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-400">
+                        {passwordError}
+                      </p>
+                    )}
+
+                    <button
+                      onClick={handlePasswordSignIn}
+                      disabled={passwordBusy || !email.trim() || !password.trim()}
+                      className="btn-secondary w-full py-2.5 text-sm"
+                    >
+                      {passwordBusy ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
+                          Signing in...
+                        </span>
+                      ) : (
+                        <>
+                          <Mail className="h-4 w-4" />
+                          Sign In
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -244,5 +315,32 @@ export default function AuthGuard({ children }: Props) {
     )
   }
 
-  return <>{children}</>
+  // ── Authenticated ──
+  return (
+    <>
+      {/* Guest mode banner — subtle, dismissible */}
+      {guestMode && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-b border-amber-500/10 px-4 py-1.5 text-center">
+          <p className="text-[11px] tracking-wide text-amber-400/70">
+            👁 Guest mode — data is read-only.{' '}
+            <button
+              onClick={() => {
+                localStorage.removeItem(GUEST_KEY)
+                setGuestMode(false)
+                setAuthed(false)
+              }}
+              className="underline underline-offset-2 hover:text-amber-300 transition-colors"
+            >
+              Authenticate
+            </button>
+          </p>
+        </div>
+      )}
+
+      {/* Shift content down to account for guest banner */}
+      <div className={guestMode ? "pt-8" : ""}>
+        {children}
+      </div>
+    </>
+  )
 }
