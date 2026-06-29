@@ -577,7 +577,7 @@ export default function OsoulArchitect() {
             </div>
             Osoul Architect OS
           </h1>
-          <div className="mt-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-text-secondary">
+          <div className="mt-1 flex items-center gap-2 text-xs font-medium tracking-wider uppercase text-zinc-400">
             <span className="flex items-center gap-1 text-accent"><Cloud size={14} /> Broker Live</span>
             <span className="text-border">|</span>
             <span>{currentMonthYear}</span>
@@ -631,7 +631,7 @@ export default function OsoulArchitect() {
             <div className="flex items-center justify-between border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-4 shadow-2xl shadow-black/40 transition-all duration-300 hover:border-white/[0.12]">
               <div>
                 <h3 className="text-[10px] font-black uppercase text-text-primary">Deployment Capital</h3>
-                <p className="text-[9px] font-bold uppercase text-text-secondary">Budget: {currentMonthYear}</p>
+                <p className="text-xs font-medium tracking-wider uppercase text-zinc-400">Budget: {currentMonthYear}</p>
               </div>
               <div className="flex items-center gap-2 rounded-md border border-border bg-bg-card-hover p-1">
                 <input
@@ -819,7 +819,7 @@ export default function OsoulArchitect() {
                     : t.allocation * Math.pow(1.15, 5)
                   return (
                     <div key={idx} className={`border-l-2 pl-3 ${idx % 2 === 0 ? "border-accent" : "border-purple-500"}`}>
-                      <p className="text-[9px] font-black uppercase text-text-secondary">{t.ticker} Projection</p>
+                      <p className="text-xs font-medium tracking-wider uppercase text-zinc-400">{t.ticker} Projection</p>
                       <p className="text-lg font-black text-text-primary">~{projectionValue.toFixed(0)} KD</p>
                       <p className="text-[8px] font-bold italic text-text-secondary">
                         {!t.roe ? "Income Yield" : "15% Intrinsic CAGR"}
@@ -828,7 +828,7 @@ export default function OsoulArchitect() {
                   )
                 })}
                 <div className="border-t border-border pt-3">
-                  <p className="text-center text-[9px] font-black uppercase text-text-secondary">Wealth Injection Prediction</p>
+                  <p className="text-xs font-medium tracking-wider uppercase text-zinc-400">Wealth Injection Prediction</p>
                   <p className="mt-1 text-center text-xl font-black text-accent">
                     ~{allocationResult.targets.reduce((acc: number, t: any) => {
                       return acc + (!t.roe || allocationResult.isDefensive
@@ -1064,11 +1064,11 @@ export default function OsoulArchitect() {
                   </div>
                   <div>
                     <h1 className="text-xl font-black uppercase italic tracking-tight text-text-primary">Architect Intelligence Ledger</h1>
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-text-secondary">Osoul Portfolio Optimization Framework</p>
+                    <p className="text-xs font-medium tracking-wider uppercase text-zinc-400">Osoul Portfolio Optimization Framework</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-[9px] font-black uppercase text-text-secondary">Filing Period</p>
+                  <p className="text-xs font-medium tracking-wider uppercase text-zinc-400">Filing Period</p>
                   <p className="text-base font-black text-text-primary">{currentMonthYear}</p>
                 </div>
               </div>
@@ -1089,7 +1089,7 @@ export default function OsoulArchitect() {
                         <span className="text-[10px] font-black uppercase text-text-primary">{t.ticker}</span>
                         <span className="text-xs font-black text-accent">{t.allocation.toFixed(3)} KD</span>
                       </div>
-                      <p className="mb-1 text-[8px] font-black uppercase text-text-secondary">{t.weight.toFixed(1)}% Weighting</p>
+                      <p className="mb-1 text-xs font-medium tracking-wider uppercase text-zinc-400">{t.weight.toFixed(1)}% Weighting</p>
                       <p className="border-l-2 border-border bg-bg-primary p-2 text-[9px] font-medium italic text-text-secondary">{t.reason}</p>
                     </div>
                   ))}
@@ -1138,15 +1138,15 @@ export default function OsoulArchitect() {
                   <h4 className="mb-3 text-[9px] font-black uppercase tracking-widest text-text-primary">Capital Footprint</h4>
                   <div className="space-y-2">
                     <div className="flex justify-between border-b border-border pb-1">
-                      <span className="text-[10px] font-bold uppercase text-text-secondary">Invested</span>
+                      <span className="text-xs font-medium tracking-wider uppercase text-zinc-400">Invested</span>
                       <span className="font-black text-text-primary">{totalInvested.toFixed(3)} KD</span>
                     </div>
                     <div className="flex justify-between border-b border-border pb-1">
-                      <span className="text-[10px] font-bold uppercase text-text-secondary">Equity</span>
+                      <span className="text-xs font-medium tracking-wider uppercase text-zinc-400">Equity</span>
                       <span className="font-black text-text-primary">{currentValue.toFixed(3)} KD</span>
                     </div>
                     <div className="flex justify-between border-b border-border pb-1">
-                      <span className="text-[10px] font-bold uppercase text-text-secondary">Return</span>
+                      <span className="text-xs font-medium tracking-wider uppercase text-zinc-400">Return</span>
                       <span className="font-black text-accent">{profitPercentage}%</span>
                     </div>
                   </div>
