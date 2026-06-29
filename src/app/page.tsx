@@ -1,9 +1,10 @@
 "use client"
 export const dynamic = "force-dynamic"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import HeaderStrip from "@/components/HeaderStrip"
 import TabNav from "@/components/TabNav"
+import QuickActionFab from "@/components/QuickActionFab"
 import PrayerTimes from "@/components/PrayerTimes"
 import WeatherWidget from "@/components/WeatherWidget"
 import ShiftTracker from "@/components/ShiftTracker"
@@ -20,6 +21,7 @@ import OsoulArchitect from "@/components/OsoulArchitect"
 import NewsFeed from "@/components/NewsFeed"
 import CommandCenter from "@/components/CommandCenter"
 import AuthGuard from "@/components/AuthGuard"
+import { Wallet, ChartCandlestick } from "lucide-react"
 
 function Section({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return <div className={`mt-6 ${className}`}>{children}</div>
@@ -33,9 +35,21 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("overview")
   const [financeView, setFinanceView] = useState<"tracker" | "osoul">("tracker")
 
+  // FAB Quick Actions → navigate to correct tab
+  const handleAddTodo = useCallback(() => setActiveTab("work"), [])
+  const handleLogShift = useCallback(() => setActiveTab("work"), [])
+  const handleMarkHabits = useCallback(() => {
+    setActiveTab("today")
+    // Scroll to habits section
+    setTimeout(() => {
+      document.getElementById("habits-section")?.scrollIntoView({ behavior: "smooth" })
+    }, 200)
+  }, [])
+  const handleQuickNote = useCallback(() => setActiveTab("work"), [])
+
   return (
     <AuthGuard>
-    <div className="min-h-screen bg-bg-primary">
+    <div className="min-h-screen bg-bg-primary pb-[72px] md:pb-0">
       <HeaderStrip />
       <TabNav onTabChange={setActiveTab} />
 
@@ -50,7 +64,9 @@ export default function Home() {
               <WeatherWidget />
             </Grid>
             <Grid>
-              <HabitTracker />
+              <div id="habits-section">
+                <HabitTracker />
+              </div>
               <NewsFeed />
             </Grid>
           </>
@@ -70,26 +86,29 @@ export default function Home() {
 
         {activeTab === "finance" && (
           <>
-            <div className="mb-4 flex gap-1 rounded-lg border border-border bg-bg-card p-1 w-fit">
+            {/* Sub-tab toggle: Tracker / Osoul */}
+            <div className="mt-6 flex items-center gap-1 rounded-xl border border-border bg-bg-card p-1.5 w-fit">
               <button
                 onClick={() => setFinanceView("tracker")}
-                className={`rounded-md px-4 py-1.5 text-xs font-medium transition-colors ${
+                className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all min-h-[44px] ${
                   financeView === "tracker"
-                    ? "bg-accent/20 text-accent"
-                    : "text-text-secondary hover:text-text-primary"
+                    ? "bg-accent/15 text-accent shadow-sm"
+                    : "text-text-secondary hover:text-text-primary hover:bg-bg-card-hover"
                 }`}
               >
-                Multi-Platform Tracker
+                <Wallet className="h-4 w-4" />
+                Tracker
               </button>
               <button
                 onClick={() => setFinanceView("osoul")}
-                className={`rounded-md px-4 py-1.5 text-xs font-medium transition-colors ${
+                className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all min-h-[44px] ${
                   financeView === "osoul"
-                    ? "bg-accent/20 text-accent"
-                    : "text-text-secondary hover:text-text-primary"
+                    ? "bg-accent/15 text-accent shadow-sm"
+                    : "text-text-secondary hover:text-text-primary hover:bg-bg-card-hover"
                 }`}
               >
-                Osoul Architect
+                <ChartCandlestick className="h-4 w-4" />
+                Osoul
               </button>
             </div>
 
@@ -124,21 +143,17 @@ export default function Home() {
             </Section>
           </>
         )}
-
-        {activeTab === "more" && (
-          <Section>
-            <div className="flex min-h-[300px] items-center justify-center rounded-xl border border-border bg-bg-card">
-              <div className="text-center">
-                <p className="text-lg font-medium text-text-secondary">Coming Soon</p>
-                <p className="mt-1 text-sm text-text-secondary">More modules are on the way.</p>
-              </div>
-            </div>
-          </Section>
-        )}
       </div>
     )}
+
+      <QuickActionFab
+        onAddTodo={handleAddTodo}
+        onLogShift={handleLogShift}
+        onMarkHabits={handleMarkHabits}
+        onQuickNote={handleQuickNote}
+      />
   </div>
   </AuthGuard>
   )
 }
-/* Build Revision: 1782619521 */
+/* Build Revision: 1782619522 */
