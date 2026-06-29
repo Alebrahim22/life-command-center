@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabase"
+import EmptyState from "@/components/EmptyState"
 
 interface BudgetData {
   monthKey: string
@@ -39,6 +40,7 @@ function defaultData(): BudgetData {
 export default function BudgetSnapshot() {
   const [data, setData] = useState<BudgetData>(defaultData())
   const [loading, setLoading] = useState(true)
+  const [budgetExists, setBudgetExists] = useState(false)
   const [incomeInput, setIncomeInput] = useState("")
   const [goalInput, setGoalInput] = useState("20")
   const [editCat, setEditCat] = useState<string | null>(null)
@@ -74,11 +76,13 @@ export default function BudgetSnapshot() {
       setData(d)
       setIncomeInput(String(d.income || ""))
       setGoalInput(String(d.savingsGoalPercent))
+      setBudgetExists(true)
     } else {
       const d = defaultData()
       setData(d)
       setIncomeInput("")
       setGoalInput("20")
+      setBudgetExists(false)
     }
 
     setLoading(false)
@@ -161,6 +165,21 @@ export default function BudgetSnapshot() {
       <div className="border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40">
         <h2 className="mb-3 text-lg font-semibold text-text-secondary">Budget Snapshot</h2>
         <div className="h-40 animate-pulse rounded bg-border" />
+      </div>
+    )
+  }
+
+  if (!budgetExists) {
+    return (
+      <div className="border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40">
+        <h2 className="mb-4 text-lg font-semibold text-text-secondary">Budget Snapshot</h2>
+        <EmptyState
+          icon="💰"
+          title="No budget set"
+          description="Set up your monthly budget to track income, savings, and spending."
+          actionLabel="Add Budget"
+          compact={false}
+        />
       </div>
     )
   }

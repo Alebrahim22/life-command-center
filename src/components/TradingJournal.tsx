@@ -335,7 +335,11 @@ export default function TradingJournal() {
       )}
 
       {filtered.length === 0 && (
-        <p className="py-6 text-center text-sm text-text-secondary">No trades yet</p>
+        <div className="flex flex-col items-center justify-center py-6 text-center">
+          <span className="text-3xl mb-2">📊</span>
+          <p className="text-sm font-medium text-text-primary">No trades recorded</p>
+          <p className="text-xs text-text-secondary mt-1">Log your first trade to start tracking performance.</p>
+        </div>
       )}
 
       <div className="space-y-1">

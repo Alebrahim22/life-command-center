@@ -279,7 +279,11 @@ export default function LegalCases() {
       )}
 
       {sorted.length === 0 && (
-        <p className="py-6 text-center text-sm text-text-secondary">No cases added yet</p>
+        <div className="flex flex-col items-center justify-center py-6 px-4 text-center">
+          <span className="text-2xl">⚖️</span>
+          <p className="text-sm font-medium">No legal cases</p>
+          <p className="text-xs text-text-secondary">Track your legal matters, court dates, and case progress.</p>
+        </div>
       )}
 
       <div className="space-y-3">

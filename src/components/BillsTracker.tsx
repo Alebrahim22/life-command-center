@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Plus, Trash2, CheckCircle2 } from "lucide-react"
 import Checkbox from "@/components/Checkbox"
 import { supabase } from "@/lib/supabase"
+import EmptyState from "@/components/EmptyState"
 
 interface Bill {
   id: string
@@ -272,7 +273,7 @@ export default function BillsTracker() {
       )}
 
       {billsWithStatus.length === 0 && (
-        <p className="py-6 text-center text-sm text-text-secondary">No bills added yet</p>
+        <EmptyState icon='📋' title='No bills tracked' description='Add your recurring bills, subscriptions, and monthly payments.' actionLabel='Add Bill' onAction={() => setShowForm(true)} compact />
       )}
 
       <div className="space-y-1">

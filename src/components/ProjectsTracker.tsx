@@ -458,7 +458,13 @@ export default function ProjectsTracker() {
                       </div>
                     )}
                     {proj.kpis.length === 0 && (
-                      <p className="text-xs text-text-secondary">No KPIs set</p>
+                      <div className="flex items-center gap-3 rounded-lg bg-bg-card/50 px-3 py-2">
+                        <span className="text-lg">🎯</span>
+                        <div>
+                          <p className="text-xs font-medium text-text-primary">No KPIs set</p>
+                          <p className="text-[10px] text-text-secondary">Add key performance indicators for this project.</p>
+                        </div>
+                      </div>
                     )}
                     {editKpiProject === name && (
                       <div className="mt-2 grid grid-cols-5 gap-2 rounded-lg bg-bg-card p-2">
@@ -498,7 +504,13 @@ export default function ProjectsTracker() {
                       </div>
                     ))}
                     {proj.milestones.length === 0 && (
-                      <p className="text-xs text-text-secondary">No milestones</p>
+                      <div className="flex items-center gap-3 rounded-lg bg-bg-card/50 px-3 py-2">
+                        <span className="text-lg">🏁</span>
+                        <div>
+                          <p className="text-xs font-medium text-text-primary">No milestones yet</p>
+                          <p className="text-[10px] text-text-secondary">Break down the project into key milestones.</p>
+                        </div>
+                      </div>
                     )}
                     {editMilestoneProject === name && (
                       <div className="mt-2 flex gap-2 rounded-lg bg-bg-card p-2">
