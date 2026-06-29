@@ -356,3 +356,124 @@ body::before {
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* ─── Staggered Entrance (for list items) ─── */
+@keyframes stagger-fade-in {
+  0% { opacity: 0; transform: translateY(10px) scale(0.97); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-stagger {
+  animation: stagger-fade-in 400ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  opacity: 0;
+}
+
+.animate-stagger:nth-child(1)  { animation-delay: calc(var(--stagger-delay, 30ms) * 1); }
+.animate-stagger:nth-child(2)  { animation-delay: calc(var(--stagger-delay, 30ms) * 2); }
+.animate-stagger:nth-child(3)  { animation-delay: calc(var(--stagger-delay, 30ms) * 3); }
+.animate-stagger:nth-child(4)  { animation-delay: calc(var(--stagger-delay, 30ms) * 4); }
+.animate-stagger:nth-child(5)  { animation-delay: calc(var(--stagger-delay, 30ms) * 5); }
+.animate-stagger:nth-child(6)  { animation-delay: calc(var(--stagger-delay, 30ms) * 6); }
+.animate-stagger:nth-child(7)  { animation-delay: calc(var(--stagger-delay, 30ms) * 7); }
+.animate-stagger:nth-child(8)  { animation-delay: calc(var(--stagger-delay, 30ms) * 8); }
+.animate-stagger:nth-child(9)  { animation-delay: calc(var(--stagger-delay, 30ms) * 9); }
+.animate-stagger:nth-child(10) { animation-delay: calc(var(--stagger-delay, 30ms) * 10); }
+.animate-stagger:nth-child(11) { animation-delay: calc(var(--stagger-delay, 30ms) * 11); }
+.animate-stagger:nth-child(12) { animation-delay: calc(var(--stagger-delay, 30ms) * 12); }
+
+/* ─── Slide In Right (notifications, modals) ─── */
+@keyframes slide-in-right {
+  0% { opacity: 0; transform: translateX(20px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 300ms ease-out forwards;
+}
+
+/* ─── Micro bounce for buttons ─── */
+@keyframes micro-bounce {
+  0%, 100% { transform: scale(1); }
+  40% { transform: scale(0.96); }
+  60% { transform: scale(1.02); }
+}
+
+.animate-micro-bounce:active {
+  animation: micro-bounce 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ─── Float (subtle hover card lift) ─── */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* ─── Entrance scale-up for widgets ─── */
+@keyframes widget-enter {
+  0% { opacity: 0; transform: scale(0.92) translateY(16px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.animate-widget-enter {
+  animation: widget-enter 400ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* ============================================================
+   Print Styles
+   ============================================================ */
+@media print {
+  body {
+    background: #fff !important;
+    color: #111 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Hide non-essential elements */
+  .fixed,
+  .btn-ghost,
+  .fab-pulse,
+  [data-palette],
+  .quick-action-fab,
+  .pb-safe,
+  .animate-fab-pulse {
+    display: none !important;
+  }
+
+  /* Simplify cards for print */
+  .glass-card,
+  .glass-card-static,
+  .today-widget {
+    background: #f8f8f8 !important;
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    break-inside: avoid;
+  }
+
+  /* Accent colors stay readable */
+  .text-accent { color: #16a34a !important; }
+  .text-accent-gold { color: #b8860b !important; }
+
+  /* Remove animations */
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Ensure tables are visible */
+  table, th, td {
+    border-color: #ccc !important;
+  }
+
+  /* Page margins */
+  @page {
+    margin: 1.5cm;
+    size: A4;
+  }
+}
