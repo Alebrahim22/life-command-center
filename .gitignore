@@ -6,3 +6,4 @@ out/
 
 # Backend .env (credentials)
 backend/.env
+*.zip
