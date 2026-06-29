@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import {
   ArrowUpRight, TrendingUp, Bell, Target, ShieldCheck, Sun, Cloud,
   Zap, Coins, Sparkles, LayoutDashboard, Briefcase, Shield,
-  BarChart3, Wallet, ChartCandlestick,
+  BarChart3, Wallet, ChartCandlestick, ChevronDown,
 } from "lucide-react"
 import Checkbox from "@/components/Checkbox"
 import ShiftTracker from "@/components/ShiftTracker"
@@ -65,9 +65,10 @@ interface WarrantyItem {
   totalDays: number
 }
 
-type DeskId = "financial" | "operating" | "vault"
+type DeskId = "overview" | "financial" | "operating" | "vault"
 
 const DESKS: { id: DeskId; label: string; icon: React.ElementType; desc: string }[] = [
+  { id: "overview", label: "Overview", icon: Sparkles, desc: "Life at a glance" },
   { id: "financial", label: "Financial", icon: BarChart3, desc: "Portfolio, Osoul & Trades" },
   { id: "operating", label: "Operating", icon: LayoutDashboard, desc: "Shifts, Tasks & Projects" },
   { id: "vault", label: "The Vault", icon: Shield, desc: "Legal, Bills & Budget" },
@@ -551,6 +552,167 @@ function WarrantyChecker() {
 }
 
 // ================================================================
+// 🃏 SummaryCard — Accordion Life Summary
+// ================================================================
+function SummaryCard({ id, emoji, title, summary, isOpen, onToggle, children }: {
+  id: string
+  emoji: string
+  title: string
+  summary: string
+  isOpen: boolean
+  onToggle: (id: string) => void
+  children: React.ReactNode
+}) {
+  return (
+    <div className={`border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl shadow-2xl shadow-black/40 transition-all duration-300 hover:border-white/[0.12] ${isOpen ? '' : ''}`}>
+      <button
+        onClick={() => onToggle(id)}
+        className="flex w-full items-center justify-between p-4 text-left"
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="text-lg shrink-0">{emoji}</span>
+          <div className="min-w-0">
+            <h3 className="text-sm font-semibold text-text-primary">{title}</h3>
+            {!isOpen && <p className="text-xs text-zinc-400 mt-0.5 truncate max-w-[240px]">{summary}</p>}
+          </div>
+        </div>
+        <ChevronDown className={`h-4 w-4 text-zinc-400 shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <div className="border-t border-white/[0.06] p-4 pt-3 space-y-3">
+          {children}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ================================================================
+// 🌟 Overview Desk — Life at a Glance
+// ================================================================
+function OverviewDesk() {
+  const [openCard, setOpenCard] = useState<string | null>(null)
+
+  // Quick data fetches for summaries
+  const [habitCount, setHabitCount] = useState(0)
+  const [todoCount, setTodoCount] = useState(0)
+  const [billsDue, setBillsDue] = useState(0)
+  const [portfolioVal, setPortfolioVal] = useState<string>("—")
+  const [legalCount, setLegalCount] = useState(0)
+  const [dataLoaded, setDataLoaded] = useState(false)
+
+  useEffect(() => {
+    // Habits from localStorage
+    const raw = typeof window !== 'undefined' ? localStorage.getItem('habit-data') : null
+    if (raw) {
+      try {
+        const today = new Date().toISOString().split('T')[0]
+        const d = JSON.parse(raw)
+        setHabitCount((d[today] || []).length)
+      } catch {}
+    }
+
+    // Todos count from Supabase
+    supabase.from('todos').select('id', { count: 'exact', head: true }).eq('completed', false)
+      .then(({ count }) => { if (count !== null) setTodoCount(count) })
+
+    // Bills due count
+    const todayDay = new Date().getDate()
+    supabase.from('bills').select('*').then(({ data }) => {
+      if (data) {
+        const due = data.filter((b: any) => b.due_day >= todayDay && b.due_day <= todayDay + 7)
+        setBillsDue(due.length)
+      }
+    })
+
+    // Portfolio total - use local storage from PortfolioTracker's persisted data
+    const portfolioRaw = typeof window !== 'undefined' ? localStorage.getItem('portfolio-holdings') : null
+    if (portfolioRaw) {
+      try {
+        const holdings = JSON.parse(portfolioRaw)
+        const total = holdings.reduce((s: number, h: any) => s + (h.shares || 0) * (h.currentPrice || 0), 0)
+        setPortfolioVal(total.toLocaleString('en-US', { minimumFractionDigits: 3 }) + ' KD')
+      } catch {}
+    }
+
+    // Legal cases count
+    supabase.from('legal_cases').select('id', { count: 'exact', head: true })
+      .then(({ count }) => { if (count !== null) setLegalCount(count) })
+
+    setDataLoaded(true)
+  }, [])
+
+  const toggleCard = (id: string) => {
+    setOpenCard(prev => prev === id ? null : id)
+  }
+
+  const cardProps = (id: string) => ({
+    id,
+    isOpen: openCard === id,
+    onToggle: toggleCard,
+  })
+
+  return (
+    <div className="space-y-3">
+      <SummaryCard
+        {...cardProps("operations")}
+        emoji="📅"
+        title="Operations"
+        summary={dataLoaded ? `Shift & leave management` : `Loading...`}
+      >
+        <ShiftTracker />
+      </SummaryCard>
+
+      <SummaryCard
+        {...cardProps("capital")}
+        emoji="📈"
+        title="Capital & Assets"
+        summary={dataLoaded ? portfolioVal : `Loading...`}
+      >
+        <PortfolioTracker />
+      </SummaryCard>
+
+      <SummaryCard
+        {...cardProps("rhythm")}
+        emoji="✅"
+        title="Daily Rhythm"
+        summary={dataLoaded ? `${habitCount}/10 habits · ${todoCount} tasks remaining` : `Loading...`}
+      >
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <HabitQuickChecks />
+          <TopTasks />
+        </div>
+      </SummaryCard>
+
+      <SummaryCard
+        {...cardProps("ventures")}
+        emoji="💼"
+        title="Ventures & Business"
+        summary={dataLoaded ? `${PROJECT_NAMES.length} active ventures` : `Loading...`}
+      >
+        <ActiveMilestones />
+      </SummaryCard>
+
+      <SummaryCard
+        {...cardProps("admin")}
+        emoji="⚖️"
+        title="Administration"
+        summary={dataLoaded ? `${billsDue} bills due · ${legalCount} legal cases` : `Loading...`}
+      >
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <UpcomingBills />
+          <LegalCases />
+        </div>
+      </SummaryCard>
+    </div>
+  )
+}
+
+// ================================================================
 // 📐 Section & Grid wrappers
 // ================================================================
 function Section({ children, className = "" }: { children: React.ReactNode; className?: string }) {
@@ -639,7 +801,7 @@ function VaultDesk() {
 // 🖥️ Desktop Layout — Multi-Desk
 // ================================================================
 function DesktopLayout() {
-  const [activeDesk, setActiveDesk] = useState<DeskId>("operating")
+  const [activeDesk, setActiveDesk] = useState<DeskId>("overview")
 
   const handleRegisterDevice = async () => {
     try {
@@ -714,6 +876,7 @@ function DesktopLayout() {
 
       {/* ─────────────── Desk Content ─────────────── */}
       <div className="animate-fade-slide-up" key={activeDesk}>
+        {activeDesk === "overview" && <OverviewDesk />}
         {activeDesk === "financial" && <FinancialDesk />}
         {activeDesk === "operating" && <OperatingDesk />}
         {activeDesk === "vault" && <VaultDesk />}
@@ -725,21 +888,39 @@ function DesktopLayout() {
 // ================================================================
 // 📱 Mobile Layout — zero-scroll, sub-tabbed
 // ================================================================
-type MobileTab = "financial" | "operating" | "vault"
+type MobileTab = "overview" | "financial" | "operating" | "vault"
 
 const MOBILE_DESKS: { key: MobileTab; label: string; icon: React.ElementType }[] = [
+  { key: "overview", label: "Overview", icon: Sparkles },
   { key: "financial", label: "Financial", icon: BarChart3 },
   { key: "operating", label: "Operating", icon: LayoutDashboard },
   { key: "vault", label: "Vault", icon: Shield },
 ]
 
 function MobileLayout() {
-  const [desk, setDesk] = useState<MobileTab>("operating")
+  const [desk, setDesk] = useState<MobileTab>("overview")
 
   return (
     <div className="h-screen overflow-hidden flex flex-col justify-between md:hidden">
       <div className="flex-1 overflow-y-auto px-4 pt-4 pb-4">
+        {/* Mobile Header — single instance */}
+        <div className="mb-4 flex items-center gap-3 animate-fade-slide-up">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-accent via-emerald-500 to-accent/80 shadow-[0_0_20px_rgba(34,197,94,0.2)] ring-1 ring-white/10">
+            <span className="text-xs font-bold text-white">م</span>
+          </div>
+          <div>
+            <h1 className="text-base font-semibold tracking-tight text-text-primary">
+              Mohammed's <span className="text-accent">Command Center</span>
+            </h1>
+          </div>
+        </div>
+
         <div className="animate-fade-slide-up">
+          {desk === "overview" && (
+            <div className="flex flex-col gap-3">
+              <OverviewDesk />
+            </div>
+          )}
           {desk === "financial" && (
             <div className="flex flex-col gap-3">
               <FinancialDesk />
