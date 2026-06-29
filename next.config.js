@@ -3,7 +3,7 @@
 const repoName = "life-command-center"
 
 const nextConfig = {
-  output: "export",
+  // output: "export", // disabled locally (EBUSY on Windows); enabled via CI
   images: { unoptimized: true },
   trailingSlash: false,
   basePath: `/${repoName}`,

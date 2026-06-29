@@ -4,12 +4,14 @@ import { useState, useEffect, useCallback } from "react"
 import { Bell, X, ShieldCheck } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { AlertItem } from "@/lib/utils"
+import { useLocale } from "@/lib/i18n"
 
 // ================================================================
 // 🔔 Notification Panel — Bills & Tasks Alerts
 // ================================================================
 
 export default function NotificationBell() {
+  const { t } = useLocale()
   const [open, setOpen] = useState(false)
   const [alerts, setAlerts] = useState<AlertItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -86,8 +88,8 @@ export default function NotificationBell() {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="btn-ghost relative p-2.5"
-        title="View alerts"
+        className="btn-ghost relative p-2.5 active:scale-95 touch-action-manipulation"
+        title={t("notifications.title")}
       >
         <Bell className="h-4 w-4" />
         {!loading && alerts.length > 0 && (
@@ -103,17 +105,17 @@ export default function NotificationBell() {
           <div className="absolute right-0 top-full z-50 mt-2 w-80 origin-top-right animate-scale-in rounded-xl border-border bg-bg-glass-strong backdrop-blur-xl shadow-overlay">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <h3 className="text-sm font-semibold text-text-primary">
-                Alerts {alerts.length > 0 && `(${alerts.length})`}
+                {t("notifications.heading")} {alerts.length > 0 && `(${alerts.length})`}
               </h3>
-              <button onClick={() => setOpen(false)} className="text-text-muted hover:text-text-primary transition-colors">
+              <button onClick={() => setOpen(false)} className="text-text-muted hover:text-text-primary transition-colors active:scale-90 touch-action-manipulation">
                 <X className="h-3.5 w-3.5" />
               </button>
             </div>
-            <div className="max-h-72 overflow-y-auto p-2 space-y-1">
+            <div className="max-h-72 overflow-y-auto p-2 space-y-1 overscroll-behavior-contain">
               {!loading && alerts.length === 0 ? (
                 <div className="flex flex-col items-center gap-2 py-6">
                   <ShieldCheck className="h-6 w-6 text-accent/40" />
-                  <p className="text-xs text-text-secondary">All clear — no alerts</p>
+                  <p className="text-xs text-text-secondary">{t("notifications.allClear")}</p>
                 </div>
               ) : (
                 alerts.map((a) => (

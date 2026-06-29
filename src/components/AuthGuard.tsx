@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { supabase } from "@/lib/supabase"
 import { Fingerprint, ChevronDown, ChevronUp, Eye, Lock, Mail, ShieldCheck } from "lucide-react"
+import { useLocale } from "@/lib/i18n"
 
 const GUEST_KEY = "lcc-guest-mode"
 const AUTH_TIMEOUT = 5000 // 5s timeout → show auth screen with guest option
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export default function AuthGuard({ children }: Props) {
+  const { t } = useLocale()
   const [authed, setAuthed] = useState(false)
   const [checking, setChecking] = useState(true)
   const [busy, setBusy] = useState(false)
@@ -171,12 +173,12 @@ export default function AuthGuard({ children }: Props) {
                 <ShieldCheck className="h-7 w-7 text-white" />
               </div>
               <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
-                Command Center
+                {t("auth.commandCenter")}
               </h1>
               <p className="mt-1.5 text-sm text-text-secondary">
                 {authTimedOut
-                  ? "Could not reach auth server"
-                  : "Biometric authentication required"
+                  ? t("auth.serverUnreachable")
+                  : t("auth.biometricRequired")
                 }
               </p>
             </div>
@@ -187,17 +189,17 @@ export default function AuthGuard({ children }: Props) {
                 <button
                   onClick={handleAuth}
                   disabled={busy}
-                  className="btn-primary w-full py-3 text-base"
+                  className="btn-primary w-full py-3 text-base active:scale-[0.98] touch-action-manipulation"
                 >
                   {busy ? (
                     <span className="flex items-center gap-2">
                       <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                      Authenticating...
+                      {t("auth.authenticating")}
                     </span>
                   ) : (
                     <>
                       <Fingerprint className="h-5 w-5" />
-                      Authenticate Command Center
+                      {t("auth.authenticate")}
                     </>
                   )}
                 </button>
@@ -205,7 +207,7 @@ export default function AuthGuard({ children }: Props) {
                 {/* Divider */}
                 <div className="my-5 flex items-center gap-3">
                   <div className="h-px flex-1 bg-border" />
-                  <span className="text-[11px] uppercase tracking-widest text-text-muted">or</span>
+                  <span className="text-[11px] uppercase tracking-widest text-text-muted">{t("auth.or")}</span>
                   <div className="h-px flex-1 bg-border" />
                 </div>
               </>
@@ -215,8 +217,7 @@ export default function AuthGuard({ children }: Props) {
             {authTimedOut && (
               <div className="mb-5 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
                 <p className="text-xs text-amber-400/80 leading-relaxed">
-                  Supabase auth server unreachable. You can continue as a guest — some features
-                  (todos, bills, portfolio) will use sample data until authentication is restored.
+                  {t("auth.timeoutMessage")}
                 </p>
               </div>
             )}
@@ -224,10 +225,10 @@ export default function AuthGuard({ children }: Props) {
             {/* Guest Mode Button */}
             <button
               onClick={handleGuestMode}
-              className="btn-ghost w-full justify-center py-3 text-sm"
+              className="btn-ghost w-full justify-center py-3 text-sm active:scale-95 touch-action-manipulation"
             >
               <Eye className="h-4 w-4" />
-              {authTimedOut ? "Continue as Guest" : "Continue as Guest (skip auth)"}
+              {authTimedOut ? t("auth.continueAsGuest") : t("auth.continueAsGuestSkip")}
             </button>
 
             {/* Admin Override (only show when auth server is reachable) */}
@@ -236,10 +237,10 @@ export default function AuthGuard({ children }: Props) {
                 {/* Toggle Admin Override */}
                 <button
                   onClick={() => setShowPasswordForm(!showPasswordForm)}
-                  className="btn-ghost mt-2 w-full justify-center text-sm"
+                  className="btn-ghost mt-2 w-full justify-center text-sm active:scale-95 touch-action-manipulation"
                 >
                   <Lock className="h-3.5 w-3.5" />
-                  Admin Override
+                  {t("auth.adminOverride")}
                   {showPasswordForm ? (
                     <ChevronUp className="h-3.5 w-3.5" />
                   ) : (
@@ -252,32 +253,32 @@ export default function AuthGuard({ children }: Props) {
                   <div className="mt-4 animate-scale-in space-y-3">
                     <div className="space-y-0.5">
                       <label className="block text-[11px] font-medium uppercase tracking-wider text-text-secondary">
-                        Email
+                        {t("auth.email")}
                       </label>
                       <div className="relative">
                         <Mail className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
                         <input
                           type="email"
                           className="w-full rounded-xl border border-border bg-bg-glass py-2.5 ps-10 pe-3 text-sm text-text-primary placeholder-text-muted outline-none transition-all duration-200 focus:border-accent/50 focus:bg-bg-card focus:shadow-[0_0_12px_rgba(34,197,94,0.06)]"
-                            placeholder="you@example.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                          />
-                        </div>
+                          placeholder={t("auth.emailPlaceholder")}
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                        />
                       </div>
+                    </div>
 
-                      <div className="space-y-0.5">
-                        <label className="block text-[11px] font-medium uppercase tracking-wider text-text-secondary">
-                          Password
-                        </label>
-                        <div className="relative">
-                          <Lock className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
-                          <input
-                            type="password"
-                            placeholder="••••••••"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full rounded-xl border border-border bg-bg-glass py-2.5 ps-10 pe-3 text-sm text-text-primary placeholder-text-muted outline-none transition-all duration-200 focus:border-accent/50 focus:bg-bg-card focus:shadow-[0_0_12px_rgba(34,197,94,0.06)]"
+                    <div className="space-y-0.5">
+                      <label className="block text-[11px] font-medium uppercase tracking-wider text-text-secondary">
+                        {t("auth.password")}
+                      </label>
+                      <div className="relative">
+                        <Lock className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
+                        <input
+                          type="password"
+                          placeholder={t("auth.passwordPlaceholder")}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="w-full rounded-xl border border-border bg-bg-glass py-2.5 ps-10 pe-3 text-sm text-text-primary placeholder-text-muted outline-none transition-all duration-200 focus:border-accent/50 focus:bg-bg-card focus:shadow-[0_0_12px_rgba(34,197,94,0.06)]"
                         />
                       </div>
                     </div>
@@ -291,17 +292,17 @@ export default function AuthGuard({ children }: Props) {
                     <button
                       onClick={handlePasswordSignIn}
                       disabled={passwordBusy || !email.trim() || !password.trim()}
-                      className="btn-secondary w-full py-2.5 text-sm"
+                      className="btn-secondary w-full py-2.5 text-sm active:scale-[0.98] touch-action-manipulation"
                     >
                       {passwordBusy ? (
                         <span className="flex items-center justify-center gap-2">
                           <span className="h-4 w-4 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
-                          Signing in...
+                          {t("auth.signingIn")}
                         </span>
                       ) : (
                         <>
                           <Mail className="h-4 w-4" />
-                          Sign In
+                          {t("auth.signIn")}
                         </>
                       )}
                     </button>
@@ -322,16 +323,16 @@ export default function AuthGuard({ children }: Props) {
       {guestMode && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-b border-amber-500/10 px-4 py-1.5 text-center">
           <p className="text-[11px] tracking-wide text-amber-400/70">
-            👁 Guest mode — data is read-only.{' '}
+            {t("auth.guestMode")}{' '}
             <button
               onClick={() => {
                 localStorage.removeItem(GUEST_KEY)
                 setGuestMode(false)
                 setAuthed(false)
               }}
-              className="underline underline-offset-2 hover:text-amber-300 transition-colors"
+              className="underline underline-offset-2 hover:text-amber-300 transition-colors active:scale-95 touch-action-manipulation"
             >
-              Authenticate
+              {t("auth.authenticateLink")}
             </button>
           </p>
         </div>

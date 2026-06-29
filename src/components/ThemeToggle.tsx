@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { Moon, Sun } from "lucide-react"
+import { useLocale } from "@/lib/i18n"
 
 const THEME_KEY = "lcc-theme"
 
@@ -40,12 +41,13 @@ export function useTheme() {
 
 export default function ThemeToggle() {
   const { theme, toggle } = useTheme()
+  const { t } = useLocale()
 
   return (
     <button
       onClick={toggle}
-      className="flex items-center gap-1.5 btn-ghost text-xs"
-      title={theme === "dark" ? "الوضع النهاري" : "الوضع الليلي"}
+      className="flex items-center gap-1.5 btn-ghost text-xs active:scale-95 touch-action-manipulation"
+      title={theme === "dark" ? t("themeToggle.darkTooltip") : t("themeToggle.lightTooltip")}
     >
       {theme === "dark" ? (
         <Moon className="h-3.5 w-3.5" />
@@ -53,7 +55,7 @@ export default function ThemeToggle() {
         <Sun className="h-3.5 w-3.5" />
       )}
       <span className="hidden sm:inline">
-        {theme === "dark" ? "Dark" : "Light"}
+        {theme === "dark" ? t("themeToggle.darkLabel") : t("themeToggle.lightLabel")}
       </span>
     </button>
   )

@@ -43,7 +43,7 @@ export default class ErrorBoundary extends Component<Props, State> {
                 this.setState({ hasError: false })
                 window.location.reload()
               }}
-              className="btn-primary mx-auto"
+              className="btn-primary mx-auto active:scale-[0.97] touch-action-manipulation"
             >
               <RotateCcw className="h-4 w-4" />
               إعادة تحميل

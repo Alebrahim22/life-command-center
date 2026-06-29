@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import {
   Sparkles, ShieldCheck, BarChart3,
   LayoutDashboard, Shield, Printer, Command,
@@ -12,22 +12,50 @@ import { supabase } from "@/lib/supabase"
 import { DeskId } from "@/lib/utils"
 import NotificationBell from "@/components/NotificationBell"
 import ThemeToggle from "@/components/ThemeToggle"
+import LangToggle from "@/components/LangToggle"
+import { useLocale } from "@/lib/i18n"
 import OverviewDesk from "@/components/desks/OverviewDesk"
 import FinancialDesk from "@/components/desks/FinancialDesk"
 import OperatingDesk from "@/components/desks/OperatingDesk"
 import VaultDesk from "@/components/desks/VaultDesk"
 
-const DESKS: { id: DeskId; label: string; icon: React.ElementType; desc: string }[] = [
-  { id: "overview", label: "Overview", icon: Sparkles, desc: "Life at a glance" },
-  { id: "financial", label: "Financial", icon: BarChart3, desc: "Portfolio, Osoul & Trades" },
-  { id: "operating", label: "Operating", icon: LayoutDashboard, desc: "Shifts, Tasks & Projects" },
-  { id: "vault", label: "The Vault", icon: Shield, desc: "Legal, Bills & Budget" },
+// ─── Desk data constructors ──────────────────────────────────
+
+interface DeskItem {
+  id: DeskId
+  label: string
+  icon: React.ElementType
+  desc: string
+}
+
+interface MobileDeskItem {
+  key: DeskId
+  tLabel: string
+  icon: React.ElementType
+}
+
+function makeDesks(t: (p: string) => string): DeskItem[] {
+  return [
+    { id: "overview", label: t("commandCenter.desks.overview"), icon: Sparkles, desc: t("commandCenter.desks.overviewDesc") },
+    { id: "financial", label: t("commandCenter.desks.financial"), icon: BarChart3, desc: t("commandCenter.desks.financialDesc") },
+    { id: "operating", label: t("commandCenter.desks.operating"), icon: LayoutDashboard, desc: t("commandCenter.desks.operatingDesc") },
+    { id: "vault", label: t("commandCenter.desks.vault"), icon: Shield, desc: t("commandCenter.desks.vaultDesc") },
+  ]
+}
+
+const MOBILE_DESKS: MobileDeskItem[] = [
+  { key: "overview", tLabel: "commandCenter.desks.overview", icon: Sparkles },
+  { key: "financial", tLabel: "commandCenter.desks.financial", icon: BarChart3 },
+  { key: "operating", tLabel: "commandCenter.desks.operating", icon: LayoutDashboard },
+  { key: "vault", tLabel: "commandCenter.desks.vaultMobile", icon: Shield },
 ]
 
 // ================================================================
 // 💻 Desktop Layout — Tabbed Desk Bar
 // ================================================================
 function DesktopLayout({ activeDesk, setActiveDesk }: { activeDesk: DeskId; setActiveDesk: (d: DeskId) => void }) {
+  const { t } = useLocale()
+  const DESKS = useMemo(() => makeDesks(t), [t])
 
   const handleRegisterDevice = async () => {
     try {
@@ -53,11 +81,11 @@ function DesktopLayout({ activeDesk, setActiveDesk }: { activeDesk: DeskId; setA
             </div>
             <div>
               <h1 className="text-lg font-semibold tracking-tight text-text-primary">
-                <span className="text-text-muted/50 font-normal">Command</span> Center
+                <span className="text-text-muted/50 font-normal">{t("commandCenter.header.command")}</span> {t("commandCenter.header.center")}
               </h1>
               <p className="text-xs text-text-muted flex items-center gap-1">
                 <Sparkles className="h-3 w-3 text-accent/60" />
-                {DESKS.find((d) => d.id === activeDesk)?.desc ?? "Life at a glance"}
+                {DESKS.find((d) => d.id === activeDesk)?.desc ?? t("commandCenter.desks.overviewDesc")}
                 <span className="text-text-muted/30 mx-0.5">•</span>
                 <span className="text-text-muted/40 font-mono tabular-nums text-[10px]">
                   {DESKS.findIndex((d) => d.id === activeDesk) + 1}/4
@@ -70,30 +98,31 @@ function DesktopLayout({ activeDesk, setActiveDesk }: { activeDesk: DeskId; setA
           <NotificationBell />
           <button
             onClick={() => window.print()}
-            className="btn-ghost text-xs"
-            title="Print / Export PDF"
+            className="btn-ghost text-xs active:scale-95 touch-action-manipulation"
+            title={t("commandCenter.printTooltip")}
           >
             <Printer className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Print</span>
+            <span className="hidden sm:inline">{t("commandCenter.print")}</span>
           </button>
           <button
             onClick={() => window.location.reload()}
-            className="btn-ghost text-xs"
-            title="Refresh all data"
+            className="btn-ghost text-xs active:scale-95 touch-action-manipulation"
+            title={t("commandCenter.refreshTooltip")}
           >
             <RefreshCw className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Refresh</span>
+            <span className="hidden sm:inline">{t("commandCenter.refresh")}</span>
           </button>
           <ThemeToggle />
+          <LangToggle />
           <kbd className="hidden rounded-md border border-border bg-bg-surface px-1.5 py-0.5 text-[10px] font-medium text-text-muted/60 sm:inline-flex items-center gap-0.5">
             <Command className="h-2.5 w-2.5" />K
           </kbd>
           <button
             onClick={handleRegisterDevice}
-            className="btn-ghost text-xs"
+            className="btn-ghost text-xs active:scale-95 touch-action-manipulation"
           >
             <ShieldCheck className="h-3.5 w-3.5" />
-            Pair Device Passkey
+            {t("commandCenter.pairDevice")}
           </button>
         </div>
       </div>
@@ -108,7 +137,7 @@ function DesktopLayout({ activeDesk, setActiveDesk }: { activeDesk: DeskId; setA
               <button
                 key={desk.id}
                 onClick={() => setActiveDesk(desk.id)}
-                className={`relative flex flex-1 items-center justify-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-300 min-h-[44px] ${
+                className={`relative flex flex-1 items-center justify-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-300 min-h-[44px] touch-action-manipulation active:scale-[0.97] ${
                   active
                     ? "text-text-primary bg-accent/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
                     : "text-text-muted hover:text-text-secondary hover:bg-bg-card"
@@ -140,13 +169,13 @@ function DesktopLayout({ activeDesk, setActiveDesk }: { activeDesk: DeskId; setA
       <div className="mt-8 flex items-center justify-center gap-4 border-t border-border pt-4">
         <button
           onClick={() => { localStorage.removeItem("lcc-onboarded"); window.location.reload() }}
-          className="text-[10px] text-text-muted/40 hover:text-text-muted transition-colors"
-          title="Replay onboarding tour"
+          className="text-[10px] text-text-muted/40 hover:text-text-muted transition-colors touch-action-manipulation active:scale-95"
+          title={t("commandCenter.footer.replayTourTooltip")}
         >
           <RotateCcw className="h-3 w-3 inline mr-1" />
-          إعادة الجولة التعريفية
+          {t("commandCenter.footer.replayTour")}
         </button>
-        <span className="text-[9px] text-text-muted/20">⌘K أو ? للبحث</span>
+        <span className="text-[9px] text-text-muted/20">{t("commandCenter.footer.searchHint")}</span>
       </div>
     </div>
   )
@@ -155,17 +184,13 @@ function DesktopLayout({ activeDesk, setActiveDesk }: { activeDesk: DeskId; setA
 // ================================================================
 // 📱 Mobile Layout — zero-scroll, sub-tabbed
 // ================================================================
-const MOBILE_DESKS: { key: DeskId; label: string; icon: React.ElementType }[] = [
-  { key: "overview", label: "Overview", icon: Sparkles },
-  { key: "financial", label: "Financial", icon: BarChart3 },
-  { key: "operating", label: "Operating", icon: LayoutDashboard },
-  { key: "vault", label: "Vault", icon: Shield },
-]
-
 function MobileLayout({ activeDesk, setActiveDesk }: { activeDesk: DeskId; setActiveDesk: (d: DeskId) => void }) {
+  const { t } = useLocale()
+  const DESKS = useMemo(() => makeDesks(t), [t])
+
   return (
     <div className="h-screen overflow-hidden flex flex-col justify-between md:hidden">
-      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-4">
+      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-4 overscroll-behavior-contain">
         {/* Mobile Header — single instance */}
         <div className="mb-4 flex items-center gap-3 animate-fade-slide-up">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-accent via-emerald-500 to-accent/80 shadow-[0_0_20px_rgba(34,197,94,0.2)] ring-1 ring-border-active/50">
@@ -173,41 +198,25 @@ function MobileLayout({ activeDesk, setActiveDesk }: { activeDesk: DeskId; setAc
           </div>
           <div>
             <h1 className="text-base font-semibold tracking-tight text-text-primary">
-              <span className="text-text-muted/50 font-normal">Command</span> Center
+              <span className="text-text-muted/50 font-normal">{t("commandCenter.header.command")}</span> {t("commandCenter.header.center")}
             </h1>
             <p className="text-[10px] text-text-muted flex items-center gap-1">
               <Sparkles className="h-2.5 w-2.5 text-accent/60" />
-              {DESKS.find((d) => d.id === activeDesk)?.desc ?? "Life at a glance"}
+              {DESKS.find((d) => d.id === activeDesk)?.desc ?? t("commandCenter.desks.overviewDesc")}
             </p>
           </div>
         </div>
 
-        <div className="animate-fade-slide-up">
-          {activeDesk === "overview" && (
-            <div className="flex flex-col gap-3">
-              <OverviewDesk />
-            </div>
-          )}
-          {activeDesk === "financial" && (
-            <div className="flex flex-col gap-3">
-              <FinancialDesk />
-            </div>
-          )}
-          {activeDesk === "operating" && (
-            <div className="flex flex-col gap-3">
-              <OperatingDesk />
-            </div>
-          )}
-          {activeDesk === "vault" && (
-            <div className="flex flex-col gap-3">
-              <VaultDesk />
-            </div>
-          )}
+        <div className="animate-fade-slide-up flex flex-col gap-2">
+          {activeDesk === "overview" && <OverviewDesk />}
+          {activeDesk === "financial" && <FinancialDesk />}
+          {activeDesk === "operating" && <OperatingDesk />}
+          {activeDesk === "vault" && <VaultDesk />}
         </div>
       </div>
 
       {/* Mobile Desk Bar */}
-      <div className="flex items-center justify-evenly border-t border-border bg-bg-glass-strong backdrop-blur-xl supports-[backdrop-filter]:bg-bg-glass-strong pb-safe">
+      <div className="flex items-center justify-evenly border-t border-border bg-bg-glass-strong backdrop-blur-xl supports-[backdrop-filter]:bg-bg-glass-strong pb-safe min-h-[56px]">
         {MOBILE_DESKS.map((d) => {
           const active = activeDesk === d.key
           const Icon = d.icon
@@ -215,12 +224,12 @@ function MobileLayout({ activeDesk, setActiveDesk }: { activeDesk: DeskId; setAc
             <button
               key={d.key}
               onClick={() => setActiveDesk(d.key)}
-              className={`relative flex items-center gap-2 px-4 py-3 text-xs font-medium tracking-wide transition-all duration-200 min-h-[44px] ${
+              className={`relative flex items-center gap-2 px-4 py-3 text-xs font-medium tracking-wide transition-all duration-200 min-h-[44px] touch-action-manipulation active:scale-90 ${
                 active ? "text-accent" : "text-text-secondary hover:text-text-primary"
               }`}
             >
               <Icon className={`h-4 w-4 ${active ? "drop-shadow-[0_0_4px_rgba(34,197,94,0.3)]" : ""}`} />
-              {d.label}
+              {t(d.tLabel)}
               {active && <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-accent rounded-full shadow-[0_0_6px_rgba(34,197,94,0.3)]" />}
             </button>
           )

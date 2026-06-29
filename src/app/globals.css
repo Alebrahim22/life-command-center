@@ -120,11 +120,6 @@ body {
    Utility Classes
    ============================================================ */
 
-/* Safe area padding for mobile bottom nav */
-.pb-safe {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-
 /* ============================================================
    Glassmorphism Components
    ============================================================ */
@@ -528,4 +523,66 @@ body::before {
     margin: 1.5cm;
     size: A4;
   }
+}
+
+/* ============================================================
+   🌐 LTR (English) Overrides
+   ============================================================ */
+
+[dir="ltr"] body {
+  direction: ltr;
+  text-align: left;
+}
+
+[dir="ltr"] .text-start {
+  text-align: left;
+}
+
+[dir="ltr"] .text-end {
+  text-align: right;
+}
+
+[dir="ltr"] .me-auto {
+  margin-right: auto;
+}
+
+[dir="ltr"] .ms-auto {
+  margin-left: auto;
+}
+
+/* ============================================================
+   📱 Mobile Improvements (P7-S4)
+   ============================================================ */
+
+/* Touch-action: prevent double-tap zoom on interactive elements */
+.touch-action-manipulation {
+  touch-action: manipulation;
+}
+
+/* Overscroll behavior: prevent rubber-banding on mobile containers */
+.overscroll-behavior-contain {
+  overscroll-behavior: contain;
+}
+
+/* Bottom nav min-height for thumb reach */
+.bottom-nav {
+  min-height: 56px;
+}
+
+/* Active scale tap feedback utilities */
+.active-scale-95:active {
+  transform: scale(0.95);
+}
+
+.active-scale-90:active {
+  transform: scale(0.90);
+}
+
+.active-scale-98:active {
+  transform: scale(0.98);
+}
+
+/* Mobile safe area bottom spacing */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }

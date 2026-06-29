@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { Search, Sparkles, BarChart3, LayoutDashboard, Shield, ArrowUpRight, Command } from "lucide-react"
+import { useLocale } from "@/lib/i18n"
 
 type DeskId = "overview" | "financial" | "operating" | "vault"
 
@@ -20,14 +21,15 @@ interface Props {
   onNavigate: (desk: DeskId) => void
 }
 
-const DESK_ACTIONS: { id: DeskId; label: string; icon: React.ElementType; desc: string }[] = [
-  { id: "overview", label: "Overview", icon: Sparkles, desc: "Life at a glance" },
-  { id: "financial", label: "Financial Desk", icon: BarChart3, desc: "Portfolio, Osoul & Trades" },
-  { id: "operating", label: "Operating Desk", icon: LayoutDashboard, desc: "Shifts, Tasks & Projects" },
-  { id: "vault", label: "The Vault", icon: Shield, desc: "Legal, Bills & Budget" },
+const DESK_ACTIONS: { id: DeskId; tLabel: string; icon: React.ElementType; tDesc: string }[] = [
+  { id: "overview", tLabel: "palette.goToOverview", icon: Sparkles, tDesc: "palette.deskOverviewDesc" },
+  { id: "financial", tLabel: "palette.goToFinancial", icon: BarChart3, tDesc: "palette.deskFinancialDesc" },
+  { id: "operating", tLabel: "palette.goToOperating", icon: LayoutDashboard, tDesc: "palette.deskOperatingDesc" },
+  { id: "vault", tLabel: "palette.goToVault", icon: Shield, tDesc: "palette.deskVaultDesc" },
 ]
 
 export default function CommandPalette({ open, onClose, onNavigate }: Props) {
+  const { t } = useLocale()
   const [query, setQuery] = useState("")
   const [selectedIdx, setSelectedIdx] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -36,8 +38,8 @@ export default function CommandPalette({ open, onClose, onNavigate }: Props) {
   const allActions: Action[] = [
     ...DESK_ACTIONS.map((d) => ({
       id: `desk-${d.id}`,
-      label: `Go to ${d.label}`,
-      desc: d.desc,
+      label: t(d.tLabel),
+      desc: t(d.tDesc),
       icon: d.icon,
       onPick: () => { onNavigate(d.id); onClose() },
     })),
@@ -115,7 +117,7 @@ export default function CommandPalette({ open, onClose, onNavigate }: Props) {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search desks, commands…"
+            placeholder={t("palette.placeholder")}
             className="flex-1 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-muted/50"
           />
           <kbd className="hidden rounded-md border border-border-hover bg-bg-glass px-1.5 py-0.5 text-[10px] font-medium text-text-muted sm:inline-block">
@@ -124,10 +126,10 @@ export default function CommandPalette({ open, onClose, onNavigate }: Props) {
         </div>
 
         {/* Results */}
-        <div ref={listRef} className="max-h-72 overflow-y-auto overscroll-contain p-2">
+        <div ref={listRef} className="max-h-72 overflow-y-auto overscroll-behavior-contain p-2">
           {filtered.length === 0 ? (
             <p className="py-8 text-center text-xs text-text-muted">
-              No results for "{query}"
+              {t("palette.noResults")}{query}{t("palette.noResultsEnd")}
             </p>
           ) : (
             <div className="space-y-0.5">
@@ -138,7 +140,7 @@ export default function CommandPalette({ open, onClose, onNavigate }: Props) {
                     key={action.id}
                     onClick={() => pick(i)}
                     onMouseEnter={() => setSelectedIdx(i)}
-                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-all ${
+                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-all active:scale-[0.98] touch-action-manipulation ${
                       i === selectedIdx
                         ? "bg-accent/15 text-accent shadow-sm"
                         : "text-text-secondary hover:bg-bg-glass hover:text-text-primary"
@@ -164,15 +166,15 @@ export default function CommandPalette({ open, onClose, onNavigate }: Props) {
           <span className="flex items-center gap-1.5 text-[10px] text-text-muted/60">
             <kbd className="rounded border border-border-hover bg-bg-glass px-1 py-0.5 text-[9px]">↑</kbd>
             <kbd className="rounded border border-border-hover bg-bg-glass px-1 py-0.5 text-[9px]">↓</kbd>
-            navigate
+            {t("palette.footer.navigate")}
           </span>
           <span className="flex items-center gap-1.5 text-[10px] text-text-muted/60">
             <kbd className="rounded border border-border-hover bg-bg-glass px-1.5 py-0.5 text-[9px]">↵</kbd>
-            open
+            {t("palette.footer.open")}
           </span>
           <span className="flex items-center gap-1.5 text-[10px] text-text-muted/60">
             <kbd className="rounded border border-border-hover bg-bg-glass px-1.5 py-0.5 text-[9px]">esc</kbd>
-            close
+            {t("palette.footer.close")}
           </span>
         </div>
       </div>
