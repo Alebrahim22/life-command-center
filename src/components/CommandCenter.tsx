@@ -10,6 +10,7 @@ import CommandPalette from "@/components/CommandPalette"
 import { supabase } from "@/lib/supabase"
 import { DeskId } from "@/lib/utils"
 import NotificationBell from "@/components/NotificationBell"
+import ThemeToggle from "@/components/ThemeToggle"
 import OverviewDesk from "@/components/desks/OverviewDesk"
 import FinancialDesk from "@/components/desks/FinancialDesk"
 import OperatingDesk from "@/components/desks/OperatingDesk"
@@ -74,7 +75,8 @@ function DesktopLayout({ activeDesk, setActiveDesk }: { activeDesk: DeskId; setA
             <Printer className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Print</span>
           </button>
-          <kbd className="hidden rounded-md border border-white/[0.08] bg-white/[0.04] px-1.5 py-0.5 text-[10px] font-medium text-text-muted/60 sm:inline-flex items-center gap-0.5">
+          <ThemeToggle />
+          <kbd className="hidden rounded-md border border-border bg-bg-surface px-1.5 py-0.5 text-[10px] font-medium text-text-muted/60 sm:inline-flex items-center gap-0.5">
             <Command className="h-2.5 w-2.5" />K
           </kbd>
           <button

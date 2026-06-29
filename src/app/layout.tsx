@@ -36,6 +36,20 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" dir="auto" className={`${inter.variable} ${firaCode.variable} ${tajawal.variable}`}>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('lcc-theme') || 'dark';
+                  document.documentElement.setAttribute('data-theme', theme);
+                } catch(e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body>{children}</body>
     </html>
   )
