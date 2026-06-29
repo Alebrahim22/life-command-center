@@ -3,951 +3,474 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Full Code Audit — Life Command Center</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<title>Life Command Center — Full Code Audit</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&family=Inter:wght@400;500;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #09090b;
-    --surface: #0c0d12;
-    --card: rgba(22, 24, 30, 0.85);
-    --accent: #22c55e;
-    --accent-gold: #d4a853;
-    --accent-red: #ef4444;
-    --accent-blue: #3b82f6;
-    --accent-amber: #f59e0b;
-    --text: #f4f4f5;
-    --text-secondary: #a1a1aa;
-    --text-muted: #6b7280;
-    --border: rgba(255,255,255,0.06);
-    --border-hover: rgba(255,255,255,0.12);
+    --bg: #0a0a0f; --surface: #12131a; --card: #1a1c25;
+    --border: rgba(255,255,255,0.07); --text: #e8e8ed; --text-muted: #888;
+    --accent: #22c55e; --gold: #d4a853; --red: #ef4444; --orange: #f59e0b;
+    --blue: #3b82f6; --green: #22c55e; --critical: #ef4444; --high: #f59e0b;
+    --medium: #3b82f6; --low: #6b7280;
   }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Tajawal', 'Inter', system-ui, sans-serif;
-    line-height: 1.6;
-    padding: 0;
-    overflow-x: hidden;
+    font-family: 'Tajawal', 'Inter', sans-serif; background: var(--bg);
+    color: var(--text); line-height: 1.7; padding: 2rem;
+    max-width: 1100px; margin: 0 auto;
   }
-  body::before {
-    content: "";
-    position: fixed;
-    inset: -50%;
-    width: 200%;
-    height: 200%;
-    background:
-      radial-gradient(ellipse 80% 60% at 20% 20%, rgba(34,197,94,0.03) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 50% at 80% 80%, rgba(212,168,83,0.02) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: -1;
-  }
+  h1 { font-size: 2rem; margin-bottom: 0.25em; }
+  h1 small { font-size: 1rem; color: var(--text-muted); font-weight: 400; display: block; }
+  h2 { font-size: 1.4rem; margin: 2em 0 0.8em; color: var(--accent); display: flex; align-items: center; gap: 0.5em; }
+  h3 { font-size: 1.1rem; margin: 1.2em 0 0.5em; color: var(--text); }
+  .meta { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2em; border-bottom: 1px solid var(--border); padding-bottom: 1em; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.2rem; text-align: center; }
+  .stat-card .num { font-size: 2rem; font-weight: 700; font-family: 'Inter', monospace; }
+  .stat-card .label { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem; }
+  .stat-card.good .num { color: var(--accent); }
+  .stat-card.warn .num { color: var(--orange); }
+  .badge { display: inline-block; font-size: 0.7rem; padding: 0.15em 0.6em; border-radius: 20px; font-weight: 600; margin-right: 0.5em; }
+  .badge-critical { background: var(--critical); color: #fff; }
+  .badge-high { background: var(--high); color: #000; }
+  .badge-medium { background: var(--medium); color: #fff; }
+  .badge-low { background: var(--low); color: #fff; }
+  .badge-good { background: #166534; color: #fff; }
+  .badge-needs-work { background: #92400e; color: #fff; }
+  .badge-bad { background: #7f1d1d; color: #fff; }
 
-  /* ─── Header ─── */
-  .report-header {
-    padding: 48px 24px 32px;
-    text-align: center;
-    border-bottom: 1px solid var(--border);
-    background: linear-gradient(180deg, rgba(34,197,94,0.04) 0%, transparent 100%);
-  }
-  .report-header h1 {
-    font-size: 32px;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    background: linear-gradient(135deg, var(--text), var(--accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .report-header .subtitle {
-    color: var(--text-secondary);
-    margin-top: 8px;
-    font-size: 15px;
-  }
-  .report-header .meta {
-    margin-top: 16px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 12px;
-    font-size: 12px;
-    color: var(--text-muted);
-  }
-  .report-header .meta span {
-    background: var(--card);
-    padding: 4px 12px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-  }
-
-  /* ─── Container ─── */
-  .container {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 32px 20px;
-  }
-
-  /* ─── Executive Summary ─── */
-  .exec-summary {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 28px;
-    margin-bottom: 32px;
-    backdrop-filter: blur(20px);
-  }
-  .exec-summary h2 {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--accent);
-    margin-bottom: 12px;
-  }
-  .exec-summary p {
-    color: var(--text-secondary);
-    font-size: 14px;
-    line-height: 1.8;
-  }
-  .exec-summary .score-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 12px;
-    margin-top: 20px;
-  }
-  .score-item {
-    background: rgba(255,255,255,0.03);
-    border-radius: 12px;
-    padding: 14px;
-    text-align: center;
-    border: 1px solid var(--border);
-  }
-  .score-item .label {
-    font-size: 11px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 500;
-  }
-  .score-item .value {
-    font-size: 15px;
-    font-weight: 700;
-    margin-top: 4px;
-  }
-  .score-good { color: var(--accent); }
-  .score-needs-work { color: var(--accent-amber); }
-  .score-bad { color: var(--accent-red); }
-
-  /* ─── Stats Bar ─── */
-  .stats-bar {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: 12px;
-    margin-bottom: 32px;
-  }
-  .stat {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px;
-    text-align: center;
-    backdrop-filter: blur(10px);
-    transition: all 200ms ease;
-  }
-  .stat:hover {
-    border-color: var(--border-hover);
-  }
-  .stat .num {
-    font-size: 22px;
-    font-weight: 800;
-    font-family: 'Fira Code', monospace;
-  }
-  .stat .lbl {
-    font-size: 10px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-top: 4px;
-  }
-
-  /* ─── Section ─── */
-  .section {
-    margin-bottom: 28px;
-  }
-  .section-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 16px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
-  }
-  .section-header .icon {
-    font-size: 20px;
-  }
-  .section-header h2 {
-    font-size: 18px;
-    font-weight: 700;
-  }
-  .section-header .rating {
-    margin-right: auto;
-    font-size: 11px;
-    padding: 3px 12px;
-    border-radius: 20px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-  }
-  .rating-good { background: rgba(34,197,94,0.12); color: var(--accent); border: 1px solid rgba(34,197,94,0.2); }
-  .rating-needs-work { background: rgba(245,158,11,0.12); color: var(--accent-amber); border: 1px solid rgba(245,158,11,0.2); }
-  .rating-bad { background: rgba(239,68,68,0.12); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.2); }
-
-  /* ─── Findings ─── */
-  .finding {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 12px;
-    backdrop-filter: blur(10px);
-    transition: all 200ms ease;
-    position: relative;
-    padding-right: 56px;
-  }
-  .finding:hover {
-    border-color: var(--border-hover);
-  }
-  .finding .badge {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 800;
-  }
-  .badge-critical { background: rgba(239,68,68,0.15); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.2); }
-  .badge-high { background: rgba(245,158,11,0.15); color: var(--accent-amber); border: 1px solid rgba(245,158,11,0.2); }
-  .badge-medium { background: rgba(59,130,246,0.15); color: var(--accent-blue); border: 1px solid rgba(59,130,246,0.2); }
-  .badge-low { background: rgba(161,161,170,0.15); color: var(--text-secondary); border: 1px solid rgba(161,161,170,0.2); }
-
-  .finding .issue {
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 6px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .finding .desc {
-    font-size: 13px;
-    color: var(--text-secondary);
-    line-height: 1.7;
-  }
-  .finding .fix {
-    margin-top: 10px;
-    padding: 10px 14px;
-    background: rgba(34,197,94,0.04);
-    border: 1px solid rgba(34,197,94,0.1);
-    border-radius: 10px;
-    font-size: 13px;
-    color: var(--accent);
-    line-height: 1.6;
-  }
-  .finding .fix strong {
-    font-weight: 700;
-  }
-  .finding .location {
-    margin-top: 8px;
-    font-size: 11px;
-    color: var(--text-muted);
-    font-family: 'Fira Code', monospace;
-  }
-
-  /* ─── Priority Map ─── */
-  .priority-map {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 28px;
-    margin-bottom: 32px;
-    backdrop-filter: blur(20px);
-  }
-  .priority-map h2 {
-    font-size: 18px;
-    font-weight: 700;
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .priority-group {
-    margin-bottom: 16px;
-  }
-  .priority-group:last-child {
-    margin-bottom: 0;
-  }
-  .priority-group h3 {
-    font-size: 13px;
-    font-weight: 700;
-    margin-bottom: 8px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--border);
-  }
-  .priority-group ul {
-    list-style: none;
-    padding: 0;
-  }
-  .priority-group li {
-    font-size: 13px;
-    color: var(--text-secondary);
-    padding: 4px 0;
-    padding-right: 16px;
-    position: relative;
-    line-height: 1.6;
-  }
-  .priority-group li::before {
-    content: "";
-    position: absolute;
-    right: 0;
-    top: 11px;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-  }
-  .pg-critical li::before { background: var(--accent-red); }
-  .pg-high li::before { background: var(--accent-amber); }
-  .pg-medium li::before { background: var(--accent-blue); }
-  .pg-low li::before { background: var(--text-muted); }
-
-  /* ─── File Map ─── */
-  .file-map {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 28px;
-    margin-bottom: 32px;
-    backdrop-filter: blur(20px);
-    overflow-x: auto;
-  }
-  .file-map h2 {
-    font-size: 18px;
-    font-weight: 700;
-    margin-bottom: 16px;
-  }
-  .file-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px;
-  }
-  .file-table th {
-    text-align: right;
-    padding: 8px 12px;
-    color: var(--text-muted);
-    font-weight: 600;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    border-bottom: 1px solid var(--border);
-  }
-  .file-table td {
-    padding: 7px 12px;
-    color: var(--text-secondary);
-    border-bottom: 1px solid rgba(255,255,255,0.03);
-    font-family: 'Fira Code', monospace;
-    font-size: 12px;
-  }
-  .file-table td:first-child {
-    font-weight: 500;
-    color: var(--text);
-    font-family: 'Tajawal', 'Inter', sans-serif;
-  }
-  .file-table tr:hover td {
-    background: rgba(255,255,255,0.02);
-  }
-  .file-table .lines {
-    text-align: center;
-    font-weight: 600;
-    color: var(--text);
-  }
-  .file-table .total-row td {
-    border-top: 2px solid var(--border-hover);
-    font-weight: 700;
-    color: var(--accent);
-    font-size: 13px;
-  }
-
-  /* ─── Action Items ─── */
-  .actions {
-    background: linear-gradient(135deg, rgba(34,197,94,0.06) 0%, rgba(34,197,94,0.02) 100%);
-    border: 1px solid rgba(34,197,94,0.15);
-    border-radius: 20px;
-    padding: 28px;
-    margin-bottom: 32px;
-  }
-  .actions h2 {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--accent);
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .action-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(34,197,94,0.08);
-  }
-  .action-item:last-child { border-bottom: none; }
-  .action-item .num {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    background: rgba(34,197,94,0.12);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 13px;
-    color: var(--accent);
-    flex-shrink: 0;
-  }
-  .action-item .content h4 {
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 2px;
-  }
-  .action-item .content p {
-    font-size: 13px;
-    color: var(--text-secondary);
-  }
-
-  /* ─── Footer ─── */
-  .footer {
-    text-align: center;
-    padding: 32px 20px 48px;
-    color: var(--text-muted);
-    font-size: 12px;
-    border-top: 1px solid var(--border);
-  }
-
-  /* ─── Responsive ─── */
-  @media (max-width: 600px) {
-    .report-header h1 { font-size: 24px; }
-    .finding { padding-right: 16px; }
-    .finding .badge { position: static; margin-bottom: 10px; }
-    .exec-summary .score-grid { grid-template-columns: repeat(2, 1fr); }
-    .stats-bar { grid-template-columns: repeat(2, 1fr); }
-  }
+  .section-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1.5rem; margin-bottom: 1.5rem; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .finding { padding: 1rem; margin: 0.5rem 0; border-radius: 12px; border: 1px solid var(--border); }
+  .finding.critical { border-right: 4px solid var(--critical); }
+  .finding.high { border-right: 4px solid var(--high); }
+  .finding.medium { border-right: 4px solid var(--medium); }
+  .finding.low { border-right: 4px solid var(--low); }
+  .finding h4 { margin-bottom: 0.3rem; }
+  .finding p { font-size: 0.9rem; color: var(--text-muted); }
+  .finding .action { margin-top: 0.5rem; font-size: 0.85rem; color: var(--accent); }
+  .finding .action strong { color: var(--text); }
+  pre { background: #00000040; padding: 1rem; border-radius: 12px; overflow-x: auto; font-size: 0.8rem; margin: 0.5rem 0; border: 1px solid var(--border); }
+  code { font-family: 'Fira Code', monospace; font-size: 0.85em; }
+  .checklist { list-style: none; padding: 0; }
+  .checklist li { padding: 0.3rem 0; display: flex; align-items: center; gap: 0.5rem; }
+  .checklist .done { color: var(--accent); }
+  .checklist .pending { color: var(--text-muted); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+  .toc { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; }
+  .toc a { color: var(--accent); text-decoration: none; display: block; padding: 0.3rem 0; }
+  .toc a:hover { text-decoration: underline; }
+  .toc .sub { padding-right: 1rem; font-size: 0.9rem; }
 </style>
 </head>
 <body>
 
-<!-- ═══════ HEADER ═══════ -->
-<div class="report-header">
-  <h1>📋 Full Code Audit</h1>
-  <p class="subtitle">Life Command Center — 6-Category Evaluation</p>
-  <div class="meta">
-    <span>📅 29 يونيو 2026</span>
-    <span>📂 ~/life-command-center-fix/</span>
-    <span>🔗 <a href="https://alebrahim22.github.io/life-command-center/" style="color:var(--accent)">live</a></span>
-    <span>📦 Next.js 15 + React 19 + Tailwind 4</span>
-    <span>🏭 47 ملف · 8,052 سطر</span>
-  </div>
+<h1>🧪 Life Command Center — التقييم الفني الكامل</h1>
+<small style="display:block;color:var(--text-muted);margin-top:0.5rem;">Full Code Audit · 29 June 2026 · المشروع في ~/life-command-center-fix</small>
+
+<div class="meta">
+  <div><strong>النسخة:</strong> Next.js 15.5.19 · React 19 · Tailwind CSS 4 · TypeScript</div>
+  <div><strong>آخر Build:</strong> ✅ 0 errors · 185kB First Load JS · Static Export</div>
+  <div><strong>عدد الملفات:</strong> 17+ مكون · 4 مكاتب · 10 lazy-loaded widgets</div>
+  <div><strong>الـ repo:</strong> <a href="https://github.com/Alebrahim22/life-command-center" style="color:var(--accent)">Alebrahim22/life-command-center</a></div>
+  <div><strong>Live:</strong> <a href="https://alebrahim22.github.io/life-command-center/" style="color:var(--accent)">alebrahim22.github.io/life-command-center</a></div>
 </div>
 
-<div class="container">
-
-<!-- ═══════ EXECUTIVE SUMMARY ═══════ -->
-<div class="exec-summary">
-  <h2>📊 Executive Summary</h2>
-  <p>
-    الـ Dashboard وضعها ممتاز بشكل عام. البنية نظيفة، الـ lazy loading شغال، الـ UI فخم وجاهز للاستخدام اليومي.
-    <strong>الملف 180kB فقط</strong> مع <strong>0 أخطاء TypeScript</strong> و <strong>0 أخطاء JavaScript</strong> في الـ production build.
-    الـ Supabase integration شغّال مع Guest mode. الـ dark/light mode موجود بس في مشكلة: <strong>Light mode يطبق CSS variables بس الألوان hardcoded (زي bg-zinc-900) ما تتغير</strong> — هذا يخلي الداشبورد ينكسر في light mode.
-  </p>
-  <p style="margin-top:8px">
-    بشكل عام، المشروع جاهز 90%. يحتاج 3-5 إصلاحات أساسية قبل أي تطوير جديد.
-  </p>
-  <div class="score-grid">
-    <div class="score-item"><div class="label">Architecture</div><div class="value score-good">✅ Good</div></div>
-    <div class="score-item"><div class="label">UI/UX</div><div class="value score-needs-work">⚠️ Needs Work</div></div>
-    <div class="score-item"><div class="label">Functionality</div><div class="value score-good">✅ Good</div></div>
-    <div class="score-item"><div class="label">Performance</div><div class="value score-good">✅ Good</div></div>
-    <div class="score-item"><div class="label">Ease of Use</div><div class="value score-needs-work">⚠️ Needs Work</div></div>
-    <div class="score-item"><div class="label">Practicality</div><div class="value score-good">✅ Good</div></div>
-  </div>
+<!-- ============================================================ -->
+<!-- SUMMARY -->
+<!-- ============================================================ -->
+<div class="summary-grid">
+  <div class="stat-card good"><div class="num">7</div><div class="label">✅ ممتاز (Good)</div></div>
+  <div class="stat-card warn"><div class="num">9</div><div class="label">🟡 يحتاج عمل (Needs Work)</div></div>
+  <div class="stat-card warn"><div class="num">2</div><div class="label">🔴 سيء (Bad)</div></div>
+</div>
+<div class="summary-grid">
+  <div class="stat-card" style="border-right:4px solid var(--critical)"><div class="num" style="color:var(--critical)">1</div><div class="label">🔴 Critical</div></div>
+  <div class="stat-card" style="border-right:4px solid var(--high)"><div class="num" style="color:var(--high)">3</div><div class="label">🟡 High</div></div>
+  <div class="stat-card" style="border-right:4px solid var(--medium)"><div class="num" style="color:var(--medium)">7</div><div class="label">🔵 Medium</div></div>
+  <div class="stat-card" style="border-right:4px solid var(--low)"><div class="num" style="color:var(--low)">7</div><div class="label">⚪ Low</div></div>
 </div>
 
-<!-- ═══════ STATS ═══════ -->
-<div class="stats-bar">
-  <div class="stat"><div class="num" style="color:var(--accent-red)">2</div><div class="lbl">🔴 Critical</div></div>
-  <div class="stat"><div class="num" style="color:var(--accent-amber)">6</div><div class="lbl">🟡 High</div></div>
-  <div class="stat"><div class="num" style="color:var(--accent-blue)">5</div><div class="lbl">🔵 Medium</div></div>
-  <div class="stat"><div class="num" style="color:var(--text-muted)">3</div><div class="lbl">⚪ Low</div></div>
-  <div class="stat"><div class="num" style="color:var(--accent)">16</div><div class="lbl">📌 Total Findings</div></div>
-  <div class="stat"><div class="num" style="color:var(--accent);font-size:16px">0.000 KD</div><div class="lbl">💰 قيمة audit</div></div>
+<!-- Table of Contents -->
+<div class="toc">
+  <strong style="display:block;margin-bottom:0.5rem;">📋 المحتويات</strong>
+  <a href="#architecture">1. 🏗️ Architecture — هيكلة الملفات</a>
+  <a href="#uiux">2. 🎨 UI/UX — الشكل والتجربة</a>
+  <a href="#functionality">3. ⚙️ Functionality — الوظائف</a>
+  <a href="#performance">4. ⚡ Performance — الأداء</a>
+  <a href="#ease">5. 👤 Ease of Use — سهولة الاستخدام</a>
+  <a href="#practicality">6. 🎯 Practicality — الفائدة العملية</a>
+  <a href="#summary">📊 Summary — الخلاصة والتوصيات</a>
 </div>
 
-<!-- ═══════ 1: ARCHITECTURE ═══════ -->
-<div class="section">
-  <div class="section-header">
-    <span class="icon">🏗️</span>
-    <h2>1. Architecture</h2>
-    <span class="rating rating-good">✅ Good</span>
-  </div>
+<!-- ============================================================ -->
+<!-- 1. ARCHITECTURE -->
+<!-- ============================================================ -->
+<h2 id="architecture">1. 🏗️ Architecture</h2>
+<div class="section-card">
+<div class="section-header"><strong>التقييم العام:</strong> <span class="badge badge-good">Good</span></div>
 
-  <div class="finding">
-    <div class="badge badge-low">⚪</div>
-    <div class="issue">✅ Lazy Loading — 10 components via Suspense</div>
-    <div class="desc">
-      <code>lazy-widgets.ts</code> يحمّل 10 مكونات تقيلة (PortfolioTracker, TradingJournal, OsoulArchitect, إلخ) عند الحاجة فقط. كل widget داخل <code>&lt;Suspense fallback={&lt;WidgetSkeleton /&gt;}&gt;</code>. ممتاز للـ bundle size.
-    </div>
-    <div class="location">📁 src/components/lazy-widgets.ts</div>
-  </div>
-
-  <div class="finding">
-    <div class="badge badge-medium">🔵</div>
-    <div class="issue">❌ DashboardLayout.tsx — Orphaned Component</div>
-    <div class="desc">
-      ملف <code>DashboardLayout.tsx</code> معرف وقاعد يستخدم grid layout بس ما ينستخدم في أي مكان. مكانه في السورس كود بدون فائدة.
-    </div>
-    <div class="fix"><strong>🔧 التوصية:</strong> احذف الملف لأنه dead code. أو استخدمه إذا كان مخطط له مستقبلًا.</div>
-    <div class="location">📁 src/components/DashboardLayout.tsx:1-13</div>
-  </div>
-
-  <div class="finding">
-    <div class="badge badge-low">⚪</div>
-    <div class="issue">✅ Supabase Hardcoded Keys</div>
-    <div class="desc">
-      Anon key موجود hardcoded في <code>supabase.ts</code>. للـ static export على GitHub Pages هذي مقبولة لأن anon key آمن مع Row Level Security، بس الأفضل تحطها في <code>.env.local</code> عشان الـ hygiene.
-    </div>
-    <div class="fix"><strong>🔧 التوصية:</strong> انقل الـ keys إلى <code>NEXT_PUBLIC_SUPABASE_URL</code> و <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> في ملف env.</div>
-    <div class="location">📁 src/lib/supabase.ts:3-4</div>
-  </div>
-
-  <div class="finding">
-    <div class="badge badge-low">⚪</div>
-    <div class="issue">✅ Tree-shaking for lucide-react</div>
-    <div class="desc">
-      <code>next.config.js</code> يضمّن <code>modularizeImports</code> للـ lucide-react. هذا يضمن أن الـ bundle ما يحمل icons غير المستخدمة.
-    </div>
-    <div class="location">📁 next.config.js:10-14</div>
-  </div>
+<div class="finding high">
+  <h4><span class="badge badge-high">High</span> OsoulArchitect.tsx — تحسن لكن باقي ثقيل</h4>
+  <p>الملف كان <strong>1,167 سطراً</strong> وتم تقسيمه إلى 476 سطراً + 3 مودالات. تحسن كبير لكنه لسا أكبر ملف في المشروع. الـ 476 سطراً لا تزال تحتوي على 4 دوال رئيسية (1 render + 3 modal) يمكن فصلها أكثر.</p>
+  <div class="action"><strong>🎯 التوصية:</strong> فصل دوال الـ rendering إلى ملفات منفصلة: <code>OsoulOverview.tsx</code>, <code>OsoulRadar.tsx</code>, <code>OsoulReport.tsx</code>. كل ملف يركز على وظيفة واحدة.</div>
 </div>
 
-<!-- ═══════ 2: UI/UX ═══════ -->
-<div class="section">
-  <div class="section-header">
-    <span class="icon">🎨</span>
-    <h2>2. UI/UX</h2>
-    <span class="rating rating-needs-work">⚠️ Needs Work</span>
-  </div>
-
-  <div class="finding">
-    <div class="badge badge-critical">🔴</div>
-    <div class="issue">❌ Light Mode Broken — Hardcoded Dark Colors</div>
-    <div class="desc">
-      <strong>أكبر مشكلة في الـ dashboard حاليًا.</strong> الـ <code>data-theme="light"</code> يحط CSS variables للـ light mode بس <strong>كل المكونات تستخدم ألوان hardcoded خاصة بالـ dark mode</strong>:
-      <code>bg-zinc-900/30</code>, <code>bg-zinc-900/90</code>, <code>bg-white/[0.06]</code>, <code>text-white</code>, <code>border-white/[0.06]</code>.
-      <br><br>
-      <strong>النتيجة:</strong> إذا شخص غير محمد فتح الـ dashboard في light mode، بعض الأقسام تختفي أو تصبح غير مقروءة لأن النص أبيض على خلفية فاتحة.
-      <br><br>
-      <strong>المكان:</strong> هذه الأنماط موجودة في <strong>كل ملف</strong>: CommandCenter.tsx, SummaryCard.tsx, AuthGuard.tsx, Onboarding.tsx, كل desks, كل widgets.
-    </div>
-    <div class="fix">
-      <strong>🔧 التوصية:</strong> استخدم Tailwind 4 dark mode classes. بدال <code>bg-zinc-900/30</code> استخدم <code>class="dark:bg-zinc-900/30 bg-white/70"</code>. أو استخدم CSS variables custom لكل الخلفيات. هذا تصليح كبير—يحتاج مسح كل الملفات الـ 47.<br>
-      <strong>البديل السريع:</strong> حول <code>data-theme="light"</code> إلى <code>data-theme="dark"</code> افتراضيًا وشيل خيار التبديل إلى light mode مؤقتًا لحين التصليح.
-    </div>
-    <div class="location">📁 جميع الملفات (47 ملف) — ⚠️ هذه مشكلة منتشرة</div>
-  </div>
-
-  <div class="finding">
-    <div class="badge badge-high">🟡</div>
-    <div class="issue">❌ RTL Support — Non-Functional Despite Arabic Content</div>
-    <div class="desc">
-      الـ <code>layout.tsx</code> يستخدم <code>dir="auto"</code> و <code>lang="en"</code>. في المقابل، الـ onboarding فيه محتوى عربي كامل، و TodayWidget فيه أيام عربية (الأحد، الإثنين...) وتحيات عربية (صباح الخير، مساء الخير).
-      <br><br>
-      <code>dir="auto"</code> ما يشتغل بشكل صحيح مع التطبيقات أحادية الاتجاه. النص العربي يظهر بشكل سيئ في الوضع الحالي لأن المحاذاة والـ padding ما صممت للـ RTL.
-    </div>
-    <div class="fix">
-      <strong>🔧 التوصية:</strong> (1) غير <code>dir="auto"</code> إلى <code>dir="rtl"</code> في layout. (2) أضف <code>lang="ar"</code>. (3) اختبر كل المكونات وشوف إذا في breakages في الـ layout. (4) استخدم <code>start</code>/<code>end</code> بدال <code>left</code>/<code>right</code> في Tailwind.
-    </div>
-    <div class="location">📁 src/app/layout.tsx:38, src/components/Onboarding.tsx, src/components/TodayWidget.tsx</div>
-  </div>
-
-  <div class="finding">
-    <div class="badge badge-high">🟡</div>
-    <div class="issue">✅ FinancialDesk — Dead Buttons</div>
-    <div class="desc">
-      زرارين "Tracker" و "Osoul" في FinancialDesk عندهم <code>onClick={() =&gt; {}}</code> — ما يسوون شي. يخرب تجربة المستخدم لأن الزرار يظهر نشط بس ما يشتغل.
-    </div>
-    <div class="fix"><strong>🔧 التوصية:</strong> شيل الأزرار أو حط navigation حقيقي يبدّل بين views داخل الـ Financial desk.</div>
-    <div class="location">📁 src/components/desks/FinancialDesk.tsx:22-34</div>
-  </div>
-
-  <div class="finding">
-    <div class="badge badge-medium">🔵</div>
-    <div class="issue">✅ Stagger Animation — Limited to 12 Items</div>
-    <div class="desc">
-      <code>.animate-stagger</code> يعمل فقط لأول 12 عنصر (مكتوب يدويًا nth-child(1) إلى nth-child(12)). إذا زادت العناصر، الـ animation يوقف.
-    </div>
-    <div class="fix"><strong>🔧 التوصية:</strong> استخدم <code>@for</code> loop أو JS inline بدال nth-child اليدوي.</div>
-    <div class="location">📁 src/app/globals.css:405-416</div>
-  </div>
-
-  <div class="finding">
-    <div class="badge badge-medium">🔵</div>
-    <div class="issue">✅ Auth Screen — "Admin Override" Confusing Label</div>
-    <div class="desc">
-      كلمة "Admin Override" تحسّس المستخدم العادي أنه مو مرحب به. الأفضل "Sign in with Email" عشان واضح.
-    </div>
-    <div class="fix"><strong>🔧 التوصية:</strong> غير label إلى "Sign in with Email" أو "بريد إلكتروني" للعربية.</div>
-    <div class="location">📁 src/components/AuthGuard.tsx:238-248</div>
-  </div>
+<div class="finding high">
+  <h4><span class="badge badge-high">High</span> Lazy Loading غير متسق</h4>
+  <p>الـ 10 widgets (PortfolioTracker, TradingJournal, ShiftTracker, إلخ) كلها محملة بـ lazy loading عبر dynamic() في ملفات المكاتب. لكن <strong>What's Next Widget</strong> ما هو lazy — يُحمّل مع bundle الأساسي.</p>
+  <div class="action"><strong>🎯 التوصية:</strong> تأكيد أن كل widget يستخدم <code>React.lazy</code> أو <code>next/dynamic</code> مع <code>ssr: false</code>.</div>
+  <pre>// Example pattern المستخدم:
+const ShiftTracker = dynamic(() => import("./ShiftTracker"), { ssr: false })</pre>
 </div>
 
-<!-- ═══════ 3: FUNCTIONALITY ═══════ -->
-<div class="section">
-  <div class="section-header">
-    <span class="icon">⚙️</span>
-    <h2>3. Functionality</h2>
-    <span class="rating rating-good">✅ Good</span>
-  </div>
-
-  <div class="finding">
-    <div class="badge badge-medium">🔵</div>
-    <div class="issue">❌ No Error Handling on Supabase Queries</div>
-    <div class="desc">
-      كثير من مكونات الـ widgets تتعامل مع Supabase بدون معالجة أخطاء <code>.catch()</code>. مثلاً OverviewDesk.tsx يسوي <code>.then(({ data }) =&gt; {...})</code> بدون أي error handling إذا فشل الاتصال.
-      الـ Guest feature يحمي من هذا جزئيًا بس لو Supabase عطى error، المكون يقعد في loading state للأبد.
-    </div>
-    <div class="fix"><strong>🔧 التوصية:</strong> أضف <code>.catch()</code> لكل استعلام Supabase مع fallback data أو error message للمستخدم.</div>
-    <div class="location">📁 src/components/desks/OverviewDesk.tsx:29-65 (وجميع المكونات الأخرى)</div>
-  </div>
-
-  <div class="finding">
-    <div class="badge badge-high">🟡</div>
-    <div class="issue">❌ FAB All Actions Navigate to Operating Desk — Wrong UX</div>
-    <div class="desc">
-      كل زرار في الـ FAB (Add Task, Log Shift, Mark Habit, Quick Note) يودّي على Operating desk. المستخدم يتوقع أن كل زر يودي على المكان المناسب أو يفتح modal مباشر. الوضع الحالي يخلي الـ FAB غير مجدي—كل الأزرار تسوي نفس الشي.
-    </div>
-    <div class="fix">
-      <strong>🔧 التوصية:</strong> بدال التنقل، افتح modal مباشر لكل إجراء:
-      <br>• Add Task → فتح modal إضافة مهمة
-      <br>• Log Shift → فتح modal تسجيل مناوبة
-      <br>• Mark Habit → فتح modal تعليم عادة
-      <br>• Quick Note → فتح modal ملاحظة سريعة
-    </div>
-    <div class="location">📁 src/components/CommandCenter.tsx:276-281, src/components/QuickActionFab.tsx:53-82</div>
-  </div>
-
-  <div class="finding">
-    <div class="badge badge-high">🟡</div>
-    <div class="issue">❌ CashRunway Uses Hardcoded 80% Formula</div>
-    <div class="desc">
-      <code>CashRunway.tsx</code> يحسب <code>income * 0.8</code> بدال استخدام savings_goal_percent الفعلي من قاعدة البيانات. هذا يعرض نسبة استخدام غير دقيقة للميزانية.
-    </div>
-    <div class="fix"><strong>🔧 التوصية:</strong> استخدم <code>data.savings_goal_percent</code> بدال <code>0.8</code> hardcoded.</div>
-    <div class="location">📁 src/components/CashRunway.tsx:41</div>
-  </div>
-
-  <div class="finding">
-    <div class="badge badge-medium">🔵</div>
-    <div class="issue">⚠️ Habit Duplicated Definitions</div>
-    <div class="desc">
-      نفس الـ 10 habits معرفة في <code>utils.ts</code> (HABITS array) و <code>HabitTracker.tsx</code>. إذا تغيرت قائمة العادات في مكان، الثاني ما يتغير—يسبب inconsistency.
-    </div>
-    <div class="fix"><strong>🔧 التوصية:</strong> استخدم الـ HABITS من <code>utils.ts</code> فقط (HabitTracker حالياً يعرف عادات خاصة فيه).</div>
-    <div class="location">📁 src/lib/utils.ts:60-71, src/components/HabitTracker.tsx:16-27</div>
-  </div>
+<div class="finding medium">
+  <h4><span class="badge badge-medium">Medium</span> Duplicate DESKS Arrays</h4>
+  <p>CommandCenter.tsx يعرّف <code>DESKS</code> مرة داخل <code>useMemo</code> في <code>DesktopLayout</code> ومرة في <code>MobileLayout</code>، بالإضافة إلى <code>MOBILE_DESKS</code> الثابت. هناك تكرار في تعريف البيانات مع اختلاف بسيط في الحقول.</p>
+  <div class="action"><strong>🎯 التوصية:</strong> توحيد DeskItem في <code>lib/utils.ts</code> واستخدامه في كل مكان. DeskLabels constructor واحد.</div>
 </div>
 
-<!-- ═══════ 4: PERFORMANCE ═══════ -->
-<div class="section">
-  <div class="section-header">
-    <span class="icon">⚡</span>
-    <h2>4. Performance</h2>
-    <span class="rating rating-good">✅ Good</span>
-  </div>
-
-  <div class="finding">
-    <div class="badge badge-low">⚪</div>
-    <div class="issue">✅ Bundle Size — 180kB Excellent</div>
-    <div class="desc">
-      حجم الـ bundle النهائي 180kB فقط—ممتاز جداً لتطبيق به 15+ widget. الفضل للـ lazy loading و tree-shaking.
-    </div>
-  </div>
-
-  <div class="finding">
-    <div class="badge badge-medium">🔵</div>
-    <div class="issue">⚠️ OsoulArchitect — 1,167 Lines Needs Splitting</div>
-    <div class="desc">
-      <code>OsoulArchitect.tsx</code> هو أكبر ملف في المشروع بـ 1,167 سطر. يحتوي على allocation, portfolio, history tabs، plus modals، plus PDF export logic. هذا يخلي الصيانة صعبة.
-    </div>
-    <div class="fix"><strong>🔧 التوصية:</strong> قسّم إلى: <code>OsoulAllocation.tsx</code>, <code>OsoulPortfolio.tsx</code>, <code>OsoulHistory.tsx</code>, <code>OsoulModals.tsx</code>.</div>
-    <div class="location">📁 src/components/OsoulArchitect.tsx (1,167 سطر)</div>
-  </div>
-
-  <div class="finding">
-    <div class="badge badge-low">⚪</div>
-    <div class="issue">✅ CSS Animations — All GPU-Accelerated</div>
-    <div class="desc">
-      كل الـ animations تستخدم <code>opacity</code> و <code>transform</code> فقط—مش triggers للـ layout reflow. هذا يضمن أداء 60fps على جميع الأجهزة.
-    </div>
-  </div>
+<div class="finding medium">
+  <h4><span class="badge badge-medium">Medium</span> TypeScript Strictness</h4>
+  <p>المشروع يستخدم TypeScript مع 0 أخطاء، لكن بعض الأنواع فضفاضة:</p>
+  <ul style="font-size:0.9rem;color:var(--text-muted);padding-right:1rem;">
+    <li><code>NestedDict</code> في i18n.tsx يستخدم <code>Record&lt;string, unknown&gt;</code> — يفقد type safety للقيم المتداخلة</li>
+    <li><code>alert()</code> يستخدم للـ registration errors — ليس production-ready</li>
+  </ul>
+  <div class="action"><strong>🎯 التوصية:</strong> استبدال <code>NestedDict</code> بنوع مسار صارم (Template Literal Types للـ translation keys).</div>
 </div>
 
-<!-- ═══════ 5: EASE OF USE ═══════ -->
-<div class="section">
-  <div class="section-header">
-    <span class="icon">🤝</span>
-    <h2>5. Ease of Use</h2>
-    <span class="rating rating-needs-work">⚠️ Needs Work</span>
-  </div>
-
-  <div class="finding">
-    <div class="badge badge-high">🟡</div>
-    <div class="issue">❌ No Keyboard Shortcut Reference</div>
-    <div class="desc">
-      محمد مو programmer — ما يعرف أن <kbd>1-4</kbd> يبدّل بين المكاتب أو <kbd>?</kbd> يفتح الـ command palette. الـ <kbd>⌘K</kbd> مذكور بشكل خفيف في الـ header.
-      لا يوجد onboarding للـ keyboard shortcuts.
-    </div>
-    <div class="fix">
-      <strong>🔧 التوصية:</strong> أضف زر "?" دائري في الزاوية أو اختصار في الـ header بعنوان "Keyboard Shortcuts" يظهر modal فيه كل الاختصارات:
-      <br><kbd>1-4</kbd> → تغيير المكتب
-      <br><kbd>⌘K</kbd> / <kbd>?</kbd> → فتح الـ palette
-      <br><kbd>Esc</kbd> → إغلاق كل شي
-    </div>
-    <div class="location">📁 src/components/CommandCenter.tsx:218-259</div>
-  </div>
-
-  <div class="finding">
-    <div class="badge badge-medium">🔵</div>
-    <div class="issue">⚠️ Onboarding — No Replay Option</div>
-    <div class="desc">
-      الـ onboarding يظهر مرة واحدة فقط (localStorage). إذا المستخدم نسي شي أو شخص آخر استخدم الـ dashboard، ما في طريقة يعيد الـ tour.
-    </div>
-    <div class="fix"><strong>🔧 التوصية:</strong> أضف زر "Show Onboarding" في الـ header أو الـ settings. أضف <code>localStorage.removeItem('lcc-onboarded')</code> من command palette.</div>
-    <div class="location">📁 src/components/Onboarding.tsx</div>
-  </div>
-
-  <div class="finding">
-    <div class="badge badge-high">🟡</div>
-    <div class="issue">❌ No Feedback After Guest Mode Authentication</div>
-    <div class="desc">
-      المستخدم في Guest mode يضغط "Authenticate" — ما يصير شي واضح. الـ guest mode banner يختفي بس ما في تأكيد للمستخدم أن authentication تم بنجاح.
-    </div>
-    <div class="fix"><strong>🔧 التوصية:</strong> أضف toast/notification بعد successful auth. أو غير الـ <code>localStorage.removeItem</code> إلى تأكيد مع رسالة.</div>
-    <div class="location">📁 src/components/AuthGuard.tsx:327-335</div>
-  </div>
-
-  <div class="finding">
-    <div class="badge badge-medium">🔵</div>
-    <div class="issue">✅ Touch targets — Good Minimum Size</div>
-    <div class="desc">
-      كل الأزرار تستخدم <code>min-h-[44px]</code> و <code>min-h-[48px]</code> ممتازة لـ accessibility على الموبايل.
-    </div>
-  </div>
+<div class="finding low">
+  <h4><span class="badge badge-low">Low</span> GitHub Actions Workflow</h4>
+  <p>ملف <code>.github/workflows/deploy.yml</code> موجود محلياً لكنه غير مدفوع للـ remote لعدم وجود <code>workflow</code> scope في التوكن.</p>
+  <div class="action"><strong>🎯 التوصية:</strong> إما تفعيل التوكن مع workflow scope أو إضافة الملف عبر GitHub UI مباشرة.</div>
 </div>
 
-<!-- ═══════ 6: PRACTICALITY ═══════ -->
-<div class="section">
-  <div class="section-header">
-    <span class="icon">🎯</span>
-    <h2>6. Practicality</h2>
-    <span class="rating rating-good">✅ Good</span>
-  </div>
+<hr>
 
-  <div class="finding">
-    <div class="badge badge-high">🟡</div>
-    <div class="issue">❌ Data Freshness — No Pull-to-Refresh</div>
-    <div class="desc">
-      الـ dashboard يعرض بيانات Supabase بدون طريقة سهلة للمستخدم لتحديثها. محمد يحتاج يروح صفحة ثانية ويرجع عشان يشوف التحديثات. بعض الـ widgets تسوي fetch مرة واحدة فقط (useEffect بدون interval).
-    </div>
-    <div class="fix"><strong>🔧 التوصية:</strong> (1) أضف زر Refresh في header الـ dashboard. (2) استخدم <code>useCallback</code> مع <code>refetch()</code> pattern لكل widget. (3) أضف auto-refresh كل 5 دقائق (NotificationBell يسويها، الباقي لا).</div>
-    <div class="location">📁 جميع الـ widgets</div>
-  </div>
+<h4>📊 Dependency Graph — الهيكلة الحالية</h4>
+<pre>
+layout.tsx ─┬─ I18nProvider
+            └─ page.tsx ──┬─ AuthGuard (Supabase)
+                          ├─ Onboarding (localStorage)
+                          └─ CommandCenter ───┬─ DesktopLayout
+                                              │   ├─ LangToggle, ThemeToggle, NotificationBell
+                                              │   ├─ Desk Bar (4 tabs)
+                                              │   └─ Desks (lazy): Overview, Financial, Operating, Vault
+                                              │       └─ 10 Widgets (lazy dynamic imports)
+                                              ├─ MobileLayout (md:hidden)
+                                              │   └─ Bottom nav bar (56px)
+                                              ├─ CommandPalette (⌘K)
+                                              └─ QuickActionFab (FAB)
+</pre>
 
-  <div class="finding">
-    <div class="badge badge-medium">🔵</div>
-    <div class="issue">⚠️ Mixed Data Sources — localStorage + Supabase</div>
-    <div class="desc">
-      بعض الإعدادات في localStorage (theme, guest mode, onboarding) وبعضها في Supabase. هذا يخلق confusion: إذا المستخدم مسح cache، يفقد بعض الـ preferences.
-    </div>
-    <div class="fix"><strong>🔧 التوصية:</strong> انقل الـ preferences إلى Supabase user profile table وتحمّل عند login. الـ localStorage يكون cache فقط.</div>
-  </div>
-
-  <div class="finding">
-    <div class="badge badge-low">⚪</div>
-    <div class="issue">✅ Core Coverage — ممتاز</div>
-    <div class="desc">
-      الـ dashboard يغطي: المناوبات، العادات، المهام، المالية (محفظة + أسهم + تداول)، المشاريع، القضايا القانونية، الفواتير، الميزانية، الضمانات. هذا تكامل ممتاز لاحتياجات محمد اليومية.
-    </div>
-  </div>
+<h4>✅ Code Splitting تحليل</h4>
+<ul class="checklist">
+  <li><span class="done">✅</span> OsoulArchitect: 1,167 → 476 سطراً (3 مودالات منفصلة)</li>
+  <li><span class="done">✅</span> Bundles: 46.3kB (main) + 54.2kB (vendors) = ~100kB shared</li>
+  <li><span class="pending">⚠️</span> OsoulArchitect باقي 476 سطر — يمكن فصله أكثر</li>
+  <li><span class="pending">⚠️</span> Lazy loading غير متسق — بعض الـ widgets محملة مباشرة</li>
+  <li><span class="done">✅</span> lucide-react tree-shaken عبر modularizeImports</li>
+</ul>
 </div>
 
-<!-- ═══════ PRIORITY MAP ═══════ -->
-<div class="priority-map">
-  <h2>🗺️ خريطة الأولويات</h2>
+<!-- ============================================================ -->
+<!-- 2. UI/UX -->
+<!-- ============================================================ -->
+<h2 id="uiux">2. 🎨 UI/UX</h2>
+<div class="section-card">
+<div class="section-header"><strong>التقييم العام:</strong> <span class="badge badge-good">Good</span></div>
 
-  <div class="priority-group pg-critical">
-    <h3 style="color:var(--accent-red)">🔴 Critical — يمنع الاستخدام</h3>
-    <ul>
-      <li><strong>Light mode broken</strong> — hardcoded dark colors في كل الملفات (47 ملف). التصليح يحتاج مسح كامل أو تعطيل light mode مؤقتًا</li>
-    </ul>
-  </div>
-
-  <div class="priority-group pg-high">
-    <h3 style="color:var(--accent-amber)">🟡 High — يضعف التجربة</h3>
-    <ul>
-      <li><strong>RTL support غير مكتمل</strong> — dir="auto" و lang="en" رغم وجود محتوى عربي</li>
-      <li><strong>FinancialDesk أزرار ميتة</strong> — Tracker/Osoul toggle ما يشتغل</li>
-      <li><strong>FAB جميع الأزرار تودّي Operating</strong> — ما في تمييز بين الإجراءات</li>
-      <li><strong>CashRunway 80% hardcoded</strong> — ما يستخدم savings_goal_percent الحقيقي</li>
-      <li><strong>Keyboard shortcuts غير موثقة</strong> — المستخدم ما يعرف الـ 1-4 و ?</li>
-      <li><strong>Guest mode auth بدون feedback</strong> — ما في تأكيد للمستخدم</li>
-      <li><strong>No pull-to-refresh</strong> — البيانات قديمة بدون تحديث يدوي</li>
-    </ul>
-  </div>
-
-  <div class="priority-group pg-medium">
-    <h3 style="color:var(--accent-blue)">🔵 Medium — تحسين</h3>
-    <ul>
-      <li><strong>DashboardLayout.tsx orphaned</strong> — dead code</li>
-      <li><strong>OsoulArchitect 1,167 سطر</strong> — يحتاج تقسيم</li>
-      <li><strong>No error handling على Supabase queries</strong> — يمكن يعلق في loading</li>
-      <li><strong>Habit duplicated definitions</strong> — في utils.ts و HabitTracker.tsx</li>
-      <li><strong>Stagger animation محدود لـ 12 عنصر</strong></li>
-      <li><strong>Onboarding لا يمكن إعادته</strong></li>
-      <li><strong>Admin override label confusing</strong></li>
-    </ul>
-  </div>
-
-  <div class="priority-group pg-low">
-    <h3 style="color:var(--text-muted)">⚪ Low — Nice to Have</h3>
-    <ul>
-      <li><strong>Supabase keys</strong> — نقل إلى env variables (hygiene)</li>
-      <li><strong>Data preferences</strong> — نقل من localStorage إلى Supabase</li>
-      <li><strong>Layout مع 3 أعمدة في xl screens</strong> — بعض المساحات الفارغة</li>
-    </ul>
-  </div>
+<div class="finding critical">
+  <h4><span class="badge badge-critical">Critical</span> Light Mode لم يتم اختباره كافياً</h4>
+  <p>الـ Light mode (P7-S1) متاح في الـ toggle ومعرّف في globals.css مع متغيرات خاصة به. <strong>لكنه لم يُعرض على المستخدم أو يختبر بدقة في المتصفح.</strong> هناك احتمالية أن بعض المكونات لا تزال تستخدم ألواناً ثابتة بدلاً من الـ CSS variables.</p>
+  <div class="action"><strong>🎯 التوصية:</strong> فتح الموقع في المتصفح → التبديل للـ Light mode → تجربة كل مكتب وكل widget والتأكد من وضوح النصوص والألوان.</div>
 </div>
 
-<!-- ═══════ 3 IMMEDIATE ACTIONS ═══════ -->
-<div class="actions">
-  <h2>🚀 3 إجراءات فورية (Suggested Phase 6)</h2>
-
-  <div class="action-item">
-    <div class="num">1</div>
-    <div class="content">
-      <h4>إصلاح Light Mode</h4>
-      <p>
-        إما: (أ) تعطيل تبديل light mode مؤقتًا وتثبيت data-theme="dark".
-        أو: (ب) مسح جميع الملفات وتغيير hardcoded colors إلى CSS variables أو dark: classes.
-        <strong style="color:var(--accent)">الخيار (أ) أسرع — 10 دقائق</strong>
-      </p>
-    </div>
-  </div>
-
-  <div class="action-item">
-    <div class="num">2</div>
-    <div class="content">
-      <h4>تقسيم OsoulArchitect</h4>
-      <p>
-        1,167 سطر في ملف واحد يخلي الصيانة صعبة. قسّم إلى 4 ملفات: Allocation, Portfolio, History, Modals.
-        <strong style="color:var(--accent)">التقدير: 30-45 دقيقة</strong>
-      </p>
-    </div>
-  </div>
-
-  <div class="action-item">
-    <div class="num">3</div>
-    <div class="content">
-      <h4>إصلاح FAB + إضافة Refresh</h4>
-      <p>
-        غير FAB عشان يفتح modals مباشرة بدال التنقل. أضف زر Refresh في الـ header.
-        <strong style="color:var(--accent)">التقدير: 20 دقيقة</strong>
-      </p>
-    </div>
-  </div>
+<div class="finding high">
+  <h4><span class="badge badge-high">High</span> Loading States غير كافية</h4>
+  <p>المكونات تستخدم <code>skeleton-shimmer</code> ولكن ليس في كل مكان. بعض الـ data-dependent widgets تظهر فراغات أو تختفي قبل تحميل البيانات. ليس هناك <code>Suspense</code> boundaries.</p>
+  <div class="action"><strong>🎯 التوصية:</strong> إضافة <code>Suspense</code> مع fallback لكل lazy-loaded widget. الـ loading state pattern موجود لكنه غير مطبق في كل مكان.</div>
 </div>
 
-<!-- ═══════ FILE MAP ═══════ -->
-<div class="file-map">
-  <h2>📂 File Size Map — جميع الملفات وعدد الأسطر</h2>
-  <table class="file-table">
-    <thead>
-      <tr>
-        <th>الملف</th>
-        <th>المسار</th>
-        <th>الأسطر</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td>OsoulArchitect</td><td>src/components/OsoulArchitect.tsx</td><td class="lines" style="color:var(--accent-red)">1,167</td></tr>
-      <tr><td>ProjectsTracker</td><td>src/components/ProjectsTracker.tsx</td><td class="lines">558</td></tr>
-      <tr><td>PortfolioTracker</td><td>src/components/PortfolioTracker.tsx</td><td class="lines">421</td></tr>
-      <tr><td>TradingJournal</td><td>src/components/TradingJournal.tsx</td><td class="lines">413</td></tr>
-      <tr><td>LegalCases</td><td>src/components/LegalCases.tsx</td><td class="lines">376</td></tr>
-      <tr><td>AuthGuard</td><td>src/components/AuthGuard.tsx</td><td class="lines">346</td></tr>
-      <tr><td>BillsTracker</td><td>src/components/BillsTracker.tsx</td><td class="lines">327</td></tr>
-      <tr><td>BudgetSnapshot</td><td>src/components/BudgetSnapshot.tsx</td><td class="lines">325</td></tr>
-      <tr><td>TodayWidget</td><td>src/components/TodayWidget.tsx</td><td class="lines">313</td></tr>
-      <tr><td>CommandCenter</td><td>src/components/CommandCenter.tsx</td><td class="lines">284</td></tr>
-      <tr><td>ShiftTracker</td><td>src/components/ShiftTracker.tsx</td><td class="lines">254</td></tr>
-      <tr><td>UpcomingEvents</td><td>src/components/UpcomingEvents.tsx</td><td class="lines">242</td></tr>
-      <tr><td>Onboarding</td><td>src/components/Onboarding.tsx</td><td class="lines">238</td></tr>
-      <tr><td>TodoList</td><td>src/components/TodoList.tsx</td><td class="lines">232</td></tr>
-      <tr><td>HabitTracker</td><td>src/components/HabitTracker.tsx</td><td class="lines">214</td></tr>
-      <tr><td>CommandPalette</td><td>src/components/CommandPalette.tsx</td><td class="lines">181</td></tr>
-      <tr><td>PrayerTimes (widget)</td><td>src/components/PrayerTimes.tsx</td><td class="lines">155</td></tr>
-      <tr><td>NewsFeed</td><td>src/components/NewsFeed.tsx</td><td class="lines">152</td></tr>
-      <tr><td>NotificationBell</td><td>src/components/NotificationBell.tsx</td><td class="lines">144</td></tr>
-      <tr><td>OverviewDesk</td><td>src/components/desks/OverviewDesk.tsx</td><td class="lines">138</td></tr>
-      <tr><td>QuickActionFab</td><td>src/components/QuickActionFab.tsx</td><td class="lines">126</td></tr>
-      <tr><td>utils</td><td>src/lib/utils.ts</td><td class="lines">89</td></tr>
-      <tr><td>WarrantyChecker</td><td>src/components/WarrantyChecker.tsx</td><td class="lines">83</td></tr>
-      <tr><td>HeaderStrip</td><td>src/components/HeaderStrip.tsx</td><td class="lines">77</td></tr>
-      <tr><td>weather</td><td>src/lib/weather.ts</td><td class="lines">75</td></tr>
-      <tr><td>TopTasks</td><td>src/components/TopTasks.tsx</td><td class="lines">75</td></tr>
-      <tr><td>HabitQuickChecks</td><td>src/components/HabitQuickChecks.tsx</td><td class="lines">74</td></tr>
-      <tr><td>CashRunway</td><td>src/components/CashRunway.tsx</td><td class="lines">72</td></tr>
-      <tr><td>prayer-times</td><td>src/lib/prayer-times.ts</td><td class="lines">70</td></tr>
-      <tr><td>WeatherWidget</td><td>src/components/WeatherWidget.tsx</td><td class="lines">67</td></tr>
-      <tr><td>SummaryCard</td><td>src/components/SummaryCard.tsx</td><td class="lines">65</td></tr>
-      <tr><td>ActiveMilestones</td><td>src/components/ActiveMilestones.tsx</td><td class="lines">65</td></tr>
-      <tr><td>ValueWatch</td><td>src/components/ValueWatch.tsx</td><td class="lines">64</td></tr>
-      <tr><td>UpcomingBills</td><td>src/components/UpcomingBills.tsx</td><td class="lines">64</td></tr>
-      <tr><td>useHaptic</td><td>src/hooks/useHaptic.ts</td><td class="lines">60</td></tr>
-      <tr><td>FinancialDesk</td><td>src/components/desks/FinancialDesk.tsx</td><td class="lines">58</td></tr>
-      <tr><td>ThemeToggle</td><td>src/components/ThemeToggle.tsx</td><td class="lines">56</td></tr>
-      <tr><td>layout</td><td>src/app/layout.tsx</td><td class="lines">56</td></tr>
-      <tr><td>OperatingDesk</td><td>src/components/desks/OperatingDesk.tsx</td><td class="lines">42</td></tr>
-      <tr><td>VaultDesk</td><td>src/components/desks/VaultDesk.tsx</td><td class="lines">37</td></tr>
-      <tr><td>EmptyState</td><td>src/components/EmptyState.tsx</td><td class="lines">39</td></tr>
-      <tr><td>MiniCard</td><td>src/components/MiniCard.tsx</td><td class="lines">33</td></tr>
-      <tr><td>page (Home)</td><td>src/app/page.tsx</td><td class="lines">21</td></tr>
-      <tr><td>globals.css</td><td>src/app/globals.css</td><td class="lines">513</td></tr>
-      <tr><td>lazy-widgets</td><td>src/components/lazy-widgets.ts</td><td class="lines">16</td></tr>
-      <tr><td>WidgetSkeleton</td><td>src/components/WidgetSkeleton.tsx</td><td class="lines">16</td></tr>
-      <tr><td>DashboardLayout</td><td>src/components/DashboardLayout.tsx</td><td class="lines">13</td></tr>
-      <tr class="total-row"><td colspan="2"><strong>📦 المجموع الكلي</strong></td><td class="lines" style="font-size:16px"><strong>8,052</strong></td></tr>
-    </tbody>
-  </table>
+<div class="finding medium">
+  <h4><span class="badge badge-medium">Medium</span> Glassmorphism أحياناً يقلل الوضوح</h4>
+  <p>تأثير الـ glass (backdrop-filter: blur) في بعض الحالات يسبب قلة وضوح للنصوص، خاصة في الـ light mode حيث تتداخل الألوان الفاتحة مع الـ blur. الـ glass-card-static أقوى من glass-card وهما يختلفان في درجة الشفافية.</p>
+  <div class="action"><strong>🎯 التوصية:</strong> توحيد درجات الشفافية (opacity) بين dark/light modes للـ glass effects. إضافة <code>bg-opacity</code> للـ light mode glass لتكون أفتح.</div>
 </div>
 
+<div class="finding medium">
+  <h4><span class="badge badge-medium">Medium</span> RTL Ready لكن بعض العناصر قد تنكسر</h4>
+  <p>الـ <code>[dir="ltr"]</code> CSS classes موجودة في globals.css. لكن بعض الـ utility classes من Tailwind مثل <code>mr-1</code> (في RotateCcw في footer) لن تعمل بشكل صحيح في LTR. وُجد <code>inline mr-1</code> في CommandCenter.tsx سطر 152.</p>
+  <div class="action"><strong>🎯 التوصية:</strong> استخدام <code>me-1</code> (margin-inline-end) بدل <code>mr-1</code> لدعم RTL/LTR تلقائياً. مراجعة جميع الـ margin/padding الاتجاهية.</div>
 </div>
 
-<div class="footer">
-  <p>Life Command Center — Full Code Audit</p>
-  <p>تم إعداد هذا التقرير بواسطة CoS Agent • 29 يونيو 2026</p>
-  <p>⚠️ هذا تقييم فني — بعض التوصيات تحتاج مراجعة قبل التطبيق</p>
+<div class="finding low">
+  <h4><span class="badge badge-low">Low</span> الـ lang toggle زر صغير</h4>
+  <p>زر تغيير اللغة (AR/EN) صغير ويحمل أيقونة Languages + نص صغير. قد لا يلاحظه المستخدم بسهولة.</p>
+  <div class="action"><strong>🎯 التوصية:</strong> إضافة الـ language toggle إلى الـ mobile bottom nav أو جعله أكثر ظهوراً (مثلاً بـ accent border).</div>
+</div>
+
+<div class="finding low">
+  <h4><span class="badge badge-low">Low</span> الـ print button يفتقد ترجمة</h4>
+  <p>الـ print dialog سيظهر بالإنجليزية دائماً — نص الأزرار مترجم لكن نافذة الطباعة نفسها لا تتأثر بالـ i18n (هذا سلوك متصفح وليس مشكلة قابلة للحل).</p>
+  <div class="action"><strong>🎯 التوصية:</strong> لا شيء — هذا limitation طبيعي للـ browser API. يمكن إضافة تعليمات طباعة في الـ print styles.</div>
+</div>
+
+<h4>✅ UI/UX جودة</h4>
+<ul class="checklist">
+  <li><span class="done">✅</span> Premium dark design with glassmorphism نظيف</li>
+  <li><span class="done">✅</span> Dark/Light mode toggle — CSS variables كاملة</li>
+  <li><span class="done">✅</span> i18n English/Arabic كامل مع RTL/LTR التبديل</li>
+  <li><span class="done">✅</span> Tajawal font للعربية + Inter للإنجليزية</li>
+  <li><span class="done">✅</span> Animations متقنة (fade-slide, stagger, widget-enter)</li>
+  <li><span class="pending">⚠️</span> Light mode يحتاج تأكيد بصري</li>
+  <li><span class="pending">⚠️</span> Glass blur يضعف الوضوح في light mode</li>
+</ul>
+</div>
+
+<!-- ============================================================ -->
+<!-- 3. FUNCTIONALITY -->
+<!-- ============================================================ -->
+<h2 id="functionality">3. ⚙️ Functionality</h2>
+<div class="section-card">
+<div class="section-header"><strong>التقييم العام:</strong> <span class="badge badge-needs-work">Needs Work</span></div>
+
+<div class="finding high">
+  <h4><span class="badge badge-high">High</span> Supabase Authentication + Guest Mode</h4>
+  <p>المشروع يستخدم <code>AuthGuard</code> الذي يتصل بـ Supabase. بعد 5 ثوانٍ يتحول إلى guest mode. لكن <strong>البيانات كلها محلية (localStorage)</strong> وليست متزامنة مع Supabase — هذا غير واضح من الـ UI. المستخدم قد يعتقد أن بياناته محفوظة في السحابة.</p>
+  <div class="action"><strong>🎯 التوصية:</strong> إضافة disclaimer واضح: "جميع البيانات مخزنة محلياً على جهازك. غير متزامنة مع السحابة حالياً." أو إظهار مؤشر (local) بجانب البيانات.</div>
+</div>
+
+<div class="finding medium">
+  <h4><span class="badge badge-medium">Medium</span> Guest Mode Timer — 5 ثوانٍ قد تكون قصيرة جداً</h4>
+  <p>الـ guest mode يبدأ بعد 5 ثوانٍ. في اتصال إنترنت بطيء أو جهاز ضعيف، قد لا تكفي 5 ثوانٍ لمحاولة الـ auth الفعلية.</p>
+  <div class="action"><strong>🎯 التوصية:</strong> زيادة المهلة إلى 8-10 ثوانٍ أو جعلها ديناميكية (تنتظر اكتمال محاولة auth ثم تتحول).</div>
+</div>
+
+<div class="finding medium">
+  <h4><span class="badge badge-medium">Medium</span> NotificationBell — ليس clear كيف يعمل</h4>
+  <p>مكون <code>NotificationBell</code> موجود لكن ليس واضحاً ما هي مصدر الإشعارات (local/polling/WebSocket). لم يتم اختبار push notifications أو polling.</p>
+  <div class="action"><strong>🎯 التوصية:</strong> توثيق آلية الإشعارات. إذا كانت محلية فقط (نايمة)، إزالتها أو تفعيلها بشكل حقيقي.</div>
+</div>
+
+<div class="finding medium">
+  <h4><span class="badge badge-medium">Medium</span> Windows EBUSY — Build Export لا يعمل محلياً</h4>
+  <p>على Windows، الـ <code>output: "export"</code> يفشل بخطأ EBUSY عند محاولة حذف مجلد <code>out/</code>. تم patch لـ next.js recursive-delete.js لكن المشكلة لازالت قائمة.</p>
+  <div class="action"><strong>🎯 التوصية:</strong> التعامل معها عبر GitHub Actions (Ubuntu runner) حيث لا توجد هذه المشكلة. الـ build العادي (بدون export) يعمل بدون مشاكل.</div>
+</div>
+
+<div class="finding low">
+  <h4><span class="badge badge-low">Low</span> Keyboard Shortcuts — محجوزة لـ 1-4</h4>
+  <p>الأرقام 1-4 محجوزة للتنقل بين المكاتب. هذا قد يتعارض مع إدخال الأرقام في الحقول النصية (مع أن الكود يتجنب INPUT/TEXTAREA).</p>
+  <div class="action"><strong>🎯 التوصية:</strong> الحل الحالي كافي (يتجاهل INPUT/TEXTAREA). لكن إضافة <code>isEditable</code> check للحالات النادرة.</div>
+</div>
+
+<h4>✅ الوظائف الأساسية</h4>
+<ul class="checklist">
+  <li><span class="done">✅</span> 4 مكاتب كلها تشتغل وتتبدل</li>
+  <li><span class="done">✅</span> Keyboard shortcuts: 1-4 (desks), ⌘K (palette), Escape</li>
+  <li><span class="done">✅</span> Guest mode بعد 5 ثوانٍ</li>
+  <li><span class="done">✅</span> Onboarding 4-step مع localStorage memory</li>
+  <li><span class="done">✅</span> Print stylesheet</li>
+  <li><span class="done">✅</span> Theme persistence عبر localStorage</li>
+  <li><span class="done">✅</span> Language persistence عبر localStorage</li>
+  <li><span class="pending">⚠️</span> Guest mode timer يمكن تحسينه</li>
+  <li><span class="pending">⚠️</span> Supabase متصل لكن البيانات محلية — غير واضح</li>
+</ul>
+</div>
+
+<!-- ============================================================ -->
+<!-- 4. PERFORMANCE -->
+<!-- ============================================================ -->
+<h2 id="performance">4. ⚡ Performance</h2>
+<div class="section-card">
+<div class="section-header"><strong>التقييم العام:</strong> <span class="badge badge-good">Good</span></div>
+
+<div class="finding medium">
+  <h4><span class="badge badge-medium">Medium</span> Bundle Size — 185kB (جيد لكن يمكن تحسينه)</h4>
+  <p>الـ First Load JS هو <strong>185kB</strong> (46.3kB main + 54.2kB vendors + باقي). هذا مقبول جداً لتطبيق مثل هذا. لكن bundle التحليلي يمكن تتبعه:</p>
+  <pre>
+Route (app)              Size     First Load JS
+┌ ○ /                   81.9 kB   185 kB (0.18 MB)
+  ▲ 10 lazy widgets:    ~30 kB    تُحمّل عند الطلب
+  </pre>
+  <div class="action"><strong>🎯 التوصية:</strong> تحليل bundle بـ <code>@next/bundle-analyzer</code> لمعرفة أي الحزم تستهلك أكبر مساحة. بشكل خاص lucide-react icons.</div>
+</div>
+
+<div class="finding low">
+  <h4><span class="badge badge-low">Low</span> CSS Animations — مؤثرة على الأداء</h4>
+  <p>الـ animations تستخدم <code>transform</code> و <code>opacity</code> (جيد)، لكن بعضها قد يسبب repaints في المتصفحات القديمة. كلها تستخدم <code>will-change</code> غير مضبوط.</p>
+  <div class="action"><strong>🎯 التوصية:</strong> لمتصفحات حديثة لا مشكلة. اختياري: إضافة <code>will-change: transform, opacity</code> على العناصر المتحركة الرئيسية.</div>
+</div>
+
+<div class="finding low">
+  <h4><span class="badge badge-low">Low</span> Font loading — 3 fonts (Inter, Fira Code, Tajawal)</h4>
+  <p>3 خطوط مختلفة تُحمّل من Google Fonts. هذا يضيف ~80kB إضافية للـ fonts. كلها تستخدم <code>display: swap</code> لمنع تأخير النص.</p>
+  <div class="action"><strong>🎯 التوصية:</strong> الوضع الحالي مقبول لـ static site. للتحسين: تضمين fonts محلياً (self-host) لتجنب DNS lookup + طلب خارجي.</div>
+</div>
+
+<h4>✅ أداء</h4>
+<ul class="checklist">
+  <li><span class="done">✅</span> 185kB First Load — ممتاز لـ dashboard شخصي</li>
+  <li><span class="done">✅</span> Lazy loading لـ 10 widgets (فعال)</li>
+  <li><span class="done">✅</span> Animations CSS-only (لا JS overhead)</li>
+  <li><span class="done">✅</span> Static export — لا server-side cost</li>
+  <li><span class="done">✅</span> images: unoptimized (حيث لا توجد صور)</li>
+  <li><span class="done">✅</span> font-display: swap للمنع FOIT</li>
+</ul>
+</div>
+
+<!-- ============================================================ -->
+<!-- 5. EASE OF USE -->
+<!-- ============================================================ -->
+<h2 id="ease">5. 👤 Ease of Use</h2>
+<div class="section-card">
+<div class="section-header"><strong>التقييم العام:</strong> <span class="badge badge-good">Good</span></div>
+
+<div class="finding medium">
+  <h4><span class="badge badge-medium">Medium</span> Onboarding — جيد لكن يحتاج اختصار</h4>
+  <p>الـ onboarding مكون من 4 خطوات مع شرح لكل مكتب. لكن <strong>لا يوجد زر "تخطي سريع"</strong> واضح — المستخدم يضطر للنقر Next 4 مرات أو الانتظار. الـ skip موجود لكن صغير.</p>
+  <div class="action"><strong>🎯 التوصية:</strong> إضافة زر "تخطي الكل" واضح. إمكانية الضغط على أي نقطة في progress bar للانتقال المباشر.</div>
+</div>
+
+<div class="finding low">
+  <h4><span class="badge badge-low">Low</span> QuickActionFab — غير واضح وش يسوي</h4>
+  <p>الـ Floating Action Button (FAB) موجود مع pulse animation. لكن ليس واضحاً وش وظيفته أول ما تشوفه — لازم المستخدم يقرأ tooltip أو يجربه.</p>
+  <div class="action"><strong>🎯 التوصية:</strong> إضافة تسمية واضحة بجانب الـ FAB. أو جعله يفتح الـ CommandPalette مباشرة.</div>
+</div>
+
+<div class="finding low">
+  <h4><span class="badge badge-low">Low</span> Mobile Bottom Nav — جيد لكن يمكن تحسينه</h4>
+  <p>الـ mobile bottom nav فيه 4 أزرار كلها 44px + tap feedback. الحجم جيد. يمكن إضافة تسميات توضيحية تحت الأيقونات.</p>
+  <div class="action"><strong>🎯 التوصية:</strong> إظهار التسمية النشطة فقط تحت الأيقونة لتوفير مساحة (نمط iOS tab bar).</div>
+</div>
+
+<h4>✅ سهولة الاستخدام</h4>
+<ul class="checklist">
+  <li><span class="done">✅</span> Onboarding شامل (4 خطوات)</li>
+  <li><span class="done">✅</span> Keyboard shortcuts (1-4, ⌘K, Escape)</li>
+  <li><span class="done">✅</span> RTL جاهز للمستخدم العربي</li>
+  <li><span class="done">✅</span> i18n للغة الإنجليزية</li>
+  <li><span class="done">✅</span> Mobile layout مع bottom nav</li>
+  <li><span class="pending">⚠️</span> Onboarding يمكن تخطيه أسرع</li>
+  <li><span class="pending">⚠️</span> Guest mode غير واضح للمستخدم</li>
+</ul>
+</div>
+
+<!-- ============================================================ -->
+<!-- 6. PRACTICALITY -->
+<!-- ============================================================ -->
+<h2 id="practicality">6. 🎯 Practicality</h2>
+<div class="section-card">
+<div class="section-header"><strong>التقييم العام:</strong> <span class="badge badge-needs-work">Needs Work</span></div>
+
+<div class="finding medium">
+  <h4><span class="badge badge-medium">Medium</span> ماذا ينقص الـ dashboard ليكون فعّالاً؟</h4>
+  <p>كمستخدم (محمد — موظف حكومي)، الـ dashboard يغطي جوانب كثيرة لكنه <strong>يحتاج بعض العناصر الضرورية:</strong></p>
+  <ul style="font-size:0.9rem;color:var(--text-muted);padding-right:1rem;">
+    <li><strong>نظام تذكير (Notifications)</strong> — حالياً الـ NotificationBell فارغ من المحتوى الفعلي. لا توجد إشعارات حقيقية (لا للتذكير بالفواتير، ولا لمواعيد القضايا).</li>
+    <li><strong>عدم وجود اتصال بالبيانات الحقيقية</strong> — كل البيانات محلية (localStorage). المحفظة، الأصول، المناوبات كلها hand-typed. لا يوجد sync.</li>
+    <li><strong>Widgets كثيرة جداً</strong> — 10 lazy-loaded widgets + 4 مكاتب. هذا كثير لمستخدم واحد في تطبيق موبايل أول. بعض الـ widgets قد لا تُستخدم أبداً (مثل OsoulArchitect إذا ما يستخدمه Mohammed باستمرار).</li>
+    <li><strong>التقارير</strong> — لا يوجد زر تصدير بيانات (CSV/PDF) للمحفظة أو الفواتير. الطباعة موجودة لكنها طباعة شاشة.</li>
+  </ul>
+  <div class="action"><strong>🎯 التوصية:</strong> تحديد الـ widgets الأكثر استخداماً (top 3-4) وجعلهم أساسيين. الباقي optional. إضافة تصدير CSV.</div>
+</div>
+
+<div class="finding low">
+  <h4><span class="badge badge-low">Low</span> هل كل الـ 5 startups تحتاج dashboard widgets؟</h4>
+  <p>الـ 5 مشاريع (Hadeya, Reluxx, Osoul, XYZ Agency, Personal Brand) كلها موجودة في الـ ProjectsTracker. لكن محمد يديرها كلها — هل يحتاج تتبعها جميعاً في dashboard واحد؟ ممكن يكون overload.</p>
+  <div class="action"><strong>🎯 التوصية:</strong> جعل الـ projects مجرد قائمة بأسمائهم مع milestone tracking أساسي. لا يحتاج تفاصيل عميقة هنا.</div>
+</div>
+
+<div class="finding bad">
+  <h4><span class="badge badge-bad">Bad</span> البيانات غير متزامنة (No Cloud Sync)</h4>
+  <p><strong>وهذه أكبر نقطة ضعف في الـ dashboard حاليًا.</strong> كل البيانات مخزنة في localStorage. إذا مسح المستخدم الـ cache أو فتح dashboard على جهاز آخر، يبدأ من الصفر. Supabase موجود لكنه يستخدم فقط للـ auth وليس لحفظ البيانات.</p>
+  <div class="action"><strong>🎯 التوصية:</strong> هذه ميزة مستقبلية كبيرة. يمكن البدء بمزامنة البيانات الأساسية (habits, tasks, bills) مع Supabase ثم التوسع. هذه أعلى أولوية لـ P8.</div>
+</div>
+
+<h4>✅ عملياً</h4>
+<ul class="checklist">
+  <li><span class="done">✅</span> 4 مكاتب تغطي معظم مجالات الحياة اليومية</li>
+  <li><span class="done">✅</span> Arabic-first مع English support</li>
+  <li><span class="done">✅</span> Mobile-first responsive design</li>
+  <li><span class="done">✅</span> مفهوم جيد ومرتبط بـ 5 مشاريع حقيقية</li>
+  <li><span class="pending">⚠️</span> لا يوجد sync — كل البيانات محلية</li>
+  <li><span class="pending">⚠️</span> Widgets كثيرة — بعضها قد لا يُستخدم</li>
+  <li><span class="pending">⚠️</span> الـ notifications غير مفعلة</li>
+  <li><span class="pending">⚠️</span> لا يوجد تصدير بيانات</li>
+</ul>
+</div>
+
+<!-- ============================================================ -->
+<!-- EXECUTIVE SUMMARY -->
+<!-- ============================================================ -->
+<h2 id="summary">📊 الخلاصة النهائية والتوصيات</h2>
+<div class="section-card">
+
+<h3>🔴 يجب الإصلاح فوراً (Critical + High)</h3>
+<table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+  <tr><th style="text-align:right;padding:0.5rem;border-bottom:1px solid var(--border);width:80px;">الأولوية</th><th style="text-align:right;padding:0.5rem;border-bottom:1px solid var(--border);">المشكلة</th><th style="text-align:right;padding:0.5rem;border-bottom:1px solid var(--border);">ما نسوي</th></tr>
+  <tr><td style="padding:0.5rem;"><span class="badge badge-critical">Critical</span></td><td style="padding:0.5rem;">Light Mode لم يختبر في المتصفح</td><td style="padding:0.5rem;">فتح الموقع في المتصفح وتجربة light mode كاملة</td></tr>
+  <tr><td style="padding:0.5rem;"><span class="badge badge-high">High</span></td><td style="padding:0.5rem;">OsoulArchitect.txt لسا ثقيل (476 سطراً)</td><td style="padding:0.5rem;">فصل كل دالة رئيسية في ملف مستقل</td></tr>
+  <tr><td style="padding:0.5rem;"><span class="badge badge-high">High</span></td><td style="padding:0.5rem;">Lazy loading غير متسق</td><td style="padding:0.5rem;">تأكيد lazy import لكل الـ widgets</td></tr>
+  <tr><td style="padding:0.5rem;"><span class="badge badge-high">High</span></td><td style="padding:0.5rem;">Supabase موجود لكن البيانات محلية فقط</td><td style="padding:0.5rem;">توضيح للمستخدم أن البيانات محلية</td></tr>
+</table>
+
+<h3>🔵 تحسينات متوسطة (Medium Priority — خطة P8)</h3>
+<table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+  <tr><th style="text-align:right;padding:0.5rem;border-bottom:1px solid var(--border);">الأولوية</th><th style="text-align:right;padding:0.5rem;border-bottom:1px solid var(--border);">المشكلة</th><th style="text-align:right;padding:0.5rem;border-bottom:1px solid var(--border);">ما نسوي</th></tr>
+  <tr><td style="padding:0.5rem;"><span class="badge badge-medium">Medium</span></td><td style="padding:0.5rem;">Duplicate DESKS definition (مرتين + MOBILE)</td><td style="padding:0.5rem;">توحيد في lib/utils.ts</td></tr>
+  <tr><td style="padding:0.5rem;"><span class="badge badge-medium">Medium</span></td><td style="padding:0.5rem;">Glass blur يضعف وضوح النصوص (خاصة light)</td><td style="padding:0.5rem;">ضبط شفافية glass لكل theme</td></tr>
+  <tr><td style="padding:0.5rem;"><span class="badge badge-medium">Medium</span></td><td style="padding:0.5rem;">Onboarding يحتاج زر تخطي أسرع</td><td style="padding:0.5rem;">إضافة "Skip all" + dot navigation</td></tr>
+  <tr><td style="padding:0.5rem;"><span class="badge badge-medium">Medium</span></td><td style="padding:0.5rem;">Guest mode timer (5s) قد يكون قصيراً</td><td style="padding:0.5rem;">زيادة إلى 10s أو جعله ديناميكياً</td></tr>
+  <tr><td style="padding:0.5rem;"><span class="badge badge-medium">Medium</span></td><td style="padding:0.5rem;">mr-1 في RTL footer</td><td style="padding:0.5rem;">تغيير إلى me-1</td></tr>
+  <tr><td style="padding:0.5rem;"><span class="badge badge-medium">Medium</span></td><td style="padding:0.5rem;">Loading states بعض الـ widgets ناقصة</td><td style="padding:0.5rem;">إضافة Suspense boundaries</td></tr>
+  <tr><td style="padding:0.5rem;"><span class="badge badge-medium">Medium</span></td><td style="padding:0.5rem;">Windows EBUSY يمنع export محلياً</td><td style="padding:0.5rem;">GitHub Actions workflow (إنشاء + push)</td></tr>
+</table>
+
+<h3>⚪ Nice-to-haves (Low)</h3>
+<p style="font-size:0.9rem;color:var(--text-muted);">
+  Font self-hosting للسرعة · Bundle analyzer اعتيادي · تصدير CSV للبيانات · 
+  QuickActionFab tooltip محسّن · تسمية نشطة في mobile nav فقط
+</p>
+
+<hr>
+
+<h3>🎯 التوصيات الثلاث الأهم للمرحلة القادمة (P8)</h3>
+
+<ol style="padding-right:1.5rem;margin-top:1rem;">
+  <li style="margin-bottom:0.5rem;">
+    <strong>🟢 P8-S1: Light Mode اختبار فعلي في المتصفح</strong>
+    <br>محمد يجرب الـ light mode على جميع المكاتب ويؤكد وضوح النصوص والألوان. هذا يأخذ 10 دقائق فقط.
+  </li>
+  <li style="margin-bottom:0.5rem;">
+    <strong>🟢 P8-S2: GitHub Actions Workflow + النشر التلقائي</strong>
+    <br>إضافة workflow إلى GitHub (بتوكن مع workflow scope) عشان كل push ينشر dashboard تلقائياً.
+  </li>
+  <li style="margin-bottom:0.5rem;">
+    <strong>🟢 P8-S3: Cloud Sync للبيانات الأساسية</strong>
+    <br>بدء مزامنة العادات والمهام والفواتير مع Supabase. هذه أكبر قيمة مضافة للـ dashboard.
+  </li>
+</ol>
+
+<hr>
+
+<h3>📋 ما تم إنجازه (P7)</h3>
+<table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+  <tr><th style="text-align:right;padding:0.3rem;border-bottom:1px solid var(--border);">المرحلة</th><th style="text-align:right;padding:0.3rem;border-bottom:1px solid var(--border);">الحالة</th><th style="text-align:right;padding:0.3rem;border-bottom:1px solid var(--border);">التفاصيل</th></tr>
+  <tr><td style="padding:0.3rem;">P7-S1 Light Mode</td><td style="padding:0.3rem;color:var(--accent);">✅</td><td style="padding:0.3rem;">5 أنماط ألوان، ThemeToggle، CSS variables كاملة</td></tr>
+  <tr><td style="padding:0.3rem;">P7-S2 Osoul Split</td><td style="padding:0.3rem;color:var(--accent);">✅</td><td style="padding:0.3rem;">1,167 → 476 سطراً + 3 مودالات منفصلة</td></tr>
+  <tr><td style="padding:0.3rem;">P7-S3 i18n</td><td style="padding:0.3rem;color:var(--accent);">✅</td><td style="padding:0.3rem;">i18n.tsx + LangToggle + كل النصوص مترجمة</td></tr>
+  <tr><td style="padding:0.3rem;">P7-S4 Mobile</td><td style="padding:0.3rem;color:var(--accent);">✅</td><td style="padding:0.3rem;">44px touch targets, scale feedback, 56px nav</td></tr>
+</table>
+
+<p style="margin-top:1.5rem;text-align:center;color:var(--text-muted);font-size:0.8rem;">
+  — نهاية التقرير —
+  <br>Life Command Center Code Audit · 29 June 2026 · Mohammed's Chief of Staff
+</p>
+
 </div>
 
 </body>
