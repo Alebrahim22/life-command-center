@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import {
   ArrowUpRight, TrendingUp, Bell, Target, ShieldCheck, Sun, Cloud,
   Zap, Coins, Sparkles, LayoutDashboard, Briefcase, Shield,
@@ -17,6 +17,7 @@ import ProjectsTracker from "@/components/ProjectsTracker"
 import LegalCases from "@/components/LegalCases"
 import HabitTracker from "@/components/HabitTracker"
 import OsoulArchitect from "@/components/OsoulArchitect"
+import QuickActionFab from "@/components/QuickActionFab"
 import { supabase } from "@/lib/supabase"
 
 // ─── Types ───────────────────────────────────────────────────────
@@ -798,10 +799,9 @@ function VaultDesk() {
 }
 
 // ================================================================
-// 🖥️ Desktop Layout — Multi-Desk
+// 💻 Desktop Layout — Tabbed Desk Bar
 // ================================================================
-function DesktopLayout() {
-  const [activeDesk, setActiveDesk] = useState<DeskId>("overview")
+function DesktopLayout({ activeDesk, setActiveDesk }: { activeDesk: DeskId; setActiveDesk: (d: DeskId) => void }) {
 
   const handleRegisterDevice = async () => {
     try {
@@ -888,18 +888,14 @@ function DesktopLayout() {
 // ================================================================
 // 📱 Mobile Layout — zero-scroll, sub-tabbed
 // ================================================================
-type MobileTab = "overview" | "financial" | "operating" | "vault"
-
-const MOBILE_DESKS: { key: MobileTab; label: string; icon: React.ElementType }[] = [
+const MOBILE_DESKS: { key: DeskId; label: string; icon: React.ElementType }[] = [
   { key: "overview", label: "Overview", icon: Sparkles },
   { key: "financial", label: "Financial", icon: BarChart3 },
   { key: "operating", label: "Operating", icon: LayoutDashboard },
   { key: "vault", label: "Vault", icon: Shield },
 ]
 
-function MobileLayout() {
-  const [desk, setDesk] = useState<MobileTab>("overview")
-
+function MobileLayout({ activeDesk, setActiveDesk }: { activeDesk: DeskId; setActiveDesk: (d: DeskId) => void }) {
   return (
     <div className="h-screen overflow-hidden flex flex-col justify-between md:hidden">
       <div className="flex-1 overflow-y-auto px-4 pt-4 pb-4">
@@ -916,22 +912,22 @@ function MobileLayout() {
         </div>
 
         <div className="animate-fade-slide-up">
-          {desk === "overview" && (
+          {activeDesk === "overview" && (
             <div className="flex flex-col gap-3">
               <OverviewDesk />
             </div>
           )}
-          {desk === "financial" && (
+          {activeDesk === "financial" && (
             <div className="flex flex-col gap-3">
               <FinancialDesk />
             </div>
           )}
-          {desk === "operating" && (
+          {activeDesk === "operating" && (
             <div className="flex flex-col gap-3">
               <OperatingDesk />
             </div>
           )}
-          {desk === "vault" && (
+          {activeDesk === "vault" && (
             <div className="flex flex-col gap-3">
               <VaultDesk />
             </div>
@@ -942,12 +938,12 @@ function MobileLayout() {
       {/* Mobile Desk Bar */}
       <div className="flex items-center justify-evenly border-t border-white/[0.06] bg-zinc-900/90 backdrop-blur-xl supports-[backdrop-filter]:bg-zinc-900/90 pb-safe">
         {MOBILE_DESKS.map((d) => {
-          const active = desk === d.key
+          const active = activeDesk === d.key
           const Icon = d.icon
           return (
             <button
               key={d.key}
-              onClick={() => setDesk(d.key)}
+              onClick={() => setActiveDesk(d.key)}
               className={`relative flex items-center gap-2 px-4 py-3 text-xs font-medium tracking-wide transition-all duration-200 min-h-[44px] ${
                 active ? "text-accent" : "text-text-secondary hover:text-text-primary"
               }`}
@@ -967,12 +963,24 @@ function MobileLayout() {
 // 🚀 CommandCenter — Entry point
 // ================================================================
 export default function CommandCenter() {
+  const [activeDesk, setActiveDesk] = useState<DeskId>("overview")
+
+  const fabHandlers = useCallback((desk: DeskId) => {
+    setActiveDesk(desk)
+  }, [])
+
   return (
     <>
       <div className="hidden md:block">
-        <DesktopLayout />
+        <DesktopLayout activeDesk={activeDesk} setActiveDesk={setActiveDesk} />
       </div>
-      <MobileLayout />
+      <MobileLayout activeDesk={activeDesk} setActiveDesk={setActiveDesk} />
+      <QuickActionFab
+        onAddTodo={() => fabHandlers("operating")}
+        onLogShift={() => fabHandlers("operating")}
+        onMarkHabits={() => fabHandlers("operating")}
+        onQuickNote={() => fabHandlers("operating")}
+      />
     </>
   )
 }
