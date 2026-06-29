@@ -168,15 +168,15 @@ export default function BillsTracker() {
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-border bg-bg-card p-5">
-        <h2 className="mb-3 text-lg font-semibold text-text-secondary">Bills & Subscriptions</h2>
+      <div className="border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40">
+        <h2 className="mb-3 text-lg font-semibold text-text-secondary">Bills Tracker</h2>
         <div className="h-32 animate-pulse rounded bg-border" />
       </div>
     )
   }
 
   return (
-    <div className="rounded-xl border border-border bg-bg-card p-5">
+    <div className="border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40 transition-all duration-300 hover:border-white/[0.12]">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-text-secondary">Bills & Subscriptions</h2>
         <button

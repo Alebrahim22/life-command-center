@@ -146,34 +146,34 @@ export default function ShiftTracker() {
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-border bg-bg-card p-5">
-        <h2 className="mb-3 text-lg font-semibold text-text-secondary">Shift Tracker</h2>
-        <div className="h-32 animate-pulse rounded bg-border" />
-      </div>
+      <div className="border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40">
+          <h2 className="mb-3 text-lg font-semibold text-text-secondary">Shift Tracker</h2>
+          <div className="h-32 animate-pulse rounded bg-border" />
+        </div>
     )
   }
 
   return (
-    <div className="col-span-1 lg:col-span-2 rounded-xl border border-border bg-bg-card p-5">
+    <div className="col-span-1 lg:col-span-2 border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40 transition-all duration-300">
       <h2 className="mb-4 text-lg font-semibold text-text-secondary">Shift Tracker</h2>
 
       <div className="mb-4 grid grid-cols-3 gap-4 text-sm">
         <div className="rounded-lg bg-bg-card-hover p-3">
-          <p className="text-text-secondary">This Month</p>
+          <p className="text-xs font-medium tracking-wider uppercase text-zinc-400">This Month</p>
           <p className="mt-1 text-2xl font-semibold text-text-primary">{shiftsThisMonth}</p>
         </div>
         <div className="rounded-lg bg-bg-card-hover p-3">
-          <p className="text-text-secondary">This Year</p>
+          <p className="text-xs font-medium tracking-wider uppercase text-zinc-400">This Year</p>
           <p className="mt-1 text-2xl font-semibold text-text-primary">{shiftsThisYear}</p>
         </div>
         <div className="rounded-lg bg-bg-card-hover p-3">
-          <p className="text-text-secondary">Remaining</p>
+          <p className="text-xs font-medium tracking-wider uppercase text-zinc-400">Remaining</p>
           <p className="mt-1 text-2xl font-semibold text-accent">{remaining}</p>
         </div>
       </div>
 
       <div className="mb-5">
-        <div className="flex items-center justify-between text-xs text-text-secondary">
+        <div className="flex items-center justify-between text-xs font-medium tracking-wider uppercase text-zinc-400">
           <span>Progress to {YEAR_TARGET}</span>
           <span>{shiftsThisYear}/{YEAR_TARGET}</span>
         </div>
@@ -186,18 +186,18 @@ export default function ShiftTracker() {
       </div>
 
       <div className="mb-5 space-y-2 border-t border-border pt-4">
-        <h3 className="text-xs font-medium uppercase tracking-wider text-text-secondary">Leave Balances</h3>
+        <h3 className="text-xs font-medium tracking-wider uppercase text-zinc-400">Leave Balances</h3>
         <div className="space-y-1.5 text-sm">
           <div className="flex items-center justify-between rounded-lg bg-bg-card-hover px-3 py-2">
-            <span className="text-text-secondary">Allowance Leave</span>
+            <span className="text-xs font-medium tracking-wider uppercase text-zinc-400">Allowance Leave</span>
             <span className="font-medium text-text-primary">{allowanceRemaining}h / {ALLOWANCE_MAX_HOURS}h</span>
           </div>
           <div className="flex items-center justify-between rounded-lg bg-bg-card-hover px-3 py-2">
-            <span className="text-text-secondary">Sick Leave</span>
+            <span className="text-xs font-medium tracking-wider uppercase text-zinc-400">Sick Leave</span>
             <span className="font-medium text-text-primary">{sickRemaining} / {SICK_MAX_DAYS} days</span>
           </div>
           <div className="flex items-center justify-between rounded-lg bg-bg-card-hover px-3 py-2">
-            <span className="text-text-secondary">Excused Absence</span>
+            <span className="text-xs font-medium tracking-wider uppercase text-zinc-400">Excused Absence</span>
             <span className="font-medium text-text-primary">{excusedRemaining} / {EXCUSED_MAX_DAYS} days</span>
           </div>
         </div>

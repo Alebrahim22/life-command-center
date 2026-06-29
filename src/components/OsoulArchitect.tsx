@@ -559,7 +559,7 @@ export default function OsoulArchitect() {
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-border bg-bg-card p-5">
+      <div className="border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40">
         <h2 className="mb-3 text-lg font-semibold text-text-secondary">Osoul Architect OS</h2>
         <div className="h-48 animate-pulse rounded bg-border" />
       </div>
@@ -628,7 +628,7 @@ export default function OsoulArchitect() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
             {/* Capital Input */}
-            <div className="flex items-center justify-between rounded-xl border border-border bg-bg-card p-4">
+            <div className="flex items-center justify-between border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-4 shadow-2xl shadow-black/40 transition-all duration-300 hover:border-white/[0.12]">
               <div>
                 <h3 className="text-[10px] font-black uppercase text-text-primary">Deployment Capital</h3>
                 <p className="text-[9px] font-bold uppercase text-text-secondary">Budget: {currentMonthYear}</p>
@@ -645,7 +645,7 @@ export default function OsoulArchitect() {
             </div>
 
             {/* Allocation Card */}
-            <div className="rounded-xl border border-border border-t-4 border-t-text-primary bg-bg-card">
+            <div className="rounded-xl border border-white/[0.06] border-t-4 border-t-text-primary bg-zinc-900/30 backdrop-blur-md shadow-2xl shadow-black/40 transition-all duration-300 hover:border-white/[0.12]">
               <div className="p-6">
                 <span className={`inline-block rounded-sm border px-2 py-1 text-[9px] font-black uppercase tracking-tighter ${
                   allocationResult.isDefensive
@@ -707,7 +707,7 @@ export default function OsoulArchitect() {
             </div>
 
             {/* Market Radar Table */}
-            <div className="overflow-hidden rounded-xl border border-border bg-bg-card">
+            <div className="overflow-hidden rounded-xl border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md shadow-2xl shadow-black/40 transition-all duration-300 hover:border-white/[0.12]">
               <div className="p-6">
                 <div className="mb-4 flex items-center justify-between">
                   <h2 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-text-primary">
@@ -807,7 +807,7 @@ export default function OsoulArchitect() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            <div className="relative overflow-hidden rounded-xl border border-border bg-bg-card-hover p-5">
+            <div className="relative overflow-hidden rounded-xl border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md p-5 shadow-2xl shadow-black/40 transition-all duration-300 hover:border-white/[0.12]">
               <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-accent/5 blur-3xl" />
               <h2 className="mb-5 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-accent">
                 <PieChart size={13} /> 5-Year Dynamics
@@ -840,7 +840,7 @@ export default function OsoulArchitect() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-border bg-bg-card p-5">
+            <div className="rounded-xl border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md p-5 shadow-2xl shadow-black/40 transition-all duration-300 hover:border-white/[0.12]">
               <h3 className="mb-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-red-400">
                 <AlertCircle size={13} /> Architect Intel
               </h3>
@@ -867,15 +867,15 @@ export default function OsoulArchitect() {
       {activeTab === "portfolio" && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <div className="rounded-xl border border-border bg-bg-card p-5">
-              <p className="text-[9px] font-black uppercase text-text-secondary">Capital Invested</p>
+            <div className="rounded-xl border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md p-5 shadow-2xl shadow-black/40 transition-all duration-300 hover:border-white/[0.12]">
+              <p className="text-[9px] font-black uppercase text-zinc-400">Capital Invested</p>
               <p className="text-2xl font-black text-text-primary">{totalInvested.toLocaleString(undefined, { minimumFractionDigits: 3 })} KD</p>
             </div>
-            <div className="rounded-xl border border-border bg-bg-card p-5">
-              <p className="text-[9px] font-black uppercase text-text-secondary">Current Value</p>
+            <div className="rounded-xl border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md p-5 shadow-2xl shadow-black/40 transition-all duration-300 hover:border-white/[0.12]">
+              <p className="text-[9px] font-black uppercase text-zinc-400">Current Value</p>
               <p className="text-2xl font-black text-text-primary">{currentValue.toLocaleString(undefined, { minimumFractionDigits: 3 })} KD</p>
             </div>
-            <div className="rounded-xl border border-accent/30 bg-bg-card p-5">
+            <div className="rounded-xl border border-accent/30 bg-zinc-900/30 backdrop-blur-md p-5 shadow-2xl shadow-black/40 transition-all duration-300 hover:border-white/[0.12]">
               <p className="text-[9px] font-black uppercase text-accent">Total Net Profit</p>
               <p className={`text-2xl font-black ${totalProfit >= 0 ? "text-accent" : "text-red-400"}`}>
                 {totalProfit >= 0 ? "+" : ""}{totalProfit.toLocaleString(undefined, { minimumFractionDigits: 3 })} KD ({profitPercentage}%)
@@ -883,7 +883,7 @@ export default function OsoulArchitect() {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-xl border border-border bg-bg-card">
+          <div className="overflow-hidden rounded-xl border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md shadow-2xl shadow-black/40 transition-all duration-300 hover:border-white/[0.12]">
             <div className="flex items-center justify-between border-b border-border bg-bg-card-hover p-4">
               <h2 className="text-[10px] font-black uppercase tracking-widest text-text-primary">Active Inventory</h2>
               <button
@@ -951,7 +951,7 @@ export default function OsoulArchitect() {
 
       {/* --- HISTORY TAB --- */}
       {activeTab === "history" && (
-        <div className="rounded-xl border border-border bg-bg-card p-5">
+        <div className="rounded-xl border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md p-5 shadow-2xl shadow-black/40 transition-all duration-300 hover:border-white/[0.12]">
           <h2 className="mb-5 text-[10px] font-black uppercase tracking-widest text-text-primary">Execution Log</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-[11px]">
@@ -988,7 +988,7 @@ export default function OsoulArchitect() {
       {/* --- RADAR MODAL --- */}
       {showRadarModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-lg overflow-hidden rounded-xl border border-border bg-bg-card shadow-2xl">
+          <div className="w-full max-w-lg overflow-hidden rounded-xl border border-white/[0.06] bg-zinc-900/40 backdrop-blur-md shadow-2xl shadow-black/60 transition-all duration-300">
             <div className="flex items-center justify-between border-b border-border p-4">
               <h2 className="text-sm font-bold text-text-primary">{editRadarIndex !== null ? "Modify Radar" : "New Radar Asset"}</h2>
               <button onClick={() => setShowRadarModal(false)}><X size={18} className="text-text-secondary" /></button>
@@ -1016,7 +1016,7 @@ export default function OsoulArchitect() {
       {/* --- STOCK MODAL --- */}
       {showStockModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-md overflow-hidden rounded-xl border border-border bg-bg-card shadow-2xl">
+          <div className="w-full max-w-md overflow-hidden rounded-xl border border-white/[0.06] bg-zinc-900/40 backdrop-blur-md shadow-2xl shadow-black/60 transition-all duration-300">
             <div className="flex items-center justify-between border-b border-border p-4">
               <h2 className="text-sm font-bold text-text-primary">{editIndex !== null ? "Modify Holding" : "New Asset"}</h2>
               <button onClick={() => setShowStockModal(false)}><X size={18} className="text-text-secondary" /></button>
@@ -1036,7 +1036,7 @@ export default function OsoulArchitect() {
       {/* --- REPORT MODAL --- */}
       {showReport && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="flex w-full max-w-4xl max-h-[90vh] flex-col overflow-hidden rounded-xl border border-border bg-bg-card shadow-2xl">
+          <div className="flex w-full max-w-4xl max-h-[90vh] flex-col overflow-hidden rounded-xl border border-white/[0.06] bg-zinc-900/40 backdrop-blur-md shadow-2xl shadow-black/60 transition-all duration-300">
             <div className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-bg-card-hover p-4">
               <h2 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-accent">
                 <FileText size={15} /> Engineering Intelligence

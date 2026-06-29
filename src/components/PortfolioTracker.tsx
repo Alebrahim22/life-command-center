@@ -178,7 +178,7 @@ export default function PortfolioTracker() {
 
   if (!loaded) {
     return (
-      <div className="rounded-xl border border-border bg-bg-card p-5">
+      <div className="border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40">
         <h2 className="mb-3 text-lg font-semibold text-text-secondary">Portfolio Tracker</h2>
         <div className="h-40 animate-pulse rounded bg-border" />
       </div>
@@ -186,24 +186,24 @@ export default function PortfolioTracker() {
   }
 
   return (
-    <div className="col-span-1 lg:col-span-2 rounded-xl border border-border bg-bg-card p-5">
+    <div className="col-span-1 lg:col-span-2 border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40 transition-all duration-300">
       <h2 className="mb-4 text-lg font-semibold text-text-secondary">Portfolio Tracker</h2>
 
       <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
         <div className="rounded-lg bg-bg-card-hover p-3">
-          <p className="text-xs text-text-secondary">Total Portfolio</p>
+          <p className="text-xs font-medium tracking-wider uppercase text-zinc-400">Total Portfolio</p>
           <p className="mt-1 text-2xl font-semibold text-text-primary">
             {fmt(totalKwd, "KWD")} KWD
           </p>
         </div>
         <div className="rounded-lg bg-bg-card-hover p-3">
-          <p className="text-xs text-text-secondary">Total P&L</p>
+          <p className="text-xs font-medium tracking-wider uppercase text-zinc-400">Total P&amp;L</p>
           <p className={`mt-1 text-2xl font-semibold ${totalPnl >= 0 ? "text-accent" : "text-red-400"}`}>
             {totalPnl >= 0 ? "+" : ""}{fmt(totalPnl, "KWD")} KWD
           </p>
         </div>
         <div className="rounded-lg bg-bg-card-hover p-3">
-          <p className="text-xs text-text-secondary">P&L %</p>
+          <p className="text-xs font-medium tracking-wider uppercase text-zinc-400">P&amp;L %</p>
           <p className={`mt-1 text-2xl font-semibold ${pnlPercent >= 0 ? "text-accent" : "text-red-400"}`}>
             {pnlPercent >= 0 ? "+" : ""}{pnlPercent.toFixed(1)}%
           </p>
@@ -211,7 +211,7 @@ export default function PortfolioTracker() {
       </div>
 
       <div className="mb-5 flex items-center gap-2 border-t border-border pt-3">
-        <label className="text-xs text-text-secondary">1 USD =</label>
+        <label className="text-xs font-medium tracking-wider uppercase text-zinc-400">1 USD =</label>
         <input
           type="number"
           step="0.001"
@@ -221,7 +221,7 @@ export default function PortfolioTracker() {
           onKeyDown={(e) => e.key === "Enter" && updateRate()}
           className="w-20 rounded-lg border border-border bg-bg-card-hover px-2 py-1 text-sm text-text-primary outline-none"
         />
-        <span className="text-xs text-text-secondary">KWD</span>
+        <span className="text-xs font-medium tracking-wider uppercase text-zinc-400">KWD</span>
       </div>
 
       <div className="space-y-3">

@@ -116,8 +116,8 @@ export default function TodoList() {
 
   if (loading) {
     return (
-      <div className="glass-card-static p-5">
-        <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-text-secondary">
+      <div className="border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40">
+        <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-400">
           <span className="mr-2 inline-block h-[3px] w-[3px] rounded-full bg-accent" />
           Tasks
         </h3>
@@ -129,10 +129,10 @@ export default function TodoList() {
   }
 
   return (
-    <div className="glass-card-static p-5">
+    <div className="border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40 transition-all duration-300 hover:border-white/[0.12]">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-text-secondary">
+        <h3 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-400">
           <span className="inline-block h-[3px] w-[3px] rounded-full bg-accent" />
           Tasks
         </h3>

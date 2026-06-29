@@ -235,7 +235,7 @@ export default function LegalCases() {
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-border bg-bg-card p-5">
+      <div className="border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40">
         <h2 className="mb-3 text-lg font-semibold text-text-secondary">Legal Cases</h2>
         <div className="h-32 animate-pulse rounded bg-border" />
       </div>
@@ -243,7 +243,7 @@ export default function LegalCases() {
   }
 
   return (
-    <div className="col-span-1 lg:col-span-2 rounded-xl border border-border bg-bg-card p-5">
+    <div className="col-span-1 lg:col-span-2 border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40 transition-all duration-300">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-text-secondary">Legal Cases</h2>
         <button
