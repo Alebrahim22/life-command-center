@@ -161,27 +161,27 @@ export default function UpcomingEvents() {
             placeholder="Event title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-white placeholder-text-secondary outline-none focus:border-accent"
+            className="w-full rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-text-primary placeholder-text-secondary outline-none focus:border-accent"
           />
           <div className="flex gap-2">
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="flex-1 rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-white outline-none [color-scheme:dark]"
+              className="flex-1 rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-text-primary outline-none"
             />
             <input
               type="time"
               value={time}
               onChange={(e) => setTime(e.target.value)}
-              className="flex-1 rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-white outline-none [color-scheme:dark]"
+              className="flex-1 rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-text-primary outline-none"
             />
           </div>
           <div className="flex gap-2">
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as Event["category"])}
-              className="flex-1 rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-white outline-none"
+              className="flex-1 rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-text-primary outline-none"
             >
               {CATEGORIES.map((c) => (
                 <option key={c} value={c}>{c}</option>

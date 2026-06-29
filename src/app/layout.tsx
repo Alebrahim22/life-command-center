@@ -35,7 +35,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" dir="auto" className={`${inter.variable} ${firaCode.variable} ${tajawal.variable}`}>
+    <html lang="ar" dir="rtl" className={`${inter.variable} ${firaCode.variable} ${tajawal.variable}`}>
       <head>
         <script
           dangerouslySetInnerHTML={{

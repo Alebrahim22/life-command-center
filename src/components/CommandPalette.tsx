@@ -100,15 +100,15 @@ export default function CommandPalette({ open, onClose, onNavigate }: Props) {
   return (
     <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh]">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-bg-surface/80 backdrop-blur-sm" />
 
       {/* Palette */}
       <div
         data-palette
-        className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/[0.08] bg-zinc-900/95 shadow-2xl shadow-black/60 backdrop-blur-xl"
+        className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-border-hover bg-bg-glass-strong shadow-overlay backdrop-blur-xl"
       >
         {/* Search input */}
-        <div className="flex items-center gap-3 border-b border-white/[0.06] px-4 py-3.5">
+        <div className="flex items-center gap-3 border-b border-border px-4 py-3.5">
           <Search className="h-4 w-4 shrink-0 text-text-muted" />
           <input
             ref={inputRef}
@@ -118,7 +118,7 @@ export default function CommandPalette({ open, onClose, onNavigate }: Props) {
             placeholder="Search desks, commands…"
             className="flex-1 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-muted/50"
           />
-          <kbd className="hidden rounded-md border border-white/[0.08] bg-white/[0.04] px-1.5 py-0.5 text-[10px] font-medium text-text-muted sm:inline-block">
+          <kbd className="hidden rounded-md border border-border-hover bg-bg-glass px-1.5 py-0.5 text-[10px] font-medium text-text-muted sm:inline-block">
             ESC
           </kbd>
         </div>
@@ -141,7 +141,7 @@ export default function CommandPalette({ open, onClose, onNavigate }: Props) {
                     className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-all ${
                       i === selectedIdx
                         ? "bg-accent/15 text-accent shadow-sm"
-                        : "text-text-secondary hover:bg-white/[0.04] hover:text-text-primary"
+                        : "text-text-secondary hover:bg-bg-glass hover:text-text-primary"
                     }`}
                   >
                     <Icon className={`h-4 w-4 shrink-0 ${i === selectedIdx ? "text-accent" : "text-text-muted"}`} />
@@ -160,18 +160,18 @@ export default function CommandPalette({ open, onClose, onNavigate }: Props) {
         </div>
 
         {/* Footer hints */}
-        <div className="flex items-center gap-4 border-t border-white/[0.06] px-4 py-2">
+        <div className="flex items-center gap-4 border-t border-border px-4 py-2">
           <span className="flex items-center gap-1.5 text-[10px] text-text-muted/60">
-            <kbd className="rounded border border-white/[0.08] bg-white/[0.04] px-1 py-0.5 text-[9px]">↑</kbd>
-            <kbd className="rounded border border-white/[0.08] bg-white/[0.04] px-1 py-0.5 text-[9px]">↓</kbd>
+            <kbd className="rounded border border-border-hover bg-bg-glass px-1 py-0.5 text-[9px]">↑</kbd>
+            <kbd className="rounded border border-border-hover bg-bg-glass px-1 py-0.5 text-[9px]">↓</kbd>
             navigate
           </span>
           <span className="flex items-center gap-1.5 text-[10px] text-text-muted/60">
-            <kbd className="rounded border border-white/[0.08] bg-white/[0.04] px-1.5 py-0.5 text-[9px]">↵</kbd>
+            <kbd className="rounded border border-border-hover bg-bg-glass px-1.5 py-0.5 text-[9px]">↵</kbd>
             open
           </span>
           <span className="flex items-center gap-1.5 text-[10px] text-text-muted/60">
-            <kbd className="rounded border border-white/[0.08] bg-white/[0.04] px-1.5 py-0.5 text-[9px]">esc</kbd>
+            <kbd className="rounded border border-border-hover bg-bg-glass px-1.5 py-0.5 text-[9px]">esc</kbd>
             close
           </span>
         </div>

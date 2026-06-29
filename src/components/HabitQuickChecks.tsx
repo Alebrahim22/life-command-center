@@ -20,7 +20,12 @@ export default function HabitQuickChecks() {
     supabase
       .from("habits")
       .select("date_key, habit_id")
-      .then(({ data: rows }) => {
+      .then(({ data: rows, error }) => {
+        if (error) {
+          console.error("[HabitQuickChecks] load:", error.message)
+          setLoaded(true)
+          return
+        }
         const map: Record<string, string[]> = {}
         if (rows) {
           for (const r of rows) {
@@ -49,8 +54,10 @@ export default function HabitQuickChecks() {
     // Supabase sync
     if (exists) {
       supabase.from("habits").delete().eq("date_key", key).eq("habit_id", id)
+        .then(({ error }) => { if (error) console.error("[HabitQuickChecks] delete:", error.message) })
     } else {
       supabase.from("habits").insert({ date_key: key, habit_id: id })
+        .then(({ error }) => { if (error) console.error("[HabitQuickChecks] insert:", error.message) })
     }
   }
 
@@ -62,7 +69,7 @@ export default function HabitQuickChecks() {
         {HABITS.map((h) => (
           <label
             key={h.id}
-            className="flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 transition-all duration-200 hover:bg-white/[0.04]"
+            className="flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 transition-all duration-200 hover:bg-bg-glass"
           >
             <Checkbox checked={doneToday.includes(h.id)} onChange={() => toggle(h.id)} />
             <span className="text-sm text-text-primary">{h.label}</span>

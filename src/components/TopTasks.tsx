@@ -51,7 +51,7 @@ export default function TopTasks() {
           {todos.map((t) => (
             <div
               key={t.id}
-              className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 hover:bg-white/[0.03]"
+              className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 hover:bg-bg-card"
             >
               <span
                 className={`flex h-2 w-2 shrink-0 rounded-full ring-2 ring-offset-1 ring-offset-bg-primary ${
@@ -59,7 +59,7 @@ export default function TopTasks() {
                     ? "bg-red-400 ring-red-400/20"
                     : t.priority === "medium"
                     ? "bg-amber-400 ring-amber-400/20"
-                    : "bg-text-muted ring-white/5"
+                    : "bg-text-muted ring-border"
                 }`}
               />
               <span className="flex-1 truncate text-sm text-text-primary">{t.text}</span>

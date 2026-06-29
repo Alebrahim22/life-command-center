@@ -162,7 +162,7 @@ export default function BudgetSnapshot() {
 
   if (loading) {
     return (
-      <div className="border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40">
+      <div className="glass-card-static p-5">
         <h2 className="mb-3 text-lg font-semibold text-text-secondary">Budget Snapshot</h2>
         <div className="h-40 animate-pulse rounded bg-border" />
       </div>
@@ -171,7 +171,7 @@ export default function BudgetSnapshot() {
 
   if (!budgetExists) {
     return (
-      <div className="border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40">
+      <div className="glass-card-static p-5">
         <h2 className="mb-4 text-lg font-semibold text-text-secondary">Budget Snapshot</h2>
         <EmptyState
           icon="💰"
@@ -185,12 +185,12 @@ export default function BudgetSnapshot() {
   }
 
   return (
-    <div className="border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40 transition-all duration-300 hover:border-white/[0.12]">
+    <div className="glass-card-static p-5 transition-all duration-300 hover:border-border-hover">
       <h2 className="mb-4 text-lg font-semibold text-text-secondary">Budget Snapshot</h2>
 
       <div className="mb-4 grid grid-cols-2 gap-3">
         <div>
-          <label className="text-[10px] font-medium tracking-wider uppercase text-zinc-400">Monthly Income (KWD)</label>
+          <label className="text-[10px] font-medium tracking-wider uppercase text-text-muted">Monthly Income (KWD)</label>
           <input
             type="number"
             value={incomeInput}
@@ -201,7 +201,7 @@ export default function BudgetSnapshot() {
           />
         </div>
         <div>
-          <label className="text-[10px] font-medium tracking-wider uppercase text-zinc-400">Savings Goal (%)</label>
+          <label className="text-[10px] font-medium tracking-wider uppercase text-text-muted">Savings Goal (%)</label>
           <input
             type="number"
             min="0"
@@ -217,19 +217,19 @@ export default function BudgetSnapshot() {
 
       <div className="mb-4 grid grid-cols-3 gap-3 text-sm">
         <div className="rounded-lg bg-bg-card-hover p-3">
-          <p className="text-[10px] font-medium tracking-wider uppercase text-zinc-400">Income</p>
+          <p className="text-[10px] font-medium tracking-wider uppercase text-text-muted">Income</p>
           <p className="mt-1 text-lg font-semibold text-text-primary">
             {data.income.toLocaleString("en-US", { minimumFractionDigits: 2 })} KWD
           </p>
         </div>
         <div className="rounded-lg bg-bg-card-hover p-3">
-          <p className="text-[10px] font-medium tracking-wider uppercase text-zinc-400">Spent</p>
+          <p className="text-[10px] font-medium tracking-wider uppercase text-text-muted">Spent</p>
           <p className={`mt-1 text-lg font-semibold ${statusColor[status]}`}>
             {totalSpent.toLocaleString("en-US", { minimumFractionDigits: 2 })} KWD
           </p>
         </div>
         <div className="rounded-lg bg-bg-card-hover p-3">
-          <p className="text-[10px] font-medium tracking-wider uppercase text-zinc-400">Remaining</p>
+          <p className="text-[10px] font-medium tracking-wider uppercase text-text-muted">Remaining</p>
           <p className={`mt-1 text-lg font-semibold ${statusColor[status]}`}>
             {remaining.toLocaleString("en-US", { minimumFractionDigits: 2 })} KWD
           </p>
@@ -250,7 +250,7 @@ export default function BudgetSnapshot() {
       </div>
 
       <div className="mb-3 border-t border-border pt-3">
-        <h3 className="mb-2 text-xs font-medium tracking-wider uppercase text-zinc-400">
+        <h3 className="mb-2 text-xs font-medium tracking-wider uppercase text-text-muted">
           Spending by Category
         </h3>
         <div className="space-y-1">

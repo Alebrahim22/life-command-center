@@ -100,8 +100,8 @@ export default function NotificationBell() {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full z-50 mt-2 w-80 origin-top-right animate-scale-in rounded-xl border border-white/[0.06] bg-zinc-900/95 backdrop-blur-xl shadow-2xl shadow-black/40">
-            <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
+          <div className="absolute right-0 top-full z-50 mt-2 w-80 origin-top-right animate-scale-in rounded-xl border-border bg-bg-glass-strong backdrop-blur-xl shadow-overlay">
+            <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <h3 className="text-sm font-semibold text-text-primary">
                 Alerts {alerts.length > 0 && `(${alerts.length})`}
               </h3>

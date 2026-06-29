@@ -19,7 +19,7 @@ type Filter = "all" | "active" | "completed"
 const priorityColors: Record<string, string> = {
   high: "bg-red-400 ring-red-400/20",
   medium: "bg-amber-400 ring-amber-400/20",
-  low: "bg-text-muted ring-white/5",
+  low: "bg-text-muted ring-border",
 }
 
 const priorityLabels: Record<string, string> = {
@@ -116,8 +116,8 @@ export default function TodoList() {
 
   if (loading) {
     return (
-      <div className="border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40">
-        <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-400">
+      <div className="glass-card-static p-5">
+        <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-text-muted">
           <span className="mr-2 inline-block h-[3px] w-[3px] rounded-full bg-accent" />
           Tasks
         </h3>
@@ -129,10 +129,10 @@ export default function TodoList() {
   }
 
   return (
-    <div className="border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40 transition-all duration-300 hover:border-white/[0.12]">
+    <div className="glass-card-static p-5 transition-all duration-300 hover:border-border-hover">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-400">
+        <h3 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-text-muted">
           <span className="inline-block h-[3px] w-[3px] rounded-full bg-accent" />
           Tasks
         </h3>
@@ -140,7 +140,7 @@ export default function TodoList() {
       </div>
 
       {/* Add form */}
-      <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl bg-white/[0.03] p-2.5">
+      <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl bg-bg-card p-2.5">
         <input
           type="text"
           placeholder="Add a task..."
@@ -202,7 +202,7 @@ export default function TodoList() {
           {filtered.map((t) => (
             <div
               key={t.id}
-              className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 hover:bg-white/[0.03]"
+              className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 hover:bg-bg-card"
             >
               <Checkbox checked={t.completed} onChange={() => toggleTodo(t.id, t.completed)} />
               <span

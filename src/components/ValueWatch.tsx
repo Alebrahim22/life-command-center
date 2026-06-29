@@ -47,7 +47,7 @@ export default function ValueWatch() {
       ) : (
         <div className="space-y-0.5">
           {stocks.map((s) => (
-            <div key={s.ticker} className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 hover:bg-white/[0.03]">
+            <div key={s.ticker} className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 hover:bg-bg-card">
               <TrendingUp className="h-3.5 w-3.5 shrink-0 text-accent" />
               <span className="text-sm font-semibold font-mono text-text-primary">{s.ticker}</span>
               <span className="flex-1 truncate text-sm text-text-secondary">{s.name}</span>

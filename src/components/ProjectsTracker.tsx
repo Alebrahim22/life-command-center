@@ -339,7 +339,7 @@ export default function ProjectsTracker() {
 
   if (loading) {
     return (
-      <div className="border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40">
+      <div className="glass-card-static p-5">
         <h2 className="mb-3 text-lg font-semibold text-text-secondary">Projects</h2>
         <div className="h-48 animate-pulse rounded bg-border" />
       </div>
@@ -347,7 +347,7 @@ export default function ProjectsTracker() {
   }
 
   return (
-    <div className="col-span-1 lg:col-span-2 border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40 transition-all duration-300">
+    <div className="col-span-1 lg:col-span-2 glass-card-static p-5 transition-all duration-300">
       <h2 className="mb-4 text-lg font-semibold text-text-secondary">Projects</h2>
 
       <div className="mb-4 flex gap-4 text-sm">
@@ -515,7 +515,7 @@ export default function ProjectsTracker() {
                     {editMilestoneProject === name && (
                       <div className="mt-2 flex gap-2 rounded-lg bg-bg-card p-2">
                         <input type="text" placeholder="Title" value={msTitle} onChange={(e) => setMsTitle(e.target.value)} className="flex-1 rounded border border-border bg-bg-card-hover px-2 py-1 text-xs text-text-primary placeholder-text-secondary outline-none" />
-                        <input type="date" value={msDate} onChange={(e) => setMsDate(e.target.value)} className="rounded border border-border bg-bg-card-hover px-2 py-1 text-xs text-text-primary outline-none [color-scheme:dark]" />
+                        <input type="date" value={msDate} onChange={(e) => setMsDate(e.target.value)} className="rounded border border-border bg-bg-card-hover px-2 py-1 text-xs text-text-primary outline-none" />
                         <button onClick={() => addMilestone(name)} className="rounded bg-accent/20 px-2 text-xs font-medium text-accent">Add</button>
                       </div>
                     )}

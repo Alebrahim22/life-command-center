@@ -235,7 +235,7 @@ export default function LegalCases() {
 
   if (loading) {
     return (
-      <div className="border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40">
+      <div className="glass-card-static p-5">
         <h2 className="mb-3 text-lg font-semibold text-text-secondary">Legal Cases</h2>
         <div className="h-32 animate-pulse rounded bg-border" />
       </div>
@@ -243,7 +243,7 @@ export default function LegalCases() {
   }
 
   return (
-    <div className="col-span-1 lg:col-span-2 border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40 transition-all duration-300">
+    <div className="col-span-1 lg:col-span-2 glass-card-static p-5 transition-all duration-300">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-text-secondary">Legal Cases</h2>
         <button
@@ -271,8 +271,8 @@ export default function LegalCases() {
             </select>
           </div>
           <div className="flex gap-2">
-            <input type="date" value={sessionDate} onChange={(e) => setSessionDate(e.target.value)} className="flex-1 rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-text-primary outline-none [color-scheme:dark]" />
-            <input type="time" value={sessionTime} onChange={(e) => setSessionTime(e.target.value)} className="flex-1 rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-text-primary outline-none [color-scheme:dark]" />
+            <input type="date" value={sessionDate} onChange={(e) => setSessionDate(e.target.value)} className="flex-1 rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-text-primary outline-none" />
+            <input type="time" value={sessionTime} onChange={(e) => setSessionTime(e.target.value)} className="flex-1 rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-text-primary outline-none" />
           </div>
           <button onClick={addCase} className="w-full rounded-lg bg-accent/20 py-2 text-sm font-medium text-accent">Add Case</button>
         </div>
@@ -318,8 +318,8 @@ export default function LegalCases() {
                     <select value={c.stage} onChange={(e) => updateCaseInDb(c.id, { stage: e.target.value as LegalCase["stage"] })} className="rounded-lg border border-border bg-bg-card px-2 py-1 text-xs text-text-primary outline-none">
                       {STAGES.map((s) => <option key={s} value={s}>{s}</option>)}
                     </select>
-                    <input type="date" value={c.nextSessionDate || ""} onChange={(e) => updateCaseInDb(c.id, { nextSessionDate: e.target.value || null })} className="rounded-lg border border-border bg-bg-card px-2 py-1 text-xs text-text-primary outline-none [color-scheme:dark]" />
-                    <input type="time" value={c.nextSessionTime || ""} onChange={(e) => updateCaseInDb(c.id, { nextSessionTime: e.target.value || null })} className="rounded-lg border border-border bg-bg-card px-2 py-1 text-xs text-text-primary outline-none [color-scheme:dark]" />
+                    <input type="date" value={c.nextSessionDate || ""} onChange={(e) => updateCaseInDb(c.id, { nextSessionDate: e.target.value || null })} className="rounded-lg border border-border bg-bg-card px-2 py-1 text-xs text-text-primary outline-none" />
+                    <input type="time" value={c.nextSessionTime || ""} onChange={(e) => updateCaseInDb(c.id, { nextSessionTime: e.target.value || null })} className="rounded-lg border border-border bg-bg-card px-2 py-1 text-xs text-text-primary outline-none" />
                   </div>
 
                   <div className="mb-3">

@@ -121,7 +121,7 @@ export default function Onboarding({ onFinish }: { onFinish: () => void }) {
       <div className="relative w-full max-w-lg mx-auto px-6">
         {/* Progress bar */}
         <div className="mb-8 flex items-center gap-3">
-          <div className="flex-1 h-1 bg-white/[0.06] rounded-full overflow-hidden">
+          <div className="flex-1 h-1 bg-bg-glass rounded-full overflow-hidden">
             <div
               className="h-full bg-accent rounded-full transition-all duration-500 ease-out"
               style={{ width: `${progress}%` }}
@@ -154,7 +154,7 @@ export default function Onboarding({ onFinish }: { onFinish: () => void }) {
           </div>
 
           {/* Divider */}
-          <div className="border-t border-white/[0.06]" />
+          <div className="border-t border-border" />
 
           {/* Description */}
           <p className="text-sm text-text-secondary leading-relaxed">
@@ -185,7 +185,7 @@ export default function Onboarding({ onFinish }: { onFinish: () => void }) {
                     ? "w-8 bg-accent"
                     : i < step
                     ? "w-2 bg-accent/40"
-                    : "w-2 bg-white/[0.12]"
+                    : "w-2 bg-bg-glass-strong"
                 }`}
               />
             ))}

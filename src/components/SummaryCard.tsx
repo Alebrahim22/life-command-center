@@ -25,7 +25,7 @@ export default function SummaryCard({
 }) {
   return (
     <div
-      className={`group border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl shadow-2xl shadow-black/40 transition-all duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:border-white/[0.12] ${
+      className={`group glass-card-static transition-all duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:border-border-hover ${
         isOpen ? 'ring-1 ring-accent/10 shadow-[0_0_30px_rgba(34,197,94,0.04)]' : ''
       }`}
     >
@@ -37,14 +37,14 @@ export default function SummaryCard({
           <span className="text-lg shrink-0">{emoji}</span>
           <div className="min-w-0">
             <h3 className="text-sm font-semibold text-text-primary group-hover:text-accent transition-colors duration-200">{title}</h3>
-            {!isOpen && <p className="text-xs text-zinc-400 mt-0.5 truncate max-w-[240px]">{summary}</p>}
+            {!isOpen && <p className="text-xs text-text-muted mt-0.5 truncate max-w-[240px]">{summary}</p>}
           </div>
         </div>
         <div className={`flex items-center justify-center w-6 h-6 rounded-lg transition-all duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
-          isOpen ? 'bg-accent/10 rotate-180' : 'bg-white/[0.03] group-hover:bg-white/[0.06]'
+          isOpen ? 'bg-accent/10 rotate-180' : 'bg-bg-card group-hover:bg-bg-glass'
         }`}>
           <ChevronDown className={`h-3.5 w-3.5 transition-all duration-200 ${
-            isOpen ? 'text-accent' : 'text-zinc-400'
+            isOpen ? 'text-accent' : 'text-text-muted'
           }`} />
         </div>
       </button>
@@ -55,7 +55,7 @@ export default function SummaryCard({
         }`}
       >
         <div className="overflow-hidden">
-          <div className="border-t border-white/[0.06] p-4 pt-3 space-y-3">
+          <div className="border-t border-border p-4 pt-3 space-y-3">
             {children}
           </div>
         </div>

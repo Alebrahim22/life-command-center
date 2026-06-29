@@ -138,7 +138,7 @@ export default function HabitTracker() {
 
   if (!loaded) {
     return (
-      <div className="border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40">
+      <div className="glass-card-static p-5">
         <h2 className="mb-3 text-lg font-semibold text-text-secondary">Habit Tracker</h2>
         <div className="h-48 animate-pulse rounded bg-border" />
       </div>
@@ -146,11 +146,11 @@ export default function HabitTracker() {
   }
 
   return (
-    <div className="col-span-1 lg:col-span-2 border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md rounded-xl p-5 shadow-2xl shadow-black/40 transition-all duration-300">
+    <div className="col-span-1 lg:col-span-2 glass-card-static p-5 transition-all duration-300">
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-text-secondary">Habit Tracker</h2>
-          <p className="text-xs font-medium tracking-wider uppercase text-zinc-400">{todayDisplay}</p>
+          <p className="text-xs font-medium tracking-wider uppercase text-text-muted">{todayDisplay}</p>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-text-secondary">{completedCount}/{totalCount}</span>

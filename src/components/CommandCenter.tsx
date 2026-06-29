@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import {
   Sparkles, ShieldCheck, BarChart3,
   LayoutDashboard, Shield, Printer, Command,
+  RotateCcw, RefreshCw,
 } from "lucide-react"
 import QuickActionFab from "@/components/QuickActionFab"
 import CommandPalette from "@/components/CommandPalette"
@@ -47,7 +48,7 @@ function DesktopLayout({ activeDesk, setActiveDesk }: { activeDesk: DeskId; setA
       <div className="mb-5 flex items-center justify-between animate-fade-slide-up">
         <div>
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-accent via-emerald-500 to-accent/80 shadow-[0_0_20px_rgba(34,197,94,0.2)] ring-1 ring-white/10">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-accent via-emerald-500 to-accent/80 shadow-[0_0_20px_rgba(34,197,94,0.2)] ring-1 ring-border-active/50">
               <span className="text-sm font-bold text-white">م</span>
             </div>
             <div>
@@ -75,6 +76,14 @@ function DesktopLayout({ activeDesk, setActiveDesk }: { activeDesk: DeskId; setA
             <Printer className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Print</span>
           </button>
+          <button
+            onClick={() => window.location.reload()}
+            className="btn-ghost text-xs"
+            title="Refresh all data"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Refresh</span>
+          </button>
           <ThemeToggle />
           <kbd className="hidden rounded-md border border-border bg-bg-surface px-1.5 py-0.5 text-[10px] font-medium text-text-muted/60 sm:inline-flex items-center gap-0.5">
             <Command className="h-2.5 w-2.5" />K
@@ -91,7 +100,7 @@ function DesktopLayout({ activeDesk, setActiveDesk }: { activeDesk: DeskId; setA
 
       {/* ─────────────── Desk Bar ─────────────── */}
       <div className="mb-5 animate-fade-slide-up">
-        <div className="glass-card-static flex items-center gap-1 px-1.5 py-1.5 rounded-xl border border-white/[0.06] bg-zinc-900/40 backdrop-blur-sm">
+        <div className="glass-card-static flex items-center gap-1 px-1.5 py-1.5 rounded-xl border-border bg-bg-glass-strong backdrop-blur-sm">
           {DESKS.map((desk, idx) => {
             const active = activeDesk === desk.id
             const Icon = desk.icon
@@ -101,8 +110,8 @@ function DesktopLayout({ activeDesk, setActiveDesk }: { activeDesk: DeskId; setA
                 onClick={() => setActiveDesk(desk.id)}
                 className={`relative flex flex-1 items-center justify-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-300 min-h-[44px] ${
                   active
-                    ? "text-white bg-accent/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-                    : "text-text-muted hover:text-text-secondary hover:bg-white/[0.03]"
+                    ? "text-text-primary bg-accent/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                    : "text-text-muted hover:text-text-secondary hover:bg-bg-card"
                 }`}
               >
                 <Icon className={`h-4 w-4 transition-all duration-300 ${
@@ -126,6 +135,19 @@ function DesktopLayout({ activeDesk, setActiveDesk }: { activeDesk: DeskId; setA
         {activeDesk === "operating" && <OperatingDesk />}
         {activeDesk === "vault" && <VaultDesk />}
       </div>
+
+      {/* ─────────────── Footer ─────────────── */}
+      <div className="mt-8 flex items-center justify-center gap-4 border-t border-border pt-4">
+        <button
+          onClick={() => { localStorage.removeItem("lcc-onboarded"); window.location.reload() }}
+          className="text-[10px] text-text-muted/40 hover:text-text-muted transition-colors"
+          title="Replay onboarding tour"
+        >
+          <RotateCcw className="h-3 w-3 inline mr-1" />
+          إعادة الجولة التعريفية
+        </button>
+        <span className="text-[9px] text-text-muted/20">⌘K أو ? للبحث</span>
+      </div>
     </div>
   )
 }
@@ -146,7 +168,7 @@ function MobileLayout({ activeDesk, setActiveDesk }: { activeDesk: DeskId; setAc
       <div className="flex-1 overflow-y-auto px-4 pt-4 pb-4">
         {/* Mobile Header — single instance */}
         <div className="mb-4 flex items-center gap-3 animate-fade-slide-up">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-accent via-emerald-500 to-accent/80 shadow-[0_0_20px_rgba(34,197,94,0.2)] ring-1 ring-white/10">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-accent via-emerald-500 to-accent/80 shadow-[0_0_20px_rgba(34,197,94,0.2)] ring-1 ring-border-active/50">
             <span className="text-xs font-bold text-white">م</span>
           </div>
           <div>
@@ -185,7 +207,7 @@ function MobileLayout({ activeDesk, setActiveDesk }: { activeDesk: DeskId; setAc
       </div>
 
       {/* Mobile Desk Bar */}
-      <div className="flex items-center justify-evenly border-t border-white/[0.06] bg-zinc-900/90 backdrop-blur-xl supports-[backdrop-filter]:bg-zinc-900/90 pb-safe">
+      <div className="flex items-center justify-evenly border-t border-border bg-bg-glass-strong backdrop-blur-xl supports-[backdrop-filter]:bg-bg-glass-strong pb-safe">
         {MOBILE_DESKS.map((d) => {
           const active = activeDesk === d.key
           const Icon = d.icon
@@ -258,10 +280,6 @@ export default function CommandCenter() {
     return () => window.removeEventListener("keydown", onKeyDown)
   }, [])
 
-  const fabHandlers = useCallback((desk: DeskId) => {
-    setActiveDesk(desk)
-  }, [])
-
   return (
     <>
       <CommandPalette
@@ -273,12 +291,7 @@ export default function CommandCenter() {
         <DesktopLayout activeDesk={activeDesk} setActiveDesk={setActiveDesk} />
       </div>
       <MobileLayout activeDesk={activeDesk} setActiveDesk={setActiveDesk} />
-      <QuickActionFab
-        onAddTodo={() => fabHandlers("operating")}
-        onLogShift={() => fabHandlers("operating")}
-        onMarkHabits={() => fabHandlers("operating")}
-        onQuickNote={() => fabHandlers("operating")}
-      />
+      <QuickActionFab />
     </>
   )
 }

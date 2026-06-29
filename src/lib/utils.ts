@@ -87,3 +87,11 @@ export function formatCurrency(v: number): string {
 export function daysBetween(a: Date, b: Date): number {
   return Math.floor((b.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
 }
+
+// ─── Error Display ─────────────────────────────────────────────────
+
+export function notifyError(context: string, err: unknown) {
+  const msg = err instanceof Error ? err.message : String(err)
+  console.error(`[LCC:${context}]`, msg)
+  // Future: integrate with a toast system
+}

@@ -205,7 +205,7 @@ export default function TodayWidget() {
       {/* ── Next Prayer (always visible) ── */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full px-4 sm:px-5 py-3 flex items-center justify-between group transition-all duration-200 hover:bg-white/[0.02] active:bg-white/[0.04]"
+        className="w-full px-4 sm:px-5 py-3 flex items-center justify-between group transition-all duration-200 hover:bg-bg-card active:bg-bg-glass"
         aria-label={expanded ? "Collapse prayer times" : "Expand prayer times"}
       >
         <div className="flex items-center gap-3">
@@ -233,7 +233,7 @@ export default function TodayWidget() {
                 ? "bg-accent/15 text-accent"
                 : Number(countdownText.split(" ")[0]) < 1 && countdownText !== "Now"
                   ? "bg-amber-500/15 text-amber-400"
-                  : "bg-white/[0.04] text-text-secondary"
+                  : "bg-bg-glass text-text-secondary"
             }`}>
               {isExpired ? "● Now" : countdownText}
             </div>
@@ -270,7 +270,7 @@ export default function TodayWidget() {
                       ? "bg-accent/10 ring-1 ring-accent/20"
                       : isNext
                         ? "bg-blue-500/5"
-                        : "hover:bg-white/[0.02]"
+                        : "hover:bg-bg-card"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -279,7 +279,7 @@ export default function TodayWidget() {
                         ? "bg-accent shadow-[0_0_6px_rgba(34,197,94,0.3)]"
                         : isNext
                           ? "bg-blue-400"
-                          : "bg-white/10"
+                          : "bg-bg-glass"
                     }`} />
                     <span className={`text-sm ${
                       isCurrent ? "font-semibold text-text-primary" : "text-text-secondary"

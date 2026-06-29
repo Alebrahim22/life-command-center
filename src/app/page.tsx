@@ -4,6 +4,7 @@ import { useState } from "react"
 import AuthGuard from "@/components/AuthGuard"
 import CommandCenter from "@/components/CommandCenter"
 import Onboarding, { useOnboarding } from "@/components/Onboarding"
+import ErrorBoundary from "@/components/ErrorBoundary"
 
 export default function Home() {
   const needsOnboarding = useOnboarding()
@@ -15,7 +16,9 @@ export default function Home() {
 
   return (
     <AuthGuard>
-      <CommandCenter />
+      <ErrorBoundary>
+        <CommandCenter />
+      </ErrorBoundary>
     </AuthGuard>
   )
 }

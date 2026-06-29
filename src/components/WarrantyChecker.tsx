@@ -56,7 +56,7 @@ export default function WarrantyChecker() {
             const critical = w.daysRemaining < 30
             const barColor = critical ? "bg-red-500" : w.daysRemaining < 90 ? "bg-amber-400" : "bg-accent"
             return (
-              <div key={w.id} className="rounded-xl bg-white/[0.03] px-3.5 py-2.5 transition-all duration-200 hover:bg-white/[0.05]">
+              <div key={w.id} className="rounded-xl bg-bg-card px-3.5 py-2.5 transition-all duration-200 hover:bg-bg-glass">
                 <div className="mb-1.5 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     <ShieldCheck className={`h-3.5 w-3.5 shrink-0 ${critical ? "text-red-400" : "text-accent"}`} />
@@ -66,7 +66,7 @@ export default function WarrantyChecker() {
                     {w.daysRemaining}d left
                   </span>
                 </div>
-                <div className="mb-1.5 h-1 w-full overflow-hidden rounded-full bg-white/[0.04]">
+                <div className="mb-1.5 h-1 w-full overflow-hidden rounded-full bg-bg-glass">
                   <div className={`h-full rounded-full transition-all duration-500 ${barColor}`} style={{ width: `${Math.min(100, pct)}%` }} />
                 </div>
                 <div className="flex items-center justify-between text-[11px] font-mono text-text-muted">

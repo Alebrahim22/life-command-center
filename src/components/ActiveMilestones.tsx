@@ -50,7 +50,7 @@ export default function ActiveMilestones() {
           {milestones.map((m) => (
             <div
               key={m.projectName}
-              className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 hover:bg-white/[0.03]"
+              className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 hover:bg-bg-card"
             >
               <Target className="h-3.5 w-3.5 shrink-0 text-accent-gold/60" />
               <span className="flex-1 truncate text-sm text-text-primary">{m.title}</span>

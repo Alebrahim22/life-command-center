@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Sun, Moon } from "lucide-react"
+import { Moon, Sun } from "lucide-react"
 
 const THEME_KEY = "lcc-theme"
 
@@ -11,14 +11,13 @@ export function useTheme() {
   const [theme, setThemeState] = useState<Theme>("dark")
 
   useEffect(() => {
-    const stored = localStorage.getItem(THEME_KEY) as Theme | null
-    if (stored === "light" || stored === "dark") {
-      setThemeState(stored)
-      document.documentElement.setAttribute("data-theme", stored)
-    } else {
-      // Default to dark if nothing stored
-      document.documentElement.setAttribute("data-theme", "dark")
-    }
+    try {
+      const saved = localStorage.getItem(THEME_KEY) as Theme | null
+      if (saved === "light" || saved === "dark") {
+        setThemeState(saved)
+        document.documentElement.setAttribute("data-theme", saved)
+      }
+    } catch {}
   }, [])
 
   const setTheme = useCallback((t: Theme) => {
@@ -28,8 +27,13 @@ export function useTheme() {
   }, [])
 
   const toggle = useCallback(() => {
-    setTheme(theme === "dark" ? "light" : "dark")
-  }, [theme, setTheme])
+    setThemeState((prev) => {
+      const next = prev === "dark" ? "light" : "dark"
+      document.documentElement.setAttribute("data-theme", next)
+      try { localStorage.setItem(THEME_KEY, next) } catch {}
+      return next
+    })
+  }, [])
 
   return { theme, setTheme, toggle }
 }
@@ -40,16 +44,16 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      className="btn-ghost text-xs"
-      title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+      className="flex items-center gap-1.5 btn-ghost text-xs"
+      title={theme === "dark" ? "الوضع النهاري" : "الوضع الليلي"}
     >
       {theme === "dark" ? (
-        <Sun className="h-3.5 w-3.5" />
-      ) : (
         <Moon className="h-3.5 w-3.5" />
+      ) : (
+        <Sun className="h-3.5 w-3.5" />
       )}
       <span className="hidden sm:inline">
-        {theme === "dark" ? "Light" : "Dark"}
+        {theme === "dark" ? "Dark" : "Light"}
       </span>
     </button>
   )

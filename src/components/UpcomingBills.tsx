@@ -44,7 +44,7 @@ export default function UpcomingBills() {
       ) : (
         <div className="space-y-0.5">
           {bills.slice(0, 5).map((b) => (
-            <div key={b.id} className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 hover:bg-white/[0.03]">
+            <div key={b.id} className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 hover:bg-bg-card">
               <Bell className={`h-3.5 w-3.5 shrink-0 ${b.status === "overdue" ? "text-red-400" : "text-amber-400"}`} />
               <span className="flex-1 truncate text-sm text-text-primary">{b.name}</span>
               <span className="shrink-0 text-sm font-mono text-text-secondary">{formatCurrency(b.amount)} {b.currency}</span>
