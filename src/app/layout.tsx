@@ -1,20 +1,25 @@
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Inter, Fira_Code } from "next/font/google"
 import "./globals.css"
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 })
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const firaCode = Fira_Code({
+  variable: "--font-fira-code",
   subsets: ["latin"],
+  display: "swap",
 })
 
 export const metadata: Metadata = {
   title: "Life Command Center",
-  description: "Personal dashboard for daily life",
+  description: "Your personal operations hub — dashboard, finances, habits & more",
+  icons: {
+    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2322c55e'/><text x='16' y='22' text-anchor='middle' fill='white' font-size='18' font-weight='bold' font-family='Inter'>L</text></svg>",
+  },
 }
 
 export default function RootLayout({
@@ -23,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en" className={`${inter.variable} ${firaCode.variable}`}>
       <body>{children}</body>
     </html>
   )

@@ -55,28 +55,28 @@ export default function QuickActionFab({
       id: "todo",
       label: "Add Task",
       icon: ListTodo,
-      color: "bg-blue-500",
+      color: "from-blue-500 to-blue-600",
       action: () => { onAddTodo?.(); setOpen(false) },
     },
     {
       id: "shift",
       label: "Log Shift",
       icon: Clock,
-      color: "bg-amber-500",
+      color: "from-amber-500 to-orange-600",
       action: () => { onLogShift?.(); setOpen(false) },
     },
     {
       id: "habit",
       label: "Mark Habit",
       icon: CheckSquare,
-      color: "bg-purple-500",
+      color: "from-purple-500 to-purple-600",
       action: () => { onMarkHabits?.(); setOpen(false) },
     },
     {
       id: "note",
       label: "Quick Note",
       icon: StickyNote,
-      color: "bg-emerald-500",
+      color: "from-emerald-500 to-emerald-600",
       action: () => { onQuickNote?.(); setOpen(false) },
     },
   ]
@@ -85,20 +85,21 @@ export default function QuickActionFab({
     <div ref={menuRef} className="fixed bottom-24 right-4 z-30 md:bottom-8 md:right-8 flex flex-col items-end gap-3">
       {/* Menu items */}
       {open && (
-        <div className="flex flex-col items-end gap-2">
-          {actions.map((a) => {
+        <div className="flex flex-col items-end gap-2 animate-scale-in">
+          {actions.map((a, i) => {
             const Icon = a.icon
             return (
               <button
                 key={a.id}
                 onClick={a.action}
-                className="flex items-center gap-2 rounded-xl bg-bg-card border border-border px-4 py-2.5 shadow-lg transition-all hover:scale-105 min-h-[44px]"
+                className="group flex items-center gap-2.5 rounded-2xl glass-card-static px-4 py-2.5 shadow-xl transition-all duration-200 hover:scale-105 hover:shadow-2xl min-h-[48px]"
+                style={{ animationDelay: `${i * 40}ms`, animation: "fade-slide-up 300ms ease-out both" }}
               >
-                <span className="text-xs font-medium text-text-primary whitespace-nowrap">
+                <span className="text-sm font-medium text-text-primary whitespace-nowrap">
                   {a.label}
                 </span>
-                <div className={`flex items-center justify-center h-8 w-8 rounded-lg ${a.color}`}>
-                  <Icon className="h-4 w-4 text-white" />
+                <div className={`flex items-center justify-center h-9 w-9 rounded-xl bg-gradient-to-br ${a.color} shadow-inner`}>
+                  <Icon className="h-[18px] w-[18px] text-white" />
                 </div>
               </button>
             )
@@ -106,11 +107,11 @@ export default function QuickActionFab({
         </div>
       )}
 
-      {/* Main FAB button */}
+      {/* Main FAB button — Premium */}
       <button
         onClick={() => setOpen(!open)}
-        className={`flex items-center justify-center h-14 w-14 rounded-full bg-accent text-white shadow-lg transition-all active:scale-90 hover:scale-105 fab-pulse ${
-          open ? "rotate-45" : ""
+        className={`flex items-center justify-center h-14 w-14 rounded-full bg-gradient-to-br from-accent to-emerald-600 text-white shadow-[0_4px_24px_rgba(34,197,94,0.3)] transition-all duration-300 active:scale-90 hover:scale-105 hover:shadow-[0_8px_32px_rgba(34,197,94,0.4)] fab-pulse ${
+          open ? "rotate-45 shadow-[0_4px_24px_rgba(34,197,94,0.4)]" : ""
         }`}
         aria-label={open ? "Close actions" : "Quick actions"}
       >

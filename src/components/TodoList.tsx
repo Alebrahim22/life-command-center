@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Trash2 } from "lucide-react"
+import { Trash2, Plus, ListTodo } from "lucide-react"
 import Checkbox from "@/components/Checkbox"
 import { supabase } from "@/lib/supabase"
 
@@ -17,9 +17,9 @@ interface Todo {
 type Filter = "all" | "active" | "completed"
 
 const priorityColors: Record<string, string> = {
-  high: "text-red-400",
-  medium: "text-yellow-400",
-  low: "text-text-secondary",
+  high: "bg-red-400 ring-red-400/20",
+  medium: "bg-amber-400 ring-amber-400/20",
+  low: "bg-text-muted ring-white/5",
 }
 
 const priorityLabels: Record<string, string> = {
@@ -80,159 +80,153 @@ export default function TodoList() {
 
     if (error) {
       console.error("Failed to add todo:", error)
-      return
+    } else if (data) {
+      setTodos((prev) => [
+        {
+          id: data.id,
+          text: data.text,
+          priority: data.priority,
+          dueDate: data.due_date,
+          completed: data.completed,
+          createdAt: data.created_at,
+        },
+        ...prev,
+      ])
+      setText("")
+      setDueDate("")
     }
-
-    setTodos((prev) => [
-      {
-        id: data.id,
-        text: data.text,
-        priority: data.priority,
-        dueDate: data.due_date,
-        completed: data.completed,
-        createdAt: data.created_at,
-      },
-      ...prev,
-    ])
-    setText("")
-    setDueDate("")
   }
 
-  async function toggleComplete(id: string) {
-    const todo = todos.find((t) => t.id === id)
-    if (!todo) return
-    const newCompleted = !todo.completed
-
-    const { error } = await supabase
-      .from("todos")
-      .update({ completed: newCompleted })
-      .eq("id", id)
-
-    if (error) {
-      console.error("Failed to update todo:", error)
-      return
+  async function toggleTodo(id: string, current: boolean) {
+    const { error } = await supabase.from("todos").update({ completed: !current }).eq("id", id)
+    if (!error) {
+      setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, completed: !current } : t)))
     }
-
-    setTodos((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, completed: newCompleted } : t)),
-    )
   }
 
   async function deleteTodo(id: string) {
     const { error } = await supabase.from("todos").delete().eq("id", id)
-
-    if (error) {
-      console.error("Failed to delete todo:", error)
-      return
+    if (!error) {
+      setTodos((prev) => prev.filter((t) => t.id !== id))
     }
-
-    setTodos((prev) => prev.filter((t) => t.id !== id))
   }
 
-  const filtered = todos.filter((t) => {
-    if (filter === "active") return !t.completed
-    if (filter === "completed") return t.completed
-    return true
-  })
+  const filtered =
+    filter === "all" ? todos : filter === "active" ? todos.filter((t) => !t.completed) : todos.filter((t) => t.completed)
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-border bg-bg-card p-5">
-        <h2 className="mb-3 text-lg font-semibold text-text-secondary">Todo</h2>
-        <p className="py-6 text-center text-sm text-text-secondary">Loading tasks...</p>
+      <div className="glass-card-static p-5">
+        <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-text-secondary">
+          <span className="mr-2 inline-block h-[3px] w-[3px] rounded-full bg-accent" />
+          Tasks
+        </h3>
+        <div className="skeleton-shimmer h-8 rounded-lg mb-2" />
+        <div className="skeleton-shimmer h-8 rounded-lg mb-2" />
+        <div className="skeleton-shimmer h-8 rounded-lg" />
       </div>
     )
   }
 
   return (
-    <div className="rounded-xl border border-border bg-bg-card p-5">
-      <h2 className="mb-4 text-lg font-semibold text-text-secondary">Todo</h2>
+    <div className="glass-card-static p-5">
+      {/* Header */}
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-text-secondary">
+          <span className="inline-block h-[3px] w-[3px] rounded-full bg-accent" />
+          Tasks
+        </h3>
+        <span className="text-[11px] font-mono text-text-muted">{todos.filter((t) => !t.completed).length} active</span>
+      </div>
 
-      <div className="mb-3 flex gap-2">
+      {/* Add form */}
+      <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl bg-white/[0.03] p-2.5">
         <input
           type="text"
           placeholder="Add a task..."
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && addTodo()}
-          className="min-w-0 flex-1 rounded-lg border border-border bg-bg-card-hover px-3 py-2 text-sm text-text-primary placeholder-text-secondary outline-none focus:border-accent"
+          className="min-w-0 flex-1 bg-transparent text-sm text-text-primary placeholder-text-muted outline-none"
         />
-        <button
-          onClick={addTodo}
-          className="rounded-lg bg-accent/20 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/30"
-        >
-          Add
-        </button>
-      </div>
-
-      <div className="mb-3 flex flex-wrap gap-2">
         <select
           value={priority}
-          onChange={(e) => setPriority(e.target.value as "high" | "medium" | "low")}
-          className="rounded-lg border border-border bg-bg-card-hover px-2 py-1.5 text-xs text-text-primary outline-none"
+          onChange={(e) => setPriority(e.target.value as any)}
+          className="rounded-lg border border-border bg-bg-glass px-2 py-1.5 text-[11px] font-medium text-text-secondary outline-none"
         >
-          <option value="high">High</option>
-          <option value="medium">Medium</option>
-          <option value="low">Low</option>
+          <option value="high">🔥 High</option>
+          <option value="medium">⚡ Med</option>
+          <option value="low">· Low</option>
         </select>
         <input
           type="date"
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}
-          className="rounded-lg border border-border bg-bg-card-hover px-2 py-1.5 text-xs text-text-primary outline-none [color-scheme:dark]"
+          className="rounded-lg border border-border bg-bg-glass px-2 py-1.5 text-[11px] font-mono text-text-secondary outline-none"
         />
+        <button
+          onClick={addTodo}
+          disabled={!text.trim()}
+          className="btn-primary px-3 py-1.5 text-xs"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          Add
+        </button>
       </div>
 
-      <div className="mb-3 flex gap-1 rounded-lg bg-bg-card-hover p-1 text-xs">
+      {/* Filters */}
+      <div className="mb-3 flex items-center gap-1">
         {(["all", "active", "completed"] as Filter[]).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`flex-1 rounded-md px-3 py-1.5 capitalize transition-colors ${
-              filter === f ? "bg-bg-card-hover text-text-primary" : "text-text-secondary hover:text-text-primary"
+            className={`rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-all duration-200 ${
+              filter === f ? "bg-accent/10 text-accent" : "text-text-muted hover:text-text-secondary"
             }`}
           >
-            {f}
+            {f.charAt(0).toUpperCase() + f.slice(1)}
           </button>
         ))}
       </div>
 
-      {filtered.length === 0 && (
-        <p className="py-6 text-center text-sm text-text-secondary">No tasks yet</p>
+      {/* List */}
+      {filtered.length === 0 ? (
+        <div className="flex flex-col items-center gap-2 py-8">
+          <ListTodo className="h-7 w-7 text-text-muted/30" />
+          <p className="text-sm text-text-muted">
+            {filter === "all" ? "No tasks yet" : filter === "active" ? "All done! 🎉" : "No completed tasks"}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-0.5">
+          {filtered.map((t) => (
+            <div
+              key={t.id}
+              className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 hover:bg-white/[0.03]"
+            >
+              <Checkbox checked={t.completed} onChange={() => toggleTodo(t.id, t.completed)} />
+              <span
+                className={`flex-1 truncate text-sm transition-all ${
+                  t.completed ? "text-text-muted line-through" : "text-text-primary"
+                }`}
+              >
+                {t.text}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className={`flex h-2 w-2 rounded-full ring-2 ring-offset-1 ring-offset-bg-primary ${priorityColors[t.priority]}`} />
+                <span className="text-[11px] text-text-muted">{priorityLabels[t.priority]}</span>
+              </span>
+              {t.dueDate && <span className="text-[11px] font-mono text-text-muted">{t.dueDate}</span>}
+              <button
+                onClick={() => deleteTodo(t.id)}
+                className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg p-1.5 text-text-muted hover:text-red-400 hover:bg-red-500/10"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
       )}
-
-      <div className="space-y-1">
-        {filtered.map((todo) => (
-          <div
-            key={todo.id}
-            className="group flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-bg-card-hover"
-          >
-            <Checkbox
-              checked={todo.completed}
-              onChange={() => toggleComplete(todo.id)}
-            />
-            <span
-              className={`flex-1 text-sm ${
-                todo.completed ? "text-text-secondary line-through" : "text-text-primary"
-              }`}
-            >
-              {todo.text}
-            </span>
-            <span className={`text-[10px] font-medium uppercase ${priorityColors[todo.priority]}`}>
-              {priorityLabels[todo.priority]}
-            </span>
-            {todo.dueDate && (
-              <span className="text-[10px] text-text-secondary">{todo.dueDate}</span>
-            )}
-            <button
-              onClick={() => deleteTodo(todo.id)}
-              className="opacity-0 transition-opacity group-hover:opacity-100"
-            >
-              <Trash2 className="h-3.5 w-3.5 text-red-400" />
-            </button>
-          </div>
-        ))}
-      </div>
     </div>
   )
 }
