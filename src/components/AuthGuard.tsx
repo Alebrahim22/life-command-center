@@ -147,11 +147,11 @@ export default function AuthGuard({ children }: Props) {
             }}
           />
           <div
-            className="absolute -left-24 -top-24 h-64 w-64 rounded-full bg-accent/5 blur-[100px] animate-fade-in"
+            className="absolute -start-24 -top-24 h-64 w-64 rounded-full bg-accent/5 blur-[100px] animate-fade-in"
             style={{ animationDelay: "300ms", animationFillMode: "both" }}
           />
           <div
-            className="absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-accent-gold/5 blur-[120px] animate-fade-in"
+            className="absolute -bottom-32 -end-32 h-80 w-80 rounded-full bg-accent-gold/5 blur-[120px] animate-fade-in"
             style={{ animationDelay: "600ms", animationFillMode: "both" }}
           />
         </div>
@@ -255,29 +255,29 @@ export default function AuthGuard({ children }: Props) {
                         Email
                       </label>
                       <div className="relative">
-                        <Mail className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
+                        <Mail className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
                         <input
                           type="email"
-                          placeholder="you@example.com"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          className="w-full rounded-xl border border-border bg-bg-glass py-2.5 pl-10 pr-3 text-sm text-text-primary placeholder-text-muted outline-none transition-all duration-200 focus:border-accent/50 focus:bg-bg-card focus:shadow-[0_0_12px_rgba(34,197,94,0.06)]"
-                        />
+                          className="w-full rounded-xl border border-border bg-bg-glass py-2.5 ps-10 pe-3 text-sm text-text-primary placeholder-text-muted outline-none transition-all duration-200 focus:border-accent/50 focus:bg-bg-card focus:shadow-[0_0_12px_rgba(34,197,94,0.06)]"
+                            placeholder="you@example.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                          />
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="space-y-0.5">
-                      <label className="block text-[11px] font-medium uppercase tracking-wider text-text-secondary">
-                        Password
-                      </label>
-                      <div className="relative">
-                        <Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
-                        <input
-                          type="password"
-                          placeholder="••••••••"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className="w-full rounded-xl border border-border bg-bg-glass py-2.5 pl-10 pr-3 text-sm text-text-primary placeholder-text-muted outline-none transition-all duration-200 focus:border-accent/50 focus:bg-bg-card focus:shadow-[0_0_12px_rgba(34,197,94,0.06)]"
+                      <div className="space-y-0.5">
+                        <label className="block text-[11px] font-medium uppercase tracking-wider text-text-secondary">
+                          Password
+                        </label>
+                        <div className="relative">
+                          <Lock className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
+                          <input
+                            type="password"
+                            placeholder="••••••••"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full rounded-xl border border-border bg-bg-glass py-2.5 ps-10 pe-3 text-sm text-text-primary placeholder-text-muted outline-none transition-all duration-200 focus:border-accent/50 focus:bg-bg-card focus:shadow-[0_0_12px_rgba(34,197,94,0.06)]"
                         />
                       </div>
                     </div>

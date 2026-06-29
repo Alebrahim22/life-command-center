@@ -808,7 +808,7 @@ export default function OsoulArchitect() {
           {/* Sidebar */}
           <div className="space-y-6">
             <div className="relative overflow-hidden rounded-xl border border-white/[0.06] bg-zinc-900/30 backdrop-blur-md p-5 shadow-2xl shadow-black/40 transition-all duration-300 hover:border-white/[0.12]">
-              <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-accent/5 blur-3xl" />
+              <div className="absolute end-0 top-0 h-24 w-24 rounded-full bg-accent/5 blur-3xl" />
               <h2 className="mb-5 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-accent">
                 <PieChart size={13} /> 5-Year Dynamics
               </h2>

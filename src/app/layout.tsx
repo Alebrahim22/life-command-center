@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Inter, Fira_Code } from "next/font/google"
+import { Inter, Fira_Code, Tajawal } from "next/font/google"
 import "./globals.css"
 
 const inter = Inter({
@@ -11,6 +11,13 @@ const inter = Inter({
 const firaCode = Fira_Code({
   variable: "--font-fira-code",
   subsets: ["latin"],
+  display: "swap",
+})
+
+const tajawal = Tajawal({
+  weight: ["300", "400", "500", "700"],
+  variable: "--font-tajawal",
+  subsets: ["arabic"],
   display: "swap",
 })
 
@@ -28,7 +35,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${firaCode.variable}`}>
+    <html lang="en" dir="auto" className={`${inter.variable} ${firaCode.variable} ${tajawal.variable}`}>
       <body>{children}</body>
     </html>
   )

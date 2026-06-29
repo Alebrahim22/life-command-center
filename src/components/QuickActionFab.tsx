@@ -82,7 +82,7 @@ export default function QuickActionFab({
   ]
 
   return (
-    <div ref={menuRef} className="fixed bottom-24 right-4 z-30 md:bottom-8 md:right-8 flex flex-col items-end gap-3">
+    <div ref={menuRef} className="fixed bottom-24 end-4 z-30 md:bottom-8 md:end-8 flex flex-col items-end gap-3">
       {/* Menu items */}
       {open && (
         <div className="flex flex-col items-end gap-2 animate-scale-in">
