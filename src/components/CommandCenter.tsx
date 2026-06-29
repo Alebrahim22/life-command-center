@@ -104,7 +104,6 @@ const HABITS = [
   { id: "cold-shower", label: "Cold Shower" },
 ]
 
-const STORAGE_KEY = "habit-data"
 const PROJECT_NAMES = ["Hadeya", "Reluxx", "Osoul", "XYZ Agency", "Personal Brand"]
 
 function todayKey(): string {
@@ -158,25 +157,41 @@ function HabitQuickChecks() {
   const today = todayKey()
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY)
-      if (raw) setData(JSON.parse(raw))
-    } catch {}
-    setLoaded(true)
+    supabase
+      .from("habits")
+      .select("date_key, habit_id")
+      .then(({ data: rows }) => {
+        const map: Record<string, string[]> = {}
+        if (rows) {
+          for (const r of rows) {
+            const key = r.date_key
+            if (!map[key]) map[key] = []
+            map[key].push(r.habit_id)
+          }
+        }
+        setData(map)
+        setLoaded(true)
+      })
   }, [])
-
-  useEffect(() => {
-    if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-  }, [data, loaded])
 
   const doneToday = data[today] || []
 
   function toggle(id: string) {
+    const key = todayKey()
+    const exists = doneToday.includes(id)
+
+    // Optimistic UI
     setData((prev) => {
       const d = prev[today] || []
-      const exists = d.includes(id)
       return { ...prev, [today]: exists ? d.filter((x) => x !== id) : [...d, id] }
     })
+
+    // Supabase sync
+    if (exists) {
+      supabase.from("habits").delete().eq("date_key", key).eq("habit_id", id)
+    } else {
+      supabase.from("habits").insert({ date_key: key, habit_id: id })
+    }
   }
 
   if (!loaded) return <Skeleton className="h-52" />
@@ -633,15 +648,12 @@ function OverviewDesk() {
   const [dataLoaded, setDataLoaded] = useState(false)
 
   useEffect(() => {
-    // Habits from localStorage
-    const raw = typeof window !== 'undefined' ? localStorage.getItem('habit-data') : null
-    if (raw) {
-      try {
-        const today = new Date().toISOString().split('T')[0]
-        const d = JSON.parse(raw)
-        setHabitCount((d[today] || []).length)
-      } catch {}
-    }
+    // Habits from Supabase
+    const today = new Date().toISOString().split('T')[0]
+    supabase.from('habits').select('habit_id').eq('date_key', today)
+      .then(({ data }) => {
+        if (data) setHabitCount(data.length)
+      })
 
     // Todos count from Supabase
     supabase.from('todos').select('id', { count: 'exact', head: true }).eq('completed', false)
@@ -656,15 +668,16 @@ function OverviewDesk() {
       }
     })
 
-    // Portfolio total - use local storage from PortfolioTracker's persisted data
-    const portfolioRaw = typeof window !== 'undefined' ? localStorage.getItem('portfolio-holdings') : null
-    if (portfolioRaw) {
-      try {
-        const holdings = JSON.parse(portfolioRaw)
-        const total = holdings.reduce((s: number, h: any) => s + (h.shares || 0) * (h.currentPrice || 0), 0)
-        setPortfolioVal(total.toLocaleString('en-US', { minimumFractionDigits: 3 }) + ' KD')
-      } catch {}
-    }
+    // Portfolio total from Supabase
+    supabase.from('portfolio_holdings').select('quantity, current_price')
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          const total = data.reduce((s: number, h: any) => s + Number(h.quantity) * Number(h.current_price), 0)
+          setPortfolioVal(total.toLocaleString('en-US', { minimumFractionDigits: 3 }) + ' KD')
+        } else {
+          setPortfolioVal('0.000 KD')
+        }
+      })
 
     // Legal cases count
     supabase.from('legal_cases').select('id', { count: 'exact', head: true })

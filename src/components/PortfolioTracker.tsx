@@ -1,71 +1,35 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ChevronDown, ChevronRight, Plus, Trash2, GripVertical } from "lucide-react"
+import { ChevronDown, ChevronRight, Plus, Trash2 } from "lucide-react"
+import { supabase } from "@/lib/supabase"
 
 interface Holding {
   id: string
+  platformId: string
   asset: string
   quantity: number
   buyPrice: number
   currentPrice: number
 }
 
-interface PlatformData {
-  collapsed: boolean
+interface PlatformInfo {
+  id: string
+  name: string
   changeToday: number
+  usdToKwd: number
   holdings: Holding[]
 }
 
-interface PortfolioData {
-  usdToKwdRate: number
-  binance: PlatformData
-  kuwaitBoursa: PlatformData
-  eToro: PlatformData
-}
+type PortfolioData = Record<string, PlatformInfo>
 
-const STORAGE_KEY = "portfolio-data"
-
-const PLATFORM_CURRENCIES: Record<string, "USD" | "KWD"> = {
-  binance: "USD",
-  kuwaitBoursa: "KWD",
-  eToro: "USD",
-}
+const PLATFORM_NAMES = ["Binance", "Kuwait Boursa", "eToro"] as const
+type PlatformName = (typeof PLATFORM_NAMES)[number]
 
 const PLATFORM_LABELS: Record<string, string> = {
   binance: "Binance",
   kuwaitBoursa: "Kuwait Boursa",
   eToro: "eToro",
-}
-
-function emptyPlatform(): PlatformData {
-  return { collapsed: false, changeToday: 0, holdings: [] }
-}
-
-function defaultData(): PortfolioData {
-  return {
-    usdToKwdRate: 0.307,
-    binance: emptyPlatform(),
-    kuwaitBoursa: emptyPlatform(),
-    eToro: emptyPlatform(),
-  }
-}
-
-function load(): PortfolioData {
-  if (typeof window === "undefined") return defaultData()
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      return {
-        usdToKwdRate: parsed.usdToKwdRate ?? 0.307,
-        binance: { ...emptyPlatform(), ...parsed.binance },
-        kuwaitBoursa: { ...emptyPlatform(), ...parsed.kuwaitBoursa },
-        eToro: { ...emptyPlatform(), ...parsed.eToro },
-      }
-    }
-  } catch {}
-  return defaultData()
 }
 
 function fmt(n: number, currency: "USD" | "KWD"): string {
@@ -76,8 +40,9 @@ function fmt(n: number, currency: "USD" | "KWD"): string {
 }
 
 export default function PortfolioTracker() {
-  const [data, setData] = useState<PortfolioData>(defaultData())
+  const [platforms, setPlatforms] = useState<PortfolioData>({})
   const [loaded, setLoaded] = useState(false)
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
   const [rateInput, setRateInput] = useState("0.307")
 
   const [addingPlatform, setAddingPlatform] = useState<string | null>(null)
@@ -86,55 +51,125 @@ export default function PortfolioTracker() {
   const [addBuy, setAddBuy] = useState("")
   const [addCur, setAddCur] = useState("")
 
+  // ── Load from Supabase ──
   useEffect(() => {
-    const d = load()
-    setData(d)
-    setRateInput(String(d.usdToKwdRate))
-    setLoaded(true)
+    Promise.all([
+      supabase.from("portfolio_platforms").select("*"),
+      supabase.from("portfolio_holdings").select("*"),
+    ]).then(([platRes, holdRes]) => {
+      const map: PortfolioData = {}
+      const platRows = platRes.data || []
+      const holdRows = holdRes.data || []
+
+      for (const p of platRows) {
+        const key = PLATFORM_NAMES.find((n) => n === p.name)?.toLowerCase() || p.name.toLowerCase()
+        map[key] = {
+          id: p.id,
+          name: p.name,
+          changeToday: Number(p.change_today || 0),
+          usdToKwd: Number(p.usd_to_kwd || 0.307),
+          holdings: [],
+        }
+        // Use the first platform's usd_to_kwd for the input
+        if (key === "binance") setRateInput(String(p.usd_to_kwd || 0.307))
+      }
+
+      for (const h of holdRows) {
+        for (const key of Object.keys(map)) {
+          if (map[key].id === h.platform_id) {
+            map[key].holdings.push({
+              id: h.id,
+              platformId: h.platform_id,
+              asset: h.asset,
+              quantity: Number(h.quantity),
+              buyPrice: Number(h.buy_price),
+              currentPrice: Number(h.current_price),
+            })
+          }
+        }
+      }
+
+      setPlatforms(map)
+      setLoaded(true)
+    })
   }, [])
 
-  useEffect(() => {
-    if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-  }, [data, loaded])
+  function getRate(): number {
+    // Use the primary rate from binance
+    return platforms.binance?.usdToKwd || 0.307
+  }
 
   function updateRate() {
     const v = parseFloat(rateInput)
-    if (v > 0) setData((prev) => ({ ...prev, usdToKwdRate: v }))
+    if (v <= 0) return
+    const rate = v
+    // Update all platforms
+    for (const key of Object.keys(platforms)) {
+      const plat = platforms[key]
+      supabase.from("portfolio_platforms").update({ usd_to_kwd: rate }).eq("id", plat.id)
+    }
+    setPlatforms((prev) => {
+      const next = { ...prev }
+      for (const key of Object.keys(next)) {
+        next[key] = { ...next[key], usdToKwd: rate }
+      }
+      return next
+    })
   }
 
   function toggleCollapse(key: string) {
-    setData((prev) => {
-      const platform = { ...(prev[key as keyof PortfolioData] as unknown as PlatformData) }
-      platform.collapsed = !platform.collapsed
-      return { ...prev, [key]: platform }
-    })
+    setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }))
   }
 
   function updateChange(key: string, val: number) {
-    setData((prev) => {
-      const platform = { ...(prev[key as keyof PortfolioData] as unknown as PlatformData) }
-      platform.changeToday = val
-      return { ...prev, [key]: platform }
-    })
+    const plat = platforms[key]
+    if (!plat) return
+    supabase.from("portfolio_platforms").update({ change_today: val }).eq("id", plat.id)
+    setPlatforms((prev) => ({
+      ...prev,
+      [key]: { ...prev[key], changeToday: val },
+    }))
   }
 
-  function addHolding(key: string) {
+  async function addHolding(key: string) {
     const qty = parseFloat(addQty)
     const buy = parseFloat(addBuy)
     const cur = parseFloat(addCur)
     if (!addAsset.trim() || isNaN(qty) || isNaN(buy) || isNaN(cur)) return
-    const holding: Holding = {
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
-      asset: addAsset.trim().toUpperCase(),
-      quantity: qty,
-      buyPrice: buy,
-      currentPrice: cur,
+
+    const plat = platforms[key]
+    if (!plat) return
+
+    const { data, error } = await supabase
+      .from("portfolio_holdings")
+      .insert({
+        platform_id: plat.id,
+        asset: addAsset.trim().toUpperCase(),
+        quantity: qty,
+        buy_price: buy,
+        current_price: cur,
+      })
+      .select()
+      .single()
+
+    if (error || !data) {
+      console.error("Failed to add holding:", error)
+      return
     }
-    setData((prev) => {
-      const platform = { ...(prev[key as keyof PortfolioData] as unknown as PlatformData) }
-      platform.holdings = [...platform.holdings, holding]
-      return { ...prev, [key]: platform }
-    })
+
+    const newHolding: Holding = {
+      id: data.id,
+      platformId: data.platform_id,
+      asset: data.asset,
+      quantity: Number(data.quantity),
+      buyPrice: Number(data.buy_price),
+      currentPrice: Number(data.current_price),
+    }
+
+    setPlatforms((prev) => ({
+      ...prev,
+      [key]: { ...prev[key], holdings: [...prev[key].holdings, newHolding] },
+    }))
     setAddingPlatform(null)
     setAddAsset("")
     setAddQty("")
@@ -142,25 +177,30 @@ export default function PortfolioTracker() {
     setAddCur("")
   }
 
-  function removeHolding(platformKey: string, holdingId: string) {
-    setData((prev) => {
-      const platform = { ...(prev[platformKey as keyof PortfolioData] as unknown as PlatformData) }
-      platform.holdings = platform.holdings.filter((h) => h.id !== holdingId)
-      return { ...prev, [platformKey]: platform }
-    })
+  async function removeHolding(platformKey: string, holdingId: string) {
+    const { error } = await supabase.from("portfolio_holdings").delete().eq("id", holdingId)
+    if (error) {
+      console.error("Failed to remove holding:", error)
+      return
+    }
+    setPlatforms((prev) => ({
+      ...prev,
+      [platformKey]: {
+        ...prev[platformKey],
+        holdings: prev[platformKey].holdings.filter((h) => h.id !== holdingId),
+      },
+    }))
   }
 
   function platformValue(key: string): number {
-    const p = data[key as keyof PortfolioData] as PlatformData
-    return p.holdings.reduce((sum, h) => sum + h.quantity * h.currentPrice, 0)
+    return (platforms[key]?.holdings || []).reduce((sum, h) => sum + h.quantity * h.currentPrice, 0)
   }
 
   function platformPnl(key: string): number {
-    const p = data[key as keyof PortfolioData] as PlatformData
-    return p.holdings.reduce((sum, h) => sum + (h.currentPrice - h.buyPrice) * h.quantity, 0)
+    return (platforms[key]?.holdings || []).reduce((sum, h) => sum + (h.currentPrice - h.buyPrice) * h.quantity, 0)
   }
 
-  const rate = data.usdToKwdRate
+  const rate = getRate()
 
   const binanceVal = platformValue("binance")
   const boursaVal = platformValue("kuwaitBoursa")
@@ -174,7 +214,13 @@ export default function PortfolioTracker() {
   const totalPnl = binancePnl * rate + boursaPnl + etoroPnl * rate
   const pnlPercent = totalKwd > 0 ? (totalPnl / (totalKwd - totalPnl)) * 100 : 0
 
-  const platforms = ["binance", "kuwaitBoursa", "eToro"] as const
+  const platformKeys = ["binance", "kuwaitBoursa", "eToro"] as const
+
+  const CURRENCY_MAP: Record<string, "USD" | "KWD"> = {
+    binance: "USD",
+    kuwaitBoursa: "KWD",
+    eToro: "USD",
+  }
 
   if (!loaded) {
     return (
@@ -225,12 +271,13 @@ export default function PortfolioTracker() {
       </div>
 
       <div className="space-y-3">
-        {platforms.map((key) => {
-          const platform = data[key] as PlatformData
+        {platformKeys.map((key) => {
+          const platform = platforms[key]
+          if (!platform) return null
           const val = platformValue(key)
           const pnl = platformPnl(key)
-          const currency = PLATFORM_CURRENCIES[key]
-          const isCollapsed = platform.collapsed
+          const currency = CURRENCY_MAP[key]
+          const isCollapsed = collapsed[key]
 
           return (
             <div key={key} className="rounded-lg border border-border bg-bg-card-hover">
@@ -244,7 +291,7 @@ export default function PortfolioTracker() {
                   <ChevronDown className="h-4 w-4 text-text-secondary" />
                 )}
                 <span className="flex-1 text-sm font-medium text-text-primary">
-                  {PLATFORM_LABELS[key]}
+                  {PLATFORM_LABELS[key] || platform.name}
                 </span>
                 <span className="text-xs text-text-secondary">{currency}</span>
                 <span className="text-sm font-semibold text-text-primary">
@@ -290,7 +337,7 @@ export default function PortfolioTracker() {
                           <span className="text-right text-sm text-text-secondary">{fmt(h.currentPrice, currency)}</span>
                           <div className="flex items-center justify-end gap-1">
                             <span className={`text-sm font-medium ${hPnl >= 0 ? "text-accent" : "text-red-400"}`}>
-                              {hPnl >= 0 ? "+" : ""}{fmt(hPnl, currency)} {currency === "KWD" ? "" : ""}
+                              {hPnl >= 0 ? "+" : ""}{fmt(hPnl, currency)}
                             </span>
                             <button
                               onClick={() => removeHolding(key, h.id)}

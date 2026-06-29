@@ -1,13 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { supabase } from "@/lib/supabase"
 import Checkbox from "@/components/Checkbox"
 
 interface HabitData {
   [dateKey: string]: string[]
 }
-
-const STORAGE_KEY = "habit-data"
 
 interface HabitDef {
   id: string
@@ -46,15 +45,6 @@ function getDaysBack(n: number): string[] {
   return days
 }
 
-function load(): HabitData {
-  if (typeof window === "undefined") return {}
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
-  } catch {}
-  return {}
-}
-
 export default function HabitTracker() {
   const [data, setData] = useState<HabitData>({})
   const [loaded, setLoaded] = useState(false)
@@ -62,24 +52,52 @@ export default function HabitTracker() {
   const today = todayKey()
   const last7 = getDaysBack(7)
 
+  // ── Load from Supabase on mount ──
   useEffect(() => {
-    setData(load())
-    setLoaded(true)
+    supabase
+      .from("habits")
+      .select("date_key, habit_id")
+      .then(({ data: rows }) => {
+        const map: HabitData = {}
+        if (rows) {
+          for (const r of rows) {
+            const key = r.date_key
+            if (!map[key]) map[key] = []
+            map[key].push(r.habit_id)
+          }
+        }
+        setData(map)
+        setLoaded(true)
+      })
   }, [])
 
-  useEffect(() => {
-    if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-  }, [data, loaded])
+  // ── Toggle habit: insert or delete row in Supabase ──
+  async function toggleHabit(habitId: string) {
+    const key = todayKey()
 
-  function toggleHabit(habitId: string) {
+    // Optimistic UI update
     setData((prev) => {
-      const todayDone = prev[today] || []
-      const exists = todayDone.includes(habitId)
-      const updated = exists
-        ? todayDone.filter((id) => id !== habitId)
-        : [...todayDone, habitId]
-      return { ...prev, [today]: updated }
+      const done = prev[key] || []
+      const exists = done.includes(habitId)
+      return {
+        ...prev,
+        [key]: exists ? done.filter((id) => id !== habitId) : [...done, habitId],
+      }
     })
+
+    // Sync with Supabase
+    const exists = (data[key] || []).includes(habitId)
+    if (exists) {
+      // Remove
+      await supabase
+        .from("habits")
+        .delete()
+        .eq("date_key", key)
+        .eq("habit_id", habitId)
+    } else {
+      // Add
+      await supabase.from("habits").insert({ date_key: key, habit_id: habitId })
+    }
   }
 
   function isDone(habitId: string, dateKey: string): boolean {
