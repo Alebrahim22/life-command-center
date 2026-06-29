@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useCallback, lazy, Suspense } from "react"
 import {
-  ArrowUpRight, TrendingUp, Bell, X, Target, ShieldCheck, Sun, Cloud,
-  Zap, Coins, Sparkles, LayoutDashboard, Briefcase, Shield,
-  BarChart3, Wallet, ChartCandlestick, ChevronDown,
+  ArrowUpRight, TrendingUp, Bell, X, Target, ShieldCheck,
+  Zap, Coins, Sparkles, LayoutDashboard, Shield,
+  BarChart3, Wallet, ChartCandlestick, ChevronDown, Command,
 } from "lucide-react"
 import Checkbox from "@/components/Checkbox"
 import QuickActionFab from "@/components/QuickActionFab"
+import CommandPalette from "@/components/CommandPalette"
 
 // Lazy-loaded widgets (largest files — loaded on-demand per desk tab)
 const PortfolioTracker = lazy(() => import("@/components/PortfolioTracker"))
@@ -1051,17 +1052,24 @@ function DesktopLayout({ activeDesk, setActiveDesk }: { activeDesk: DeskId; setA
             </div>
             <div>
               <h1 className="text-lg font-semibold tracking-tight text-text-primary">
-                Mohammed's <span className="text-accent">Command Center</span>
+                <span className="text-text-muted/50 font-normal">Command</span> Center
               </h1>
               <p className="text-xs text-text-muted flex items-center gap-1">
                 <Sparkles className="h-3 w-3 text-accent/60" />
-                Your daily operational overview
+                {DESKS.find((d) => d.id === activeDesk)?.desc ?? "Life at a glance"}
+                <span className="text-text-muted/30 mx-0.5">•</span>
+                <span className="text-text-muted/40 font-mono tabular-nums text-[10px]">
+                  {DESKS.findIndex((d) => d.id === activeDesk) + 1}/4
+                </span>
               </p>
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <NotificationBell />
+          <kbd className="hidden rounded-md border border-white/[0.08] bg-white/[0.04] px-1.5 py-0.5 text-[10px] font-medium text-text-muted/60 sm:inline-flex items-center gap-0.5">
+            <Command className="h-2.5 w-2.5" />K
+          </kbd>
           <button
             onClick={handleRegisterDevice}
             className="btn-ghost text-xs"
@@ -1092,6 +1100,7 @@ function DesktopLayout({ activeDesk, setActiveDesk }: { activeDesk: DeskId; setA
                   active ? "text-accent drop-shadow-[0_0_6px_rgba(34,197,94,0.3)]" : ""
                 }`} />
                 <span className="hidden sm:inline">{desk.label}</span>
+                <span className="text-[10px] font-mono tabular-nums text-text-muted/40 hidden sm:inline">[{idx + 1}]</span>
                 {active && (
                   <span className="absolute bottom-0 left-3 right-3 h-[2px] bg-gradient-to-r from-accent/60 via-accent to-accent/60 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.3)]" />
                 )}
@@ -1133,8 +1142,12 @@ function MobileLayout({ activeDesk, setActiveDesk }: { activeDesk: DeskId; setAc
           </div>
           <div>
             <h1 className="text-base font-semibold tracking-tight text-text-primary">
-              Mohammed's <span className="text-accent">Command Center</span>
+              <span className="text-text-muted/50 font-normal">Command</span> Center
             </h1>
+            <p className="text-[10px] text-text-muted flex items-center gap-1">
+              <Sparkles className="h-2.5 w-2.5 text-accent/60" />
+              {DESKS.find((d) => d.id === activeDesk)?.desc ?? "Life at a glance"}
+            </p>
           </div>
         </div>
 
@@ -1191,6 +1204,50 @@ function MobileLayout({ activeDesk, setActiveDesk }: { activeDesk: DeskId; setAc
 // ================================================================
 export default function CommandCenter() {
   const [activeDesk, setActiveDesk] = useState<DeskId>("overview")
+  const [paletteOpen, setPaletteOpen] = useState(false)
+
+  // ─── Keyboard shortcuts ───
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      // Don't capture when typing in inputs
+      const tag = (e.target as HTMLElement).tagName
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return
+
+      // Ctrl/Cmd+K → toggle palette
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault()
+        setPaletteOpen((p) => !p)
+        return
+      }
+
+      // ? → open palette
+      if (e.key === "?" && !e.shiftKey) {
+        e.preventDefault()
+        setPaletteOpen((p) => !p)
+        return
+      }
+
+      // Escape → close palette
+      if (e.key === "Escape") {
+        setPaletteOpen(false)
+        return
+      }
+
+      // 1-4 → navigate desks
+      const deskMap: Record<string, DeskId> = {
+        "1": "overview",
+        "2": "financial",
+        "3": "operating",
+        "4": "vault",
+      }
+      if (e.key in deskMap) {
+        setActiveDesk(deskMap[e.key])
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown)
+    return () => window.removeEventListener("keydown", onKeyDown)
+  }, [])
 
   const fabHandlers = useCallback((desk: DeskId) => {
     setActiveDesk(desk)
@@ -1198,6 +1255,11 @@ export default function CommandCenter() {
 
   return (
     <>
+      <CommandPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        onNavigate={(desk) => setActiveDesk(desk)}
+      />
       <div className="hidden md:block">
         <DesktopLayout activeDesk={activeDesk} setActiveDesk={setActiveDesk} />
       </div>

@@ -2,10 +2,10 @@
 
 import { useState, useMemo, useEffect, useRef } from "react"
 import {
-  TrendingUp, Shield, AlertCircle, FileText, Activity, Clock,
+  AlertCircle, FileText, Activity,
   ChevronRight, X, Briefcase, PieChart, Info, RefreshCw,
   Plus, Edit2, Trash2, Cpu, CheckCircle, History as HistoryIcon,
-  Cloud, CloudOff, Download, FileDown,
+  Cloud, Download, FileDown,
 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 

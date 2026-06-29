@@ -8,6 +8,11 @@ const nextConfig = {
   trailingSlash: false,
   basePath: `/${repoName}`,
   assetPrefix: `/${repoName}/`,
+  modularizeImports: {
+    "lucide-react": {
+      transform: "lucide-react/dist/esm/icons/{{kebabCase member}}",
+    },
+  },
 }
 
 module.exports = nextConfig
